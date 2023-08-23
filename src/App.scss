@@ -16,6 +16,8 @@ body{
 
   &:hover{
     > .e-time-range-wrapper > .e-time-range{
+      max-height: 100px;
+      padding: 3px; //TODO: ここにこれ書くの汚い
     }
   }
 
@@ -50,8 +52,9 @@ body{
         left: 0;
       box-sizing: border-box;
 
-      max-height: 100px;
-      padding: 3px; //TODO: ここにこれ書くの汚い
+      max-height: 0;
+      padding: 0; //TODO: ここにこれ書くの汚い
+
 
       overflow: hidden;
 
@@ -103,3 +106,14 @@ body{
 
 
 
+
+.c-daily-timeline{
+  display: flex;
+  flex-direction: column;
+
+  >.e-hour{
+    height: 50px;
+
+  }
+
+}

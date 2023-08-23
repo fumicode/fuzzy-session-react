@@ -8,6 +8,11 @@ export default class TimeRange{
     readonly end: string
   ){ }
 
+  get startHour():number{
+    return parseInt(this.start.split(':')[0]);
+    //TODO ここで、parseIntを使うのは、よくない。
+  }
+
   get durationHour():number{
     const startDate = new Date(`2023-08-22T${this.start}`);
     const endDate = new Date(`2023-08-22T${this.end}`);

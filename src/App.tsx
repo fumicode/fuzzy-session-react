@@ -1,5 +1,6 @@
 import './App.scss';
-import Session, {SessionView} from './Components/Session';
+import { DailyTimelineView } from './Components/DailyTimelineView';
+import Session from './Components/Session';
 import TimeRange from './Components/TimeRange';
 import React, { FC } from 'react';
 
@@ -22,17 +23,7 @@ const App: FC = ()=> {
 
     
   return (
-    <>
-      {
-        sessions.map((s)=>
-          <>
-            <SessionView main={s}/>
-            <hr style={{margin:'100px 0px'}}/>
-          </>
-        )
-      }
-
-    </>
+    <DailyTimelineView main={sessions}/>
   );
 }
 
