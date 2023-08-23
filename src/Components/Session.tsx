@@ -6,13 +6,10 @@ import ViewModel from './ViewModel'
 import TimeRange, { TimeRangeView } from './TimeRange';
 import crypto from 'crypto';
 
-
 export class SessionId{
-
   private readonly _value: string;
 
   constructor(value: string | undefined = undefined){
-
     if(value === undefined){
       //TODO: なぜかcrypto.randomUUIDが使えないので、簡易的なやりかた
       value = crypto.randomBytes(20).toString('hex');
@@ -47,6 +44,10 @@ export default class Session{
     }
 
     this.id = id;
+  }
+
+  overlaps(otherSession: Session): TimeRange | undefined{
+    return this.openingTimeRange.overlaps(otherSession.openingTimeRange);
   }
 }
 
