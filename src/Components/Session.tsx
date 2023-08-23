@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import ViewModel from './ViewModel'
 
-import TimeRange, { TimeRangeView } from './TimeRange';
+import TimeRange, { TimeRangeTextView } from './TimeRange';
 import crypto from 'crypto';
 
 export class SessionId{
@@ -69,7 +69,7 @@ export const SessionView: FC<SessionViewModel> = styled((props:SessionViewModel)
         {session.title}
       </div>
       <div style={{fontSize:'10px'}}>
-        <TimeRangeView main={range} />
+        <TimeRangeTextView main={range} />
       </div>
       <div className="e-time-range-wrapper m-start">
         <div className="e-time-range">

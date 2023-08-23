@@ -4,7 +4,7 @@ import TimeRange from "./TimeRange";
 
 export default class Conflict{
   public readonly overlappingTimeRange: TimeRange;
-  public readonly conflictingSessionIds: [SessionId, SessionId];
+  public readonly sessionIds: [SessionId, SessionId];
 
   constructor(
     sessionA: Session,
@@ -18,15 +18,34 @@ export default class Conflict{
 
     this.overlappingTimeRange = overlappingTimeRange;
 
-    this.conflictingSessionIds = [
+    this.sessionIds = [
       sessionA.id,
       sessionB.id
     ];
 
   }
 
-  toString(): string{
-    return `Conflict: ${this.overlappingTimeRange.toString()} #${this.conflictingSessionIds[0].toString('short')} <-> #${this.conflictingSessionIds[1].toString('short')}`;
+  //コンフリクトの酷さ
+  get horribleness(): number{
+    return this.overlappingTimeRange.durationHour;
   }
 
+  toString(mode: StringMode | undefined = undefined): string{
+    if(mode === 'horribleness-emoji'){
+      switch(this.horribleness){
+        case 0:
+          return '🤨';
+        case 1:
+          return '😢';
+        case 2:
+          return '😡';
+        default:
+          return '😱';
+      }
+    }
+
+    return `Conflict: ${this.overlappingTimeRange.toString()} #${this.sessionIds[0].toString('short')} <-> #${this.sessionIds[1].toString('short')}`;
+  }
 }
+
+type StringMode = 'horribleness-emoji';

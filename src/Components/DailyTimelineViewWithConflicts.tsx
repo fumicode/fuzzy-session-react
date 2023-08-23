@@ -6,6 +6,7 @@ import 'core-js/features/array';
 import Session, { SessionView } from './Session'
 import ViewModel from './ViewModel'
 import ConflictsWarningSessionList from './ConflictsWarningSessionList';
+import { TimeRangeView } from './TimeRange';
 
 export type DailyTimelineWithConflictsViewModel = ViewModel<ConflictsWarningSessionList>;
 
@@ -44,10 +45,25 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
             }
           )
         }
+      </div>
+      <div className="e-statuses">
         {
           conflicts.map((conflict)=>
-            conflict.overlappingTimeRange.toString())
+            {
+              const conflictDuration = conflict.overlappingTimeRange.durationHour;
 
+              const y = conflict.overlappingTimeRange.startHour * 50;
+              const conflictId = conflict.sessionIds.join('-');
+
+              return (
+                <div className="e-status-box" style={{top: y +'px'}} key={conflictId}>
+                  <TimeRangeView main={conflict.overlappingTimeRange}>
+                    {conflict.toString('horribleness-emoji')}
+                  </TimeRangeView>
+                </div>
+              )
+            }
+          )
         }
       </div>
     </div>
@@ -86,10 +102,23 @@ flex-direction: column;
 
 >.e-contents{
   position: absolute;
+    left: 60px;
+
   >.e-session-box{
     position: absolute;
     z-index: 1;
-    left: 50px;
+  }
+
+}
+
+>.e-statuses{
+  position: absolute;
+    left: 40px;
+
+  >.e-status-box{
+    position: absolute;
+    z-index: 1;
+    width: 20px;
   }
 
 }

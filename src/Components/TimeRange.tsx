@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 
 import ViewModel from './ViewModel'
 import { textSpanOverlap } from 'typescript';
+import styled from 'styled-components';
 
 export default class TimeRange{
   constructor(
@@ -60,9 +61,12 @@ const overlaps = (a:TimeRange, b:TimeRange):boolean => {
   );
 }
 
-export type TimeRangeViewModel = ViewModel<TimeRange>;
+export type TimeRangeViewModel = ViewModel<TimeRange> & {
+  children?: React.ReactNode;
 
-export const TimeRangeView: FC<TimeRangeViewModel> = (props:TimeRangeViewModel) => {
+};
+
+export const TimeRangeTextView: FC<TimeRangeViewModel> = (props:TimeRangeViewModel) => {
   const range: TimeRange = props.main;
   return (
     <>
@@ -70,3 +74,108 @@ export const TimeRangeView: FC<TimeRangeViewModel> = (props:TimeRangeViewModel) 
     </>
   );
 }
+
+export const TimeRangeView: FC<TimeRangeViewModel> = styled((props:TimeRangeViewModel)=>{
+  const className = props.className || '';
+  const range = props.main;
+
+  const hoursNum = range.durationHour;
+
+  return (
+    <div className={className} style={{height:`${hoursNum*50}px`}}>
+      <div className="e-content">
+        
+        {props.children}
+
+      </div>
+      <div className="e-time-range-wrappers">
+        <div className="e-time-range-wrapper m-start">
+          <div className="e-time-range">
+            {range.start}〜
+          </div>
+        </div>
+        <div className="e-time-range-wrapper m-end">
+          <div className="e-time-range">
+            〜{range.end}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+})`
+position: relative;
+
+height:  200px; //とりあえず仮で
+
+border:1px solid white;
+
+background: red;
+
+
+&:hover{
+  > .e-time-range-wrapper > .e-time-range{
+    max-height: 100px;
+    padding: 3px; //TODO: ここにこれ書くの汚い
+  }
+}
+
+> .e-content{
+  position: relative;
+  height: 100%;
+  width: 100%;
+
+}
+
+> .e-time-range-wrappers{
+  > .e-time-range-wrapper{
+    position: absolute;
+      left: 0;
+      z-index: 1;
+
+    &.m-start{
+      position: absolute;
+        top: 0;
+
+      > .e-time-range{
+        bottom: 0;
+
+        border-radius: 5px 5px 0 0;
+      }
+    }
+
+    &.m-end{
+      position: absolute;
+        bottom: 0;
+
+      > .e-time-range{
+        top: 0;
+
+        border-radius: 0 0 5px 5px;
+      }
+    }
+
+    > .e-time-range{
+      position: absolute;
+        left: 0;
+      box-sizing: border-box;
+
+      max-height: 0;
+      padding: 0; //TODO: ここにこれ書くの汚い
+
+
+      overflow: hidden;
+
+      padding-right: 10px;
+      line-height: 1;
+
+      font-size: 10px;
+
+      background-color: #ddd;
+
+      white-space: nowrap;
+    }
+  }
+}
+
+`;
+

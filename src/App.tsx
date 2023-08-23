@@ -8,6 +8,11 @@ import React, { FC } from 'react';
 const sessions: Session[] = [
   new Session(
     undefined,
+    '予定0',
+    new TimeRange('09:00','11:00')
+  ),
+  new Session(
+    undefined,
     '予定1',
     new TimeRange('10:00','13:00')
   ),
@@ -25,6 +30,11 @@ const sessions: Session[] = [
     undefined,
     '予定4',
     new TimeRange('16:00','20:00')
+  ),
+  new Session(
+    undefined,
+    '予定4',
+    new TimeRange('18:00','20:00')
   ),
 ];
 
