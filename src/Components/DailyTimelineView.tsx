@@ -14,7 +14,7 @@ export const DailyTimelineView: FC<DailyTimelineViewModel> = styled((props: Dail
   const hoursMax = 24;
   const hoursArray = [...Array(hoursMax).keys()];
 
-  const sessionsBelongsToHour = distributeSessionsToHours(sessions);
+  //const sessionsBelongsToHour = distributeSessionsToHours(sessions);
 
   return (
     <div className={props.className}>
@@ -23,15 +23,26 @@ export const DailyTimelineView: FC<DailyTimelineViewModel> = styled((props: Dail
           <div className='e-hour-line' key={hour}>
             <div className="e-hour-label">{hour}:00</div>
             <div className="e-hour-content">
-            {
-              (sessionsBelongsToHour.get(hour) || []).map((session)=>
-                <SessionView main={session} key={session.id.toString()}/>
-              )
-            }
             </div>
           </div>
         )
       }
+      <div className="e-contents">
+        {
+          sessions.map((session)=>
+            {
+              //todo: 50がマジックナンバーになっている！！ DOM描画時に取得するようにする。
+
+              const y = session.openingTimeRange.startHour * 50;
+              return (
+                <div className="e-session-box" style={{top: y +'px'}} key={session.id.toString()}>
+                  <SessionView main={session}/>
+                </div>
+              )
+            }
+          )
+        }
+      </div>
     </div>
   );
 })`
@@ -63,6 +74,17 @@ flex-direction: column;
   }
   >.e-hour-content{
   }
+}
+
+
+>.e-contents{
+  position: absolute;
+  >.e-session-box{
+    position: absolute;
+    z-index: 1;
+    left: 50px;
+  }
+
 }
 `;
 
