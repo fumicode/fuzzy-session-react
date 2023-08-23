@@ -1,10 +1,10 @@
 import { FC } from 'react';
+import styled from 'styled-components';
 
 import ViewModel from './ViewModel'
 
 import TimeRange, { TimeRangeView } from './TimeRange';
 
-import styled from 'styled-components';
 
 
 export default class Session{
@@ -26,7 +26,7 @@ export const SessionView: FC<SessionViewModel> = styled((props:SessionViewModel)
   const hoursNum = range.durationHour;
 
   return (
-    <div className={className} style={{height:`${hoursNum*40}px`}}>
+    <div className={className} style={{height:`${hoursNum*50}px`}}>
       <div style={{fontSize:'13px'}}>
         {session.title}
       </div>
@@ -53,7 +53,10 @@ position: relative;
 width: 100px;
 height:  200px; //とりあえず仮で
 
+border:1px solid white;
+
 background: hsla(280, 50%, 54%, 0.8);
+
 
 &:hover{
   > .e-time-range-wrapper > .e-time-range{

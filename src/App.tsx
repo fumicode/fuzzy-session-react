@@ -1,4 +1,3 @@
-import './App.scss';
 import { DailyTimelineView } from './Components/DailyTimelineView';
 import Session from './Components/Session';
 import TimeRange from './Components/TimeRange';
