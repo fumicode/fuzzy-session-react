@@ -4,15 +4,49 @@ import styled from 'styled-components';
 import ViewModel from './ViewModel'
 
 import TimeRange, { TimeRangeView } from './TimeRange';
+import crypto from 'crypto';
 
 
+export class SessionId{
+
+  private readonly _value: string;
+
+  constructor(value: string | undefined = undefined){
+
+    if(value === undefined){
+      //TODO: なぜかcrypto.randomUUIDが使えないので、簡易的なやりかた
+      value = crypto.randomBytes(20).toString('hex');
+    }
+
+    this._value = value;
+  }
+
+  toString(mode:string|undefined = undefined):string{
+    if(mode === 'short'){
+      return this._value.substring(0,8);
+    }
+    return this._value;
+  }
+
+
+  equals(otherId: SessionId): boolean{
+    return this._value === otherId._value;
+  }
+}
 
 export default class Session{
+  readonly id: SessionId;
+
   constructor(
+    id: SessionId | undefined,
     readonly title:string,
     readonly openingTimeRange: TimeRange
   ){
+    if(!id){
+      id = new SessionId();
+    }
 
+    this.id = id;
   }
 }
 
@@ -27,6 +61,9 @@ export const SessionView: FC<SessionViewModel> = styled((props:SessionViewModel)
 
   return (
     <div className={className} style={{height:`${hoursNum*50}px`}}>
+      <div style={{fontSize:'13px'}}>
+        #{session.id.toString('short')}
+      </div>
       <div style={{fontSize:'13px'}}>
         {session.title}
       </div>
@@ -68,6 +105,7 @@ background: hsla(280, 50%, 54%, 0.8);
 > .e-time-range-wrapper{
   position: absolute;
     left: 0;
+    z-index: 1;
 
   &.m-start{
     position: absolute;

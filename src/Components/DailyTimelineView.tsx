@@ -20,12 +20,12 @@ export const DailyTimelineView: FC<DailyTimelineViewModel> = styled((props: Dail
     <div className={props.className}>
       {
         hoursArray.map((hour)=>
-          <div className='e-hour-line'>
+          <div className='e-hour-line' key={hour}>
             <div className="e-hour-label">{hour}:00</div>
             <div className="e-hour-content">
             {
               (sessionsBelongsToHour.get(hour) || []).map((session)=>
-                <SessionView main={session}/>
+                <SessionView main={session} key={session.id.toString()}/>
               )
             }
             </div>
