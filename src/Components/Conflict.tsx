@@ -1,5 +1,6 @@
 import Session, {SessionId} from "./Session";
 import TimeRange from "./TimeRange";
+import ViewModel from "./ViewModel";
 
 
 export default class Conflict{
@@ -21,26 +22,32 @@ export default class Conflict{
     this.sessionIds = sessionPair.map((session)=> session.id) as [SessionId, SessionId];
   }
 
-  //コンフリクトの酷さ
+  //コンフリクトの酷さ = 長さとする。
+  //TODO: 名前が曖昧かも。普通にdurationにしようかな？
+  //いや、全体の長さによって、ひどく重なっているかどうかは変わってくる。あとでちゃんと定義しよう。誤差や不確かさの考え方を使う。
   get horribleness(): number{
     return this.overlappingTimeRange.durationHour;
   }
 
   toString(mode: StringMode | undefined = undefined): string{
     if(mode === 'horribleness-emoji'){
-      switch(this.horribleness){
-        case 0:
-          return '🤨';
-        case 1:
-          return '😢';
-        case 2:
-          return '😡';
-        default:
-          return '😱';
-      }
+      return this.toStringEmoji();
     }
 
     return `Conflict: ${this.overlappingTimeRange.toString()} #${this.sessionIds[0].toString('short')} <-> #${this.sessionIds[1].toString('short')}`;
+  }
+
+  toStringEmoji(): string{
+    switch(this.horribleness){
+      case 0:
+        return '🤨';
+      case 1:
+        return '😢';
+      case 2:
+        return '😡';
+      default:
+        return '😱';
+    }
   }
 }
 

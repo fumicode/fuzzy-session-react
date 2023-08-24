@@ -8,6 +8,7 @@ import ViewModel from './ViewModel'
 import ConflictsWarningSessionList from './ConflictsWarningSessionList';
 import { TimeRangeView } from './TimeRange';
 import { log } from 'console';
+import Conflict from './Conflict';
 
 export type DailyTimelineWithConflictsViewModel = ViewModel<ConflictsWarningSessionList>;
 
@@ -21,6 +22,39 @@ class SessionViewModel{
     this.sessionId = session.id;
 
   }
+}
+
+class ConflictViewModel implements ViewModel<Conflict>{
+
+  constructor(
+    public readonly main:Conflict
+  ){
+
+  }
+
+  get horriblenessHue():number{
+    return this.calcHorriblenessHue(this.main.horribleness)
+  }
+
+  private calcHorriblenessHue(horribleness:number):number {
+    const x = horribleness;
+
+    const x1 = 0,
+      y1 = 50,
+      x2 = 3,
+      y2 = 0;
+
+    if(x > x2){ //とてもひどいなら真っ赤
+      return y2;
+    }
+    else if(x < x1){ //ちょっとかさなってるだけなら真っ黄
+      return y1;
+    }
+
+    const a = (y2 - y1)/(x2 - x1); //傾き
+    return a * (x - x1) + y1
+  }
+
 }
 
 export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewModel> = styled((props: DailyTimelineWithConflictsViewModel)=>{
@@ -88,14 +122,14 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
         {
           conflicts.map((conflict)=>
             {
-              const conflictDuration = conflict.overlappingTimeRange.durationHour;
+              const comflictVM = new ConflictViewModel(conflict);
 
               const y = conflict.overlappingTimeRange.startHour * 50;
               const conflictId = conflict.sessionIds.join('-');
 
               return (
                 <div className="e-status-box" style={{top: y +'px'}} key={conflictId}>
-                  <TimeRangeView main={conflict.overlappingTimeRange} background={`hsl(0, 100%, ${90 - 10 * conflict.horribleness }%)`}>
+                  <TimeRangeView main={conflict.overlappingTimeRange} background={`hsla(${comflictVM.horriblenessHue}, 100%, 50%, 0.7)`}>
                     {conflict.toString('horribleness-emoji')}
                   </TimeRangeView>
                 </div>
