@@ -46,7 +46,10 @@ export default class TimeRange{
 
       return new TimeRange(start, end); 
     }
+  }
 
+  compare(otherTR: TimeRange): number{
+    return compare(this, otherTR);
   }
 
   toString(): string{
@@ -61,8 +64,28 @@ const overlaps = (a:TimeRange, b:TimeRange):boolean => {
   );
 }
 
+const compare =  (a:TimeRange, b:TimeRange):number => {
+  if(a.startHour < b.startHour){
+    return -1; // < 0
+  }
+  else if(a.startHour > b.startHour){
+    return 1; // > 0
+  }
+  else{
+    if(a.endHour < b.endHour){
+      return -1; // < 0
+    }
+    else if(a.endHour > b.endHour){
+      return 1; // > 0
+    }
+
+    return 0;
+  } 
+};
+
 export type TimeRangeViewModel = ViewModel<TimeRange> & {
   children?: React.ReactNode;
+  background?: string;
 
 };
 
@@ -82,7 +105,10 @@ export const TimeRangeView: FC<TimeRangeViewModel> = styled((props:TimeRangeView
   const hoursNum = range.durationHour;
 
   return (
-    <div className={className} style={{height:`${hoursNum*50}px`}}>
+    <div className={className} style={{
+      height:`${hoursNum*50}px`,
+      background: props.background || 'hsl(0, 100%, 70%)'
+      }}>
       <div className="e-content">
         
         {props.children}
@@ -109,7 +135,7 @@ height:  200px; //とりあえず仮で
 
 border:1px solid white;
 
-background: red;
+//background: hsl(0, 100%, 70%);
 
 
 &:hover{

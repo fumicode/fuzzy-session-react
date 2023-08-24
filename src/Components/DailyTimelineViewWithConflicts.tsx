@@ -3,15 +3,29 @@ import styled from 'styled-components';
 
 import 'core-js/features/array';
 
-import Session, { SessionView } from './Session'
+import Session, { SessionId, SessionView } from './Session'
 import ViewModel from './ViewModel'
 import ConflictsWarningSessionList from './ConflictsWarningSessionList';
 import { TimeRangeView } from './TimeRange';
+import { log } from 'console';
 
 export type DailyTimelineWithConflictsViewModel = ViewModel<ConflictsWarningSessionList>;
 
+class SessionViewModel{
+  public readonly sessionId: SessionId;
+
+  constructor(
+    public readonly session: Session,
+    public leftPx: number,
+  ){
+    this.sessionId = session.id;
+
+  }
+}
+
 export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewModel> = styled((props: DailyTimelineWithConflictsViewModel)=>{
   const sessions = props.main.sessions;
+  const sesVMs = sessions.map((session)=> new SessionViewModel(session, 0));
   const conflicts = props.main.conflicts;
 
   const hoursMax = 24;
@@ -19,6 +33,25 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
 
   //const sessionsBelongsToHour = distributeSessionsToHours(sessions);
 
+  console.log(conflicts);
+
+  conflicts.forEach((conflict)=>{
+    //かぶってるやつのうしろのやつ
+
+    const baseSessionId = conflict.sessionIds[0];
+    const baseSessionVM = sesVMs.find((sesVM)=>sesVM.sessionId === baseSessionId);
+
+    const slidingSessionId = conflict.sessionIds[1];
+    const slidingSessionVM = sesVMs.find((sesVM)=>sesVM.sessionId === slidingSessionId);
+
+    if(baseSessionVM === undefined || slidingSessionVM === undefined){ // ありえないはず
+      throw new Error('コンフリクトがあるということは、その対象のセッションは必ず存在するはず。何かがおかしい。');
+    }
+
+    slidingSessionVM.leftPx = baseSessionVM.leftPx +  20;
+  });
+  
+  
   return (
     <div className={props.className}>
       {
@@ -32,13 +65,18 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
       }
       <div className="e-contents">
         {
-          sessions.map((session)=>
+          sesVMs.map((sesVM)=>
             {
               //todo: 50がマジックナンバーになっている！！ DOM描画時に取得するようにする。
+              const session = sesVM.session;
 
+              const x = sesVM.leftPx;
               const y = session.openingTimeRange.startHour * 50;
               return (
-                <div className="e-session-box" style={{top: y +'px'}} key={session.id.toString()}>
+                <div className="e-session-box" 
+                  style={{top: y +'px', left: x+'px'}} 
+                  key={session.id.toString()}
+                >
                   <SessionView main={session}/>
                 </div>
               )
@@ -57,7 +95,7 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
 
               return (
                 <div className="e-status-box" style={{top: y +'px'}} key={conflictId}>
-                  <TimeRangeView main={conflict.overlappingTimeRange}>
+                  <TimeRangeView main={conflict.overlappingTimeRange} background={`hsl(0, 100%, ${90 - 10 * conflict.horribleness }%)`}>
                     {conflict.toString('horribleness-emoji')}
                   </TimeRangeView>
                 </div>

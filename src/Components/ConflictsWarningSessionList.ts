@@ -4,11 +4,13 @@ import Conflict from "./Conflict";
 
 export default class ConflictsWarningSessionList{
   private readonly _conflicts: Conflict[];
-  private readonly _sessions: Session[]
+  private readonly _sessions: Session[]; //TODO: これは、禁忌かもしれない。ID参照になおすべきかも。
 
   constructor(
     sessions: Session[]
   ){
+    sessions = [...sessions].sort((a, b) => 
+      a.openingTimeRange.compare(b.openingTimeRange));
     this._conflicts = this.findConflicts(sessions);
     this._sessions  = sessions;
   }

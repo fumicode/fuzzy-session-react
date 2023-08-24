@@ -4,7 +4,7 @@ import TimeRange from "./TimeRange";
 
 export default class Conflict{
   public readonly overlappingTimeRange: TimeRange;
-  public readonly sessionIds: [SessionId, SessionId];
+  public readonly sessionIds: [SessionId, SessionId]; // 2番目の方が後の予定であるとする
 
   constructor(
     sessionA: Session,
@@ -17,12 +17,8 @@ export default class Conflict{
     }
 
     this.overlappingTimeRange = overlappingTimeRange;
-
-    this.sessionIds = [
-      sessionA.id,
-      sessionB.id
-    ];
-
+    const sessionPair = [sessionA, sessionB].sort((a,b)=> a.openingTimeRange.compare(b.openingTimeRange));
+    this.sessionIds = sessionPair.map((session)=> session.id) as [SessionId, SessionId];
   }
 
   //コンフリクトの酷さ
