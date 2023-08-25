@@ -30,27 +30,46 @@ export class SessionId{
   }
 }
 
-export default class Session{
+type FuzzyTime = string;
+
+export default class SessionEntity{
   readonly id: SessionId;
+
+  private _title:string;
+  private _openingTimeRange: TimeRange;
 
   constructor(
     id: SessionId | undefined,
-    readonly title:string,
-    readonly openingTimeRange: TimeRange
+    title:string,
+    openingTimeRange: TimeRange
   ){
     if(!id){
       id = new SessionId();
     }
 
     this.id = id;
+    this._title = title;
+    this._openingTimeRange = openingTimeRange ;
   }
 
-  overlaps(otherSession: Session): TimeRange | undefined{
+  get title(){
+    return this._title;
+  }
+
+  get openingTimeRange(){
+    return this._openingTimeRange ;
+  }
+
+  overlaps(otherSession: SessionEntity): TimeRange | undefined{
     return this.openingTimeRange.overlaps(otherSession.openingTimeRange);
+  }
+
+  changeStartTime(start: FuzzyTime){
+    this._openingTimeRange = new TimeRange(start, this._openingTimeRange.end);
   }
 }
 
-export type SessionViewModel = ViewModel<Session>;
+export type SessionViewModel = ViewModel<SessionEntity>;
 
 export const SessionView: FC<SessionViewModel> = styled((props:SessionViewModel)=>{
   const className = props.className || '';

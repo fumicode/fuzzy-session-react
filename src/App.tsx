@@ -1,85 +1,85 @@
 import ConflictsWarningSessionList from './Components/ConflictsWarningSessionList';
 import { DailyTimelineWithConflictsView } from './Components/DailyTimelineViewWithConflicts';
-import Session from './Components/Session';
+import SessionEntity from './Components/Session';
 import TimeRange from './Components/TimeRange';
 import React, { FC } from 'react';
 
 import styled from 'styled-components';
 
-const inchoSessions: Session[] = [
-  new Session(
+const inchoSessions: SessionEntity[] = [
+  new SessionEntity(
     undefined,
     '予定0',
     new TimeRange('09:00','10:00')
   ),
-  new Session(
+  new SessionEntity(
     undefined,
     '予定1',
     new TimeRange('10:00','12:00')
   ),
-  new Session(
+  new SessionEntity(
     undefined,
     '予定2',
     new TimeRange('12:00','14:00')
   ),
-  new Session(
+  new SessionEntity(
     undefined,
     '予定3',
     new TimeRange('15:00','17:00')
   ),
-  new Session(
+  new SessionEntity(
     undefined,
     '予定4',
     new TimeRange('16:00','19:00')
   ),
-  new Session(
+  new SessionEntity(
     undefined,
     '予定4',
     new TimeRange('18:00','20:00')
   ),
 ];
 
-const taineiSessions: Session[] = [
-  new Session(
+const taineiSessions: SessionEntity[] = [
+  new SessionEntity(
     undefined,
     'タイ古式3時間',
     new TimeRange('09:00','12:00')
   ),
-  new Session(
+  new SessionEntity(
     undefined,
     'タイ古式1時間',
     new TimeRange('13:00','14:00')
   ),
 
-  new Session(
+  new SessionEntity(
     undefined,
     'タイ古式1時間',
     new TimeRange('16:40','17:00')
   ),
 ];
 
-const ashitaroSessions: Session[] = [
-  new Session(
+const ashitaroSessions: SessionEntity[] = [
+  new SessionEntity(
     undefined,
     '院長アシスタント0',
     new TimeRange('09:00','10:00')
   ),
-  new Session(
+  new SessionEntity(
     undefined,
     '院長アシスタント1',
     new TimeRange('10:00','12:00')
   ),
-  new Session(
+  new SessionEntity(
     undefined,
     '院長アシスタント2',
     new TimeRange('12:00','14:00')
   ),
-  new Session(
+  new SessionEntity(
     undefined,
     '院長アシスタント3',
     new TimeRange('15:00','17:00')
   ),
-  new Session(
+  new SessionEntity(
     undefined,
     '院長アシスタント4',
     new TimeRange('18:00','20:00')

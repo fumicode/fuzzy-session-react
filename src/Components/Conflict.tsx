@@ -1,4 +1,4 @@
-import Session, {SessionId} from "./Session";
+import SessionEntity, {SessionId} from "./Session";
 import TimeRange from "./TimeRange";
 
 export default class Conflict{
@@ -6,8 +6,8 @@ export default class Conflict{
   public readonly sessionIds: [SessionId, SessionId]; // 2番目の方が後の予定であるとする
 
   constructor(
-    sessionA: Session,
-    sessionB: Session,
+    sessionA: SessionEntity,
+    sessionB: SessionEntity,
   ){
     const overlappingTimeRange = sessionA.overlaps(sessionB);
 

@@ -3,17 +3,17 @@ import styled from 'styled-components';
 
 import 'core-js/features/array';
 
-import Session, { SessionId, SessionView } from './Session'
+import SessionEntity, { SessionId, SessionView } from './Session'
 import ViewModel from './ViewModel'
 import ConflictsWarningSessionList from './ConflictsWarningSessionList';
 import { TimeRangeView } from './TimeRange';
 import Conflict from './Conflict';
 
-class SessionViewModel implements ViewModel<Session>{
+class SessionViewModel implements ViewModel<SessionEntity>{
   public readonly sessionId: SessionId;
 
   constructor(
-    public readonly session: Session,
+    public readonly session: SessionEntity,
     public leftPx: number,
   ){
     this.sessionId = session.id;
