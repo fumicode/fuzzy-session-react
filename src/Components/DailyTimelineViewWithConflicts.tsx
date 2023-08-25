@@ -7,7 +7,6 @@ import Session, { SessionId, SessionView } from './Session'
 import ViewModel from './ViewModel'
 import ConflictsWarningSessionList from './ConflictsWarningSessionList';
 import { TimeRangeView } from './TimeRange';
-import { log } from 'console';
 import Conflict from './Conflict';
 
 class SessionViewModel implements ViewModel<Session>{
@@ -66,7 +65,7 @@ class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningS
   ){
 
     //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
-    const metaConflicts = this.main.conflicts;
+    //const metaConflicts = this.main.conflicts;
 
   }
 

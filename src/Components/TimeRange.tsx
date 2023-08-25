@@ -1,7 +1,6 @@
 import React, { FC } from 'react';
 
 import ViewModel from './ViewModel'
-import { textSpanOverlap } from 'typescript';
 import styled from 'styled-components';
 
 export default class TimeRange{

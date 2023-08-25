@@ -1,7 +1,5 @@
 import Session, {SessionId} from "./Session";
 import TimeRange from "./TimeRange";
-import ViewModel from "./ViewModel";
-
 
 export default class Conflict{
   public readonly overlappingTimeRange: TimeRange;
