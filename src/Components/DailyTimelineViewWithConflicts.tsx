@@ -10,9 +10,7 @@ import { TimeRangeView } from './TimeRange';
 import { log } from 'console';
 import Conflict from './Conflict';
 
-export type DailyTimelineWithConflictsViewModel = ViewModel<ConflictsWarningSessionList>;
-
-class SessionViewModel{
+class SessionViewModel implements ViewModel<Session>{
   public readonly sessionId: SessionId;
 
   constructor(
@@ -20,17 +18,19 @@ class SessionViewModel{
     public leftPx: number,
   ){
     this.sessionId = session.id;
+  }
 
+  get main(){
+    return this.session;
   }
 }
 
+
 class ConflictViewModel implements ViewModel<Conflict>{
-
   constructor(
-    public readonly main:Conflict
-  ){
-
-  }
+    public readonly main:Conflict,
+    public leftPx: number
+  ){ }
 
   get horriblenessHue():number{
     return this.calcHorriblenessHue(this.main.horribleness)
@@ -54,6 +54,22 @@ class ConflictViewModel implements ViewModel<Conflict>{
     const a = (y2 - y1)/(x2 - x1); //傾き
     return a * (x - x1) + y1
   }
+
+}
+
+class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningSessionList>{
+  className?: string | undefined;
+
+  constructor(
+    public readonly main: ConflictsWarningSessionList, 
+    public readonly showsTime: boolean = true
+  ){
+
+    //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
+    const metaConflicts = this.main.conflicts;
+
+  }
+
 
 }
 
@@ -91,7 +107,10 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
       {
         hoursArray.map((hour)=>
           <div className='e-hour-line' key={hour}>
-            <div className="e-hour-label">{hour}:00</div>
+            {
+              props.showsTime && 
+                <div className="e-hour-label">{hour}:00</div>
+            }
             <div className="e-hour-content">
             </div>
           </div>
@@ -122,7 +141,7 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
         {
           conflicts.map((conflict)=>
             {
-              const comflictVM = new ConflictViewModel(conflict);
+              const comflictVM = new ConflictViewModel(conflict, 0);
 
               const y = conflict.overlappingTimeRange.startHour * 50;
               const conflictId = conflict.sessionIds.join('-');
@@ -141,8 +160,12 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
     </div>
   );
 })`
+position: relative;
 display: flex;
 flex-direction: column;
+width: 300px; //仮ぎめ
+
+border-left: solid 1px #ccc;
 
 >.e-hour-line{
   position: relative;

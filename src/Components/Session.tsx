@@ -25,7 +25,6 @@ export class SessionId{
     return this._value;
   }
 
-
   equals(otherId: SessionId): boolean{
     return this._value === otherId._value;
   }
@@ -62,9 +61,13 @@ export const SessionView: FC<SessionViewModel> = styled((props:SessionViewModel)
 
   return (
     <div className={className} style={{height:`${hoursNum*50}px`}}>
+      {
+        /*
       <div style={{fontSize:'13px'}}>
         #{session.id.toString('short')}
       </div>
+         */
+      }
       <div style={{fontSize:'13px'}}>
         {session.title}
       </div>
@@ -94,6 +97,8 @@ height:  200px; //とりあえず仮で
 border:1px solid white;
 
 background: hsla(280, 50%, 54%, 0.8);
+
+color: white;
 
 
 &:hover{

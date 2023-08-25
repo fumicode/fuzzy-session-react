@@ -1,5 +1,5 @@
 
 export default interface ViewModel<T>{
-  main: T;
-  className?: string;
+  readonly main: T;
+  readonly className?: string;
 }
