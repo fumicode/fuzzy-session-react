@@ -10,7 +10,7 @@ export default class ConflictsWarningSessionList{
     sessions: SessionEntity[]
   ){
     sessions = [...sessions].sort((a, b) => 
-      a.openingTimeRange.compare(b.openingTimeRange));
+      a.timeRange.compare(b.timeRange));
     this._conflicts = this.findConflicts(sessions);
     this._sessions  = sessions;
   }

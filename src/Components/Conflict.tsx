@@ -16,7 +16,7 @@ export default class Conflict{
     }
 
     this.overlappingTimeRange = overlappingTimeRange;
-    const sessionPair = [sessionA, sessionB].sort((a,b)=> a.openingTimeRange.compare(b.openingTimeRange));
+    const sessionPair = [sessionA, sessionB].sort((a,b)=> a.timeRange.compare(b.timeRange));
     this.sessionIds = sessionPair.map((session)=> session.id) as [SessionId, SessionId];
   }
 

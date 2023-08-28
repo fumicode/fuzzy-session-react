@@ -35,72 +35,89 @@ type FuzzyTime = string;
 export default class SessionEntity{
   readonly id: SessionId;
 
-  private _title:string;
-  private _openingTimeRange: TimeRange;
 
   constructor(
     id: SessionId | undefined,
-    title:string,
-    openingTimeRange: TimeRange
+    readonly title:string,
+    readonly timeRange: TimeRange,
+    readonly prev: SessionEntity | undefined = undefined
   ){
     if(!id){
       id = new SessionId();
     }
 
     this.id = id;
-    this._title = title;
-    this._openingTimeRange = openingTimeRange ;
   }
 
-  get title(){
-    return this._title;
-  }
-
-  get openingTimeRange(){
-    return this._openingTimeRange ;
-  }
 
   overlaps(otherSession: SessionEntity): TimeRange | undefined{
-    return this.openingTimeRange.overlaps(otherSession.openingTimeRange);
+    return this.timeRange.overlaps(otherSession.timeRange);
   }
 
-  changeStartTime(start: FuzzyTime){
-    this._openingTimeRange = new TimeRange(start, this._openingTimeRange.end);
+  changeStartTime(start: FuzzyTime): SessionEntity{
+    return new SessionEntity(
+      this.id,
+      this.title,
+      new TimeRange(start, this.timeRange.end),
+      this
+    );
+  }
+
+  changeEndTime(start: FuzzyTime): TimeRange {
+    return new TimeRange(start, this.timeRange.end);
   }
 }
 
-export type SessionViewModel = ViewModel<SessionEntity>;
+export interface SessionViewModel extends ViewModel<SessionEntity>{
+  //className,
+  //main
 
-export const SessionView: FC<SessionViewModel> = styled((props:SessionViewModel)=>{
-  const className = props.className || '';
-  const session = props.main;
-  const range = session.openingTimeRange;
+  onStartTimeBack : ()=>void;
+  onStartTimeGo : ()=>void;
+}
 
-  const hoursNum = range.durationHour;
-
+export const SessionView: FC<SessionViewModel> = styled(({ 
+  className: c,
+  main: session,
+  onStartTimeBack,
+  onStartTimeGo,
+}: SessionViewModel)=>{
+  const timeRange = session.timeRange;
+  const hoursNum = timeRange.durationHour;
+  
   return (
-    <div className={className} style={{height:`${hoursNum*50}px`}}>
+    <div className={c} style={{height:`${hoursNum*50}px`}}>
       {
-        /*
+      /*
       <div style={{fontSize:'13px'}}>
         #{session.id.toString('short')}
       </div>
-         */
+      */
       }
       <div style={{fontSize:'13px'}}>
         {session.title}
       </div>
       <div style={{fontSize:'10px'}}>
-        <TimeRangeTextView main={range} />
+        <TimeRangeTextView main={timeRange} />
       </div>
       <div className="e-time-range-wrapper m-start">
         <div className="e-time-range">
-          {session.openingTimeRange.start}〜
+          {session.timeRange.start}〜
+        </div>
+
+        <div className="e-control-buttons">
+          <button className="e-button m-up" onClick={(e)=>{
+            onStartTimeBack()
+          }}>▲</button>
+          <button className="e-button m-down" onClick={(e)=>{
+            onStartTimeGo()
+          }}
+          >▼</button>
         </div>
       </div>
       <div className="e-time-range-wrapper m-end">
         <div className="e-time-range">
-          〜{session.openingTimeRange.end}
+          〜{session.timeRange.end}
         </div>
       </div>
       <div className="e-fuzzy-box m-start"></div>
@@ -121,15 +138,24 @@ color: white;
 
 
 &:hover{
-  > .e-time-range-wrapper > .e-time-range{
-    max-height: 100px;
-    padding: 3px; //TODO: ここにこれ書くの汚い
+  > .e-time-range-wrapper{
+
+    > .e-time-range{
+      max-height: 100px;
+      padding: 3px; //TODO: ここにこれ書くの汚い
+    }
+
+    > .e-control-buttons{
+      display:block;
+
+    }
   }
 }
 
 > .e-time-range-wrapper{
   position: absolute;
     left: 0;
+    right: 0;
     z-index: 1;
 
   &.m-start{
@@ -173,6 +199,25 @@ color: white;
     background-color: #ddd;
 
     white-space: nowrap;
+  }
+
+  > .e-control-buttons{
+    display:none;
+    position: absolute;
+      right: 0;
+    width: 0;
+
+    > .e-button{
+      position: absolute;
+
+      &.m-up{
+        bottom: 0;
+      }
+      &.m-down{
+        top: 0;
+      }
+      
+    }
   }
 
 

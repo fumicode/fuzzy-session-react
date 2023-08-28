@@ -2,11 +2,11 @@ import ConflictsWarningSessionList from './Components/ConflictsWarningSessionLis
 import { DailyTimelineWithConflictsView } from './Components/DailyTimelineViewWithConflicts';
 import SessionEntity from './Components/Session';
 import TimeRange from './Components/TimeRange';
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 
 import styled from 'styled-components';
 
-const inchoSessions: SessionEntity[] = [
+let inchoSessions: SessionEntity[] = [
   new SessionEntity(
     undefined,
     '予定0',
@@ -30,7 +30,7 @@ const inchoSessions: SessionEntity[] = [
   new SessionEntity(
     undefined,
     '予定4',
-    new TimeRange('16:00','19:00')
+    new TimeRange('17:00','18:00')
   ),
   new SessionEntity(
     undefined,
@@ -91,12 +91,16 @@ const inchoSessionList = new ConflictsWarningSessionList(inchoSessions);
 const taineiSessionList = new ConflictsWarningSessionList(taineiSessions);
 const ashitaroSessionList = new ConflictsWarningSessionList(ashitaroSessions);
 
-const calendars = [
+interface Calendar{
+  title: string,
+  list: ConflictsWarningSessionList
+}
+
+const _calendars: Calendar[] = [
   {
     title: "院長",
     list: inchoSessionList,
   },
-
   {
     title: "タイ姉",
     list: taineiSessionList,
@@ -109,13 +113,109 @@ const calendars = [
 
 const App: FC = styled((props: {className: string})=> {
   const {className} = props;
+  const [calendars, setCalendars] = useState<Calendar[]>(_calendars);
+
   return (
     <div className={className}>
       {
         calendars.map((cal,index) => 
-          <div className="e-column">
+          <div className="e-column" key={index}>
             <h2>{cal.title}</h2>
-            <DailyTimelineWithConflictsView main={cal.list} showsTime={index === 0} />
+            <DailyTimelineWithConflictsView 
+              main={cal.list} 
+              showsTime={index === 0} 
+              onStartTimeBack={(sId)=>{
+                const sessionIndex = inchoSessions.findIndex(
+                  session => session.id.equals(sId)
+                )
+
+                console.log({
+                  sessionIndex,
+                  inchoSessions
+                })
+
+                const session = inchoSessions[sessionIndex];
+
+                if(sessionIndex === -1){
+                  throw new Error("sessionが見つかりません")
+                }
+
+                const newSession = session.changeStartTime((
+                  ('00' + (session.timeRange.startHour - 1)).slice(-2)
+                )+":00")
+
+                inchoSessions = [
+                  ...inchoSessions.slice(0, sessionIndex),
+                     newSession,
+                  ...inchoSessions.slice(sessionIndex+1)
+                ]
+
+                
+                setCalendars([
+                  {
+                    title: "院長",
+                    list: new ConflictsWarningSessionList(inchoSessions)
+                  },
+                  {
+                    title: "タイ姉",
+                    list: taineiSessionList,
+                  },
+                  {
+                    title: "アシ太郎",
+                    list: ashitaroSessionList 
+                  },
+                ]);
+
+              }}
+
+              onStartTimeGo={
+                (sId)=>{
+                  const sessionIndex = inchoSessions.findIndex(
+                    session => session.id.equals(sId)
+                  )
+
+                  console.log({
+                    sessionIndex,
+                    inchoSessions
+                  })
+                  
+                  if(sessionIndex === -1){
+                    throw new Error("sessionが見つかりません")
+                  }
+
+                  const session = inchoSessions[sessionIndex];
+
+                  const newSession = session.changeStartTime((
+
+                    ('00' + (session.timeRange.startHour + 1)).slice(-2)
+                  )+":00")
+
+                  inchoSessions = [
+                    ...inchoSessions.slice(0, sessionIndex),
+                       newSession,
+                    ...inchoSessions.slice(sessionIndex+1)
+
+                  ]
+
+                  setCalendars([
+                    {
+                      title: "院長",
+                      list: new ConflictsWarningSessionList(inchoSessions)
+                    },
+                    {
+                      title: "タイ姉",
+                      list: taineiSessionList,
+                    },
+                    {
+                      title: "アシ太郎",
+                      list: ashitaroSessionList 
+                    },
+                  ]);
+
+                }
+
+              }
+            />
           </div>
         )
       }

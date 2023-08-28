@@ -3,17 +3,17 @@ import styled from 'styled-components';
 
 import 'core-js/features/array';
 
-import SessionEntity, { SessionId, SessionView } from './Session'
+import SessionEntitly, { SessionId, SessionView } from './Session'
 import ViewModel from './ViewModel'
 import ConflictsWarningSessionList from './ConflictsWarningSessionList';
 import { TimeRangeView } from './TimeRange';
 import Conflict from './Conflict';
 
-class SessionViewModel implements ViewModel<SessionEntity>{
+class SessionBoxViewModel implements ViewModel<SessionEntitly>{
   public readonly sessionId: SessionId;
 
   constructor(
-    public readonly session: SessionEntity,
+    public readonly session: SessionEntitly,
     public leftPx: number,
   ){
     this.sessionId = session.id;
@@ -59,9 +59,14 @@ class ConflictViewModel implements ViewModel<Conflict>{
 class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningSessionList>{
   className?: string | undefined;
 
+
+
   constructor(
     public readonly main: ConflictsWarningSessionList, 
-    public readonly showsTime: boolean = true
+    public readonly showsTime: boolean = true,
+
+    public onStartTimeBack: (sessionId: SessionId) => void,
+    public onStartTimeGo: (sessionId: SessionId) => void
   ){
 
     //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
@@ -72,13 +77,23 @@ class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningS
 
 }
 
-export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewModel> = styled((props: DailyTimelineWithConflictsViewModel)=>{
-  const sessions = props.main.sessions;
-  const sesVMs = sessions.map((session)=> new SessionViewModel(session, 0));
-  const conflicts = props.main.conflicts;
+export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewModel> = styled(({
+  className,
+  main: {
+    sessions, 
+    conflicts
+  },
+  showsTime,
+
+  onStartTimeBack,
+  onStartTimeGo,
+
+}: DailyTimelineWithConflictsViewModel)=>{
+  const sesVMs = sessions.map((session)=> new SessionBoxViewModel(session, 0));
 
   const hoursMax = 24;
   const hoursArray = [...Array(hoursMax).keys()];
+
 
   //const sessionsBelongsToHour = distributeSessionsToHours(sessions);
 
@@ -102,12 +117,12 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
   
   
   return (
-    <div className={props.className}>
+    <div className={className}>
       {
         hoursArray.map((hour)=>
           <div className='e-hour-line' key={hour}>
             {
-              props.showsTime && 
+              showsTime && 
                 <div className="e-hour-label">{hour}:00</div>
             }
             <div className="e-hour-content">
@@ -123,13 +138,21 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
               const session = sesVM.session;
 
               const x = sesVM.leftPx;
-              const y = session.openingTimeRange.startHour * 50;
+              const y = session.timeRange.startHour * 50;
               return (
                 <div className="e-session-box" 
                   style={{top: y +'px', left: x+'px'}} 
                   key={session.id.toString()}
                 >
-                  <SessionView main={session}/>
+                  <SessionView 
+                    main={session}
+                    onStartTimeBack={
+                      ()=>onStartTimeBack(session.id)
+                    }
+                    onStartTimeGo={
+                      ()=>onStartTimeGo(session.id)
+                    }
+                  />
                 </div>
               )
             }
