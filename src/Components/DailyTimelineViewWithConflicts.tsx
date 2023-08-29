@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import 'core-js/features/array';
 
-import SessionEntitly, { SessionId, SessionView } from './Session'
+import SessionEntitly, { SessionId, SessionView, SessionViewModel } from './Session'
 import ViewModel from './ViewModel'
 import ConflictsWarningSessionList from './ConflictsWarningSessionList';
 import { TimeRangeView } from './TimeRange';
@@ -127,7 +127,11 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
   onStartTimeGo,
 
 }: DailyTimelineWithConflictsViewModel)=>{
-  const sesVMs = sessions.map((session)=> new SessionBoxViewModel(session, 0));
+  //states
+  const [topId, setTopId] = useState<string | undefined>(undefined);
+  const [grabbedSessionBVM, setGrabbedSessionBVM] = useState<SessionBoxViewModel| undefined>(undefined);
+
+  const sesBVMs = sessions.map((session)=> new SessionBoxViewModel(session, 0));
 
   const hoursMax = 24;
   const hoursArray = [...Array(hoursMax).keys()];
@@ -137,20 +141,20 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
 
   console.log(conflicts);
 
-  const [topId, setTopId] = useState<string | undefined>(undefined);
   const zIndexCalcurator = new ZIndexCalcurator(
-    sesVMs.map(vm => vm.sessionId.toString()), 
-    topId
+    sesBVMs.map(vm => vm.sessionId.toString()), 
+    grabbedSessionBVM && grabbedSessionBVM.sessionId.toString() || topId
   );
+
 
   conflicts.forEach((conflict)=>{
     //かぶってるやつのうしろのやつ
 
     const baseSessionId = conflict.sessionIds[0];
-    const baseSessionVM = sesVMs.find((sesVM)=>sesVM.sessionId === baseSessionId);
+    const baseSessionVM = sesBVMs.find((sesVM)=>sesVM.sessionId === baseSessionId);
 
     const slidingSessionId = conflict.sessionIds[1];
-    const slidingSessionVM = sesVMs.find((sesVM)=>sesVM.sessionId === slidingSessionId);
+    const slidingSessionVM = sesBVMs.find((sesVM)=>sesVM.sessionId === slidingSessionId);
 
     if(baseSessionVM === undefined || slidingSessionVM === undefined){ // ありえないはず
       throw new Error('コンフリクトがあるということは、その対象のセッションは必ず存在するはず。何かがおかしい。');
@@ -176,24 +180,40 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
       }
       <div className="e-contents">
         {
-          sesVMs.map((sesVM, index)=>
+          sesBVMs.map((sesBVM, index)=>
             {
               //todo: 50がマジックナンバーになっている！！ DOM描画時に取得するようにする。
-              const session = sesVM.session;
+              const session = sesBVM.session;
 
-              const x = sesVM.leftPx;
+              const x = sesBVM.leftPx;
               const y = session.timeRange.startHour * 50;
               return (
                 <div className="e-session-box" 
-                  style={{top: y +'px', left: x+'px', zIndex: zIndexCalcurator.getZIndex(sesVM.sessionId.toString())}} 
+                  style={{top: y +'px', left: x+'px', zIndex: zIndexCalcurator.getZIndex(sesBVM.sessionId.toString())}} 
                   key={session.id.toString()}
+                  onClick={()=>{
+                    if(grabbedSessionBVM && grabbedSessionBVM === sesBVM){
+                      //すでに掴んでいたら放す
+                      setGrabbedSessionBVM(undefined);
+                    }
+                    else{
+                      setGrabbedSessionBVM(sesBVM)
+                    }
+
+                  }}
                   onMouseOver={()=>{
-                    setTopId(sesVM.sessionId.toString())
+                    setTopId(sesBVM.sessionId.toString())
                   }}
                   onMouseOut={()=>{
                     setTopId(undefined)
                   }}
                 >
+                  {
+                    grabbedSessionBVM?.sessionId.equals(sesBVM.sessionId) && 
+                      <div className="e-grabbed-status">
+                          ✊
+                      </div>
+                  }
                   <SessionView 
                     main={session}
                     onStartTimeBack={
@@ -274,6 +294,17 @@ border-left: solid 1px #ccc;
   >.e-session-box{
     position: absolute;
     z-index: 1;
+
+
+    >.e-grabbed-status{
+      position: absolute;
+        left:-0.8em;
+        top:-0.8em;
+        z-index: 1;
+      width: 1em;
+      height: 1em;
+
+    }
   }
 
 }
