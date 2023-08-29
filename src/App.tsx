@@ -42,6 +42,11 @@ let inchoSessions: SessionEntity[] = [
 const taineiSessions: SessionEntity[] = [
   new SessionEntity(
     undefined,
+    '勤務時間',
+    new TimeRange('08:00','18:00')
+  ),
+  new SessionEntity(
+    undefined,
     'タイ古式3時間',
     new TimeRange('09:00','12:00')
   ),

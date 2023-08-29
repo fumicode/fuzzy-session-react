@@ -74,6 +74,8 @@ export interface SessionViewModel extends ViewModel<SessionEntity>{
 
   onStartTimeBack : ()=>void;
   onStartTimeGo : ()=>void;
+
+  isHovered: boolean;
 }
 
 export const SessionView: FC<SessionViewModel> = styled(({ 
@@ -81,12 +83,13 @@ export const SessionView: FC<SessionViewModel> = styled(({
   main: session,
   onStartTimeBack,
   onStartTimeGo,
+  isHovered
 }: SessionViewModel)=>{
   const timeRange = session.timeRange;
   const hoursNum = timeRange.durationHour;
   
   return (
-    <div className={c} style={{height:`${hoursNum*50}px`}}>
+    <div className={c + ' ' + (isHovered&&'m-hover')} style={{height:`${hoursNum*50}px`}}>
       {
       /*
       <div style={{fontSize:'13px'}}>
@@ -137,7 +140,7 @@ background: hsla(280, 50%, 54%, 0.8);
 color: white;
 
 
-&:hover{
+&:hover,&.m-hover{
   > .e-time-range-wrapper{
 
     > .e-time-range{
@@ -232,6 +235,7 @@ color: white;
     right: 0;
     z-index: -1;
 
+  pointer-events:none;
 
   height: 50px;
 

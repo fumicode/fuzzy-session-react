@@ -8,6 +8,7 @@ import ViewModel from './ViewModel'
 import ConflictsWarningSessionList from './ConflictsWarningSessionList';
 import { TimeRangeView } from './TimeRange';
 import Conflict from './Conflict';
+import ZIndexCalcurator from '../Utils/ZIndexCalcurator';
 
 class SessionBoxViewModel implements ViewModel<SessionEntitly>{
   public readonly sessionId: SessionId;
@@ -78,44 +79,8 @@ class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningS
 }
 
 
-class ZIndexCalcurator{
 
-  constructor(
-    //文字列じゃなくて、抽象化したい。 equalsでもできるようにしたい。
-    readonly ids: string[],
-    readonly topId: string | undefined = undefined,
-    //readonly bottomId: string | undefined //あとで:
-  ){
-    //後ほど上が普通
-  }
-
-  setTop(id:string | undefined){
-    if(id === undefined){
-      return new ZIndexCalcurator(this.ids, undefined);
-    }
-
-    if(!this.ids.includes(id)){
-      throw new Error(`#${id}はid一覧に含まれていないため、トップに設定できません`);
-    }
-
-    return new ZIndexCalcurator(this.ids, id);
-  }
-
-  getZIndex(id: string){
-    if(id === this.topId){
-      return this.maxZIndex + 1; 
-    }
-
-    return this.ids.indexOf(id);
-  }
-
-  get maxZIndex(){
-    return this.ids.length;
-  }
-
-}
-
-export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewModel> = styled(({
+const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   className,
   main: {
     sessions, 
@@ -139,8 +104,6 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
 
   //const sessionsBelongsToHour = distributeSessionsToHours(sessions);
 
-  console.log(conflicts);
-
   const zIndexCalcurator = new ZIndexCalcurator(
     sesBVMs.map(vm => vm.sessionId.toString()), 
     grabbedSessionBVM && grabbedSessionBVM.sessionId.toString() || topId
@@ -162,7 +125,8 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
 
     slidingSessionVM.leftPx = baseSessionVM.leftPx +  20;
   });
-  
+
+
   
   return (
     <div className={className}>
@@ -187,14 +151,16 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
 
               const x = sesBVM.leftPx;
               const y = session.timeRange.startHour * 50;
+
+              const isGrabbed = grabbedSessionBVM ? sesBVM.sessionId.equals(grabbedSessionBVM.sessionId) : false; 
+
               return (
                 <div className="e-session-box" 
                   style={{top: y +'px', left: x+'px', zIndex: zIndexCalcurator.getZIndex(sesBVM.sessionId.toString())}} 
                   key={session.id.toString()}
                   onClick={()=>{
-                    if(grabbedSessionBVM && grabbedSessionBVM === sesBVM){
+                    if(grabbedSessionBVM && grabbedSessionBVM.sessionId.equals(sesBVM.sessionId)){
                       //すでに掴んでいたら放す
-                      setGrabbedSessionBVM(undefined);
                     }
                     else{
                       setGrabbedSessionBVM(sesBVM)
@@ -209,10 +175,12 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
                   }}
                 >
                   {
-                    grabbedSessionBVM?.sessionId.equals(sesBVM.sessionId) && 
-                      <div className="e-grabbed-status">
-                          ✊
-                      </div>
+                    isGrabbed && 
+                      <div className="e-grabbed-status"
+                        onClick={()=>{
+                          setGrabbedSessionBVM(undefined);
+                        }}
+                      ></div>
                   }
                   <SessionView 
                     main={session}
@@ -222,6 +190,7 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
                     onStartTimeGo={
                       ()=>onStartTimeGo(session.id)
                     }
+                    isHovered={isGrabbed}
                   />
                 </div>
               )
@@ -251,6 +220,11 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
       </div>
     </div>
   );
+}
+
+
+export const DailyTimelineWithConflictsView = styled(Component).withConfig({
+  displayName: 'DailyTimelineWithConflictsView'
 })`
 position: relative;
 display: flex;
@@ -303,6 +277,17 @@ border-left: solid 1px #ccc;
         z-index: 1;
       width: 1em;
       height: 1em;
+
+      &::before{
+        content: '✊'
+      }
+
+      &:hover{
+        &::before{
+          content: '🖐'
+        }
+
+      }
 
     }
   }
