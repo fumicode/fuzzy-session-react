@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import styled from 'styled-components';
 
 import 'core-js/features/array';
@@ -77,6 +77,44 @@ class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningS
 
 }
 
+
+class ZIndexCalcurator{
+
+  constructor(
+    //文字列じゃなくて、抽象化したい。 equalsでもできるようにしたい。
+    readonly ids: string[],
+    readonly topId: string | undefined = undefined,
+    //readonly bottomId: string | undefined //あとで:
+  ){
+    //後ほど上が普通
+  }
+
+  setTop(id:string | undefined){
+    if(id === undefined){
+      return new ZIndexCalcurator(this.ids, undefined);
+    }
+
+    if(!this.ids.includes(id)){
+      throw new Error(`#${id}はid一覧に含まれていないため、トップに設定できません`);
+    }
+
+    return new ZIndexCalcurator(this.ids, id);
+  }
+
+  getZIndex(id: string){
+    if(id === this.topId){
+      return this.maxZIndex + 1; 
+    }
+
+    return this.ids.indexOf(id);
+  }
+
+  get maxZIndex(){
+    return this.ids.length;
+  }
+
+}
+
 export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewModel> = styled(({
   className,
   main: {
@@ -98,6 +136,12 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
   //const sessionsBelongsToHour = distributeSessionsToHours(sessions);
 
   console.log(conflicts);
+
+  const [topId, setTopId] = useState<string | undefined>(undefined);
+  const zIndexCalcurator = new ZIndexCalcurator(
+    sesVMs.map(vm => vm.sessionId.toString()), 
+    topId
+  );
 
   conflicts.forEach((conflict)=>{
     //かぶってるやつのうしろのやつ
@@ -132,7 +176,7 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
       }
       <div className="e-contents">
         {
-          sesVMs.map((sesVM)=>
+          sesVMs.map((sesVM, index)=>
             {
               //todo: 50がマジックナンバーになっている！！ DOM描画時に取得するようにする。
               const session = sesVM.session;
@@ -141,8 +185,14 @@ export const DailyTimelineWithConflictsView: FC<DailyTimelineWithConflictsViewMo
               const y = session.timeRange.startHour * 50;
               return (
                 <div className="e-session-box" 
-                  style={{top: y +'px', left: x+'px'}} 
+                  style={{top: y +'px', left: x+'px', zIndex: zIndexCalcurator.getZIndex(sesVM.sessionId.toString())}} 
                   key={session.id.toString()}
+                  onMouseOver={()=>{
+                    setTopId(sesVM.sessionId.toString())
+                  }}
+                  onMouseOut={()=>{
+                    setTopId(undefined)
+                  }}
                 >
                   <SessionView 
                     main={session}

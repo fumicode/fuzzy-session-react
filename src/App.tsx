@@ -10,7 +10,7 @@ let inchoSessions: SessionEntity[] = [
   new SessionEntity(
     undefined,
     '予定0',
-    new TimeRange('09:00','10:00')
+    new TimeRange('09:00','11:00')
   ),
   new SessionEntity(
     undefined,
@@ -20,7 +20,7 @@ let inchoSessions: SessionEntity[] = [
   new SessionEntity(
     undefined,
     '予定2',
-    new TimeRange('12:00','14:00')
+    new TimeRange('11:00','14:00')
   ),
   new SessionEntity(
     undefined,

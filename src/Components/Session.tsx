@@ -143,6 +143,8 @@ color: white;
     > .e-time-range{
       max-height: 100px;
       padding: 3px; //TODO: ここにこれ書くの汚い
+      
+      color: black;
     }
 
     > .e-control-buttons{
