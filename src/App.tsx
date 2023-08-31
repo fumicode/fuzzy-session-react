@@ -1,10 +1,11 @@
-import ConflictsWarningSessionList from './Components/ConflictsWarningSessionList';
+import ConflictsWarningSessionMap from './Components/ConflictsWarningSessionList';
 import { DailyTimelineWithConflictsView } from './Components/DailyTimelineViewWithConflicts';
 import SessionEntity from './Components/Session';
 import TimeRange from './Components/TimeRange';
 import React, { FC, useState } from 'react';
 
 import styled from 'styled-components';
+import update from 'immutability-helper';
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(
@@ -92,27 +93,27 @@ const ashitaroSessions: SessionEntity[] = [
 ];
 
 
-const inchoSessionList = new ConflictsWarningSessionList(inchoSessions);
-const taineiSessionList = new ConflictsWarningSessionList(taineiSessions);
-const ashitaroSessionList = new ConflictsWarningSessionList(ashitaroSessions);
+const inchoSessionMap = new ConflictsWarningSessionMap(inchoSessions);
+const taineiSessionMap = new ConflictsWarningSessionMap(taineiSessions);
+const ashitaroSessionMap = new ConflictsWarningSessionMap(ashitaroSessions);
 
 interface Calendar{
   title: string,
-  list: ConflictsWarningSessionList
+  sessionMap: ConflictsWarningSessionMap
 }
 
 const _calendars: Calendar[] = [
   {
     title: "院長",
-    list: inchoSessionList,
+    sessionMap: inchoSessionMap,
   },
   {
     title: "タイ姉",
-    list: taineiSessionList,
+    sessionMap: taineiSessionMap,
   },
   {
     title: "アシ太郎",
-    list: ashitaroSessionList 
+    sessionMap: ashitaroSessionMap 
   },
 ]
 
@@ -123,103 +124,62 @@ const App: FC = styled((props: {className: string})=> {
   return (
     <div className={className}>
       {
-        calendars.map((cal,index) => 
-          <div className="e-column" key={index}>
+        calendars.map((cal,calIndex) => 
+          <div className="e-column" key={calIndex}>
             <h2>{cal.title}</h2>
             <DailyTimelineWithConflictsView 
-              main={cal.list} 
-              showsTime={index === 0} 
+              main={cal.sessionMap} 
+              showsTime={calIndex === 0} 
               onStartTimeBack={(sId)=>{
-                const sessionIndex = inchoSessions.findIndex(
-                  session => session.id.equals(sId)
-                )
+                //要するに何をしたいかと言うと：
+                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
-                console.log({
-                  sessionIndex,
-                  inchoSessions
-                })
-
-                const session = inchoSessions[sessionIndex];
-
-                if(sessionIndex === -1){
-                  throw new Error("sessionが見つかりません")
+                //検索
+                const session = calendars[calIndex].sessionMap.get(sId);
+                if(session === undefined){
+                  throw new Error("そんなことはありえないはず");
                 }
 
-                const newSession = session.changeStartTime((
-                  ('00' + (session.timeRange.startHour - 1)).slice(-2)
-                )+":00")
+                //更新
+                const addingSession = session.changeStartTime((
+                  `${((`00` + (session.timeRange.startHour - 1)).slice(-2))}:00`
+                ));
 
-                inchoSessions = [
-                  ...inchoSessions.slice(0, sessionIndex),
-                     newSession,
-                  ...inchoSessions.slice(sessionIndex+1)
-                ]
+                //永続化
+                const newCals = update(calendars, {[calIndex]:{ sessionMap: (list)=>
+                  list.set(addingSession.id, addingSession)
+                }});
+                setCalendars( newCals);
 
-                
-                setCalendars([
-                  {
-                    title: "院長",
-                    list: new ConflictsWarningSessionList(inchoSessions)
-                  },
-                  {
-                    title: "タイ姉",
-                    list: taineiSessionList,
-                  },
-                  {
-                    title: "アシ太郎",
-                    list: ashitaroSessionList 
-                  },
-                ]);
+
+                //検索と永続化をリポジトリに隠蔽したいな。
 
               }}
 
-              onStartTimeGo={
-                (sId)=>{
-                  const sessionIndex = inchoSessions.findIndex(
-                    session => session.id.equals(sId)
-                  )
+              onStartTimeGo={(sId)=>{
+                //要するに何をしたいかと言うと：
+                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
-                  console.log({
-                    sessionIndex,
-                    inchoSessions
-                  })
-                  
-                  if(sessionIndex === -1){
-                    throw new Error("sessionが見つかりません")
-                  }
-
-                  const session = inchoSessions[sessionIndex];
-
-                  const newSession = session.changeStartTime((
-
-                    ('00' + (session.timeRange.startHour + 1)).slice(-2)
-                  )+":00")
-
-                  inchoSessions = [
-                    ...inchoSessions.slice(0, sessionIndex),
-                       newSession,
-                    ...inchoSessions.slice(sessionIndex+1)
-
-                  ]
-
-                  setCalendars([
-                    {
-                      title: "院長",
-                      list: new ConflictsWarningSessionList(inchoSessions)
-                    },
-                    {
-                      title: "タイ姉",
-                      list: taineiSessionList,
-                    },
-                    {
-                      title: "アシ太郎",
-                      list: ashitaroSessionList 
-                    },
-                  ]);
-
+                //検索
+                const session = calendars[calIndex].sessionMap.get(sId);
+                if(session === undefined){
+                  throw new Error("そんなことはありえないはず");
                 }
 
-              }
+                //更新
+                const addingSession = session.changeStartTime((
+                  `${((`00` + (session.timeRange.startHour + 1)).slice(-2))}:00`
+                ));
+
+                //永続化
+                const newCals = update(calendars, {[calIndex]:{ sessionMap: (list)=>
+                  list.set(addingSession.id, addingSession)
+                }});
+                setCalendars( newCals);
+
+
+                //検索と永続化をリポジトリに隠蔽したいな。
+              }}
             />
           </div>
         )

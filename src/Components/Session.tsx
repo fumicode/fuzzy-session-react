@@ -9,6 +9,10 @@ import crypto from 'crypto';
 export class SessionId{
   private readonly _value: string;
 
+  static fromString(str: string): SessionId{
+    return new SessionId(str);
+  }
+
   constructor(value: string | undefined = undefined){
     if(value === undefined){
       //TODO: なぜかcrypto.randomUUIDが使えないので、簡易的なやりかた
@@ -54,19 +58,26 @@ export default class SessionEntity{
     return this.timeRange.overlaps(otherSession.timeRange);
   }
 
-  changeStartTime(start: FuzzyTime): SessionEntity{
-    return new SessionEntity(
+  changeStartTime(start: FuzzyTime): this{
+    return new ThisClass(
       this.id,
       this.title,
       new TimeRange(start, this.timeRange.end),
       this
-    );
+    ) as this;
   }
 
-  changeEndTime(start: FuzzyTime): TimeRange {
-    return new TimeRange(start, this.timeRange.end);
+  changeEndTime(start: FuzzyTime): this{
+    return new ThisClass(
+      this.id,
+      this.title,
+      new TimeRange(start, this.timeRange.end),
+      this
+    ) as this;
   }
 }
+
+const ThisClass = SessionEntity;
 
 export interface SessionViewModel extends ViewModel<SessionEntity>{
   //className,
@@ -117,6 +128,7 @@ export const SessionView: FC<SessionViewModel> = styled(({
           }}
           >▼</button>
         </div>
+
       </div>
       <div className="e-time-range-wrapper m-end">
         <div className="e-time-range">

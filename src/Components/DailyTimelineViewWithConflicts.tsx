@@ -5,7 +5,7 @@ import 'core-js/features/array';
 
 import SessionEntitly, { SessionId, SessionView, SessionViewModel } from './Session'
 import ViewModel from './ViewModel'
-import ConflictsWarningSessionList from './ConflictsWarningSessionList';
+import ConflictsWarningSessionMap from './ConflictsWarningSessionList';
 import { TimeRangeView } from './TimeRange';
 import Conflict from './Conflict';
 import ZIndexCalcurator from '../Utils/ZIndexCalcurator';
@@ -57,13 +57,13 @@ class ConflictViewModel implements ViewModel<Conflict>{
 
 }
 
-class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningSessionList>{
+class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningSessionMap>{
   className?: string | undefined;
 
 
 
   constructor(
-    public readonly main: ConflictsWarningSessionList, 
+    public readonly main: ConflictsWarningSessionMap, 
     public readonly showsTime: boolean = true,
 
     public onStartTimeBack: (sessionId: SessionId) => void,
