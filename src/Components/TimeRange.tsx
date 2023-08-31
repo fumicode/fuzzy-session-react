@@ -2,26 +2,45 @@ import React, { FC } from 'react';
 
 import ViewModel from './ViewModel'
 import styled from 'styled-components';
+import FuzzyTime from './FuzzyTime';
 
 export default class TimeRange{
+
+  readonly start: FuzzyTime;
+  readonly end: FuzzyTime;
+
+  constructor( start: string, end: string);
+  constructor( start: FuzzyTime, end: FuzzyTime);
+
+
   constructor(
-    readonly start: string,
-    readonly end: string
-  ){ }
+    start: string | FuzzyTime,
+    end: string | FuzzyTime
+  ){ 
+    if(typeof start === 'string'){
+      start = new FuzzyTime(start);
+    }
+    if(typeof end === 'string'){
+      end = new FuzzyTime(end);
+    }
+
+    this.start = start;
+    this.end = end;
+  }
 
   get startHour():number{
-    return parseInt(this.start.split(':')[0]);
+    return this.start.hour;
     //TODO ここで、parseIntを使うのは、よくない。
   }
 
   get endHour():number{
-    return parseInt(this.end.split(':')[0]);
+    return this.end.hour;
     //TODO ここで、parseIntを使うのは、よくない。
   }
 
   get durationHour():number{
-    const startDate = new Date(`2023-08-22T${this.start}`);
-    const endDate = new Date(`2023-08-22T${this.end}`);
+    const startDate = new Date(`2023-08-22T${this.start.toString()}`);
+    const endDate = new Date(`2023-08-22T${this.end.toString()}`);
 
     //TODO: 簡易的な計算!!!! いずれ、date-fnsなどのlibを使って厳密に計算したい。
     const duration = endDate.getHours() - startDate.getHours();
@@ -92,7 +111,7 @@ export const TimeRangeTextView: FC<TimeRangeViewModel> = (props:TimeRangeViewMod
   const range: TimeRange = props.main;
   return (
     <>
-      {range.start} 〜 {range.end}
+      {range.start.toString()} 〜 {range.end.toString()}
     </>
   );
 }
@@ -116,12 +135,12 @@ export const TimeRangeView: FC<TimeRangeViewModel> = styled((props:TimeRangeView
       <div className="e-time-range-wrappers">
         <div className="e-time-range-wrapper m-start">
           <div className="e-time-range">
-            {range.start}〜
+            {range.start.toString()}〜
           </div>
         </div>
         <div className="e-time-range-wrapper m-end">
           <div className="e-time-range">
-            〜{range.end}
+            〜{range.end.toString()}
           </div>
         </div>
       </div>

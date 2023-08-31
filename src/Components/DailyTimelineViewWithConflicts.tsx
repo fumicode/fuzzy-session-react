@@ -54,13 +54,10 @@ class ConflictViewModel implements ViewModel<Conflict>{
     const a = (y2 - y1)/(x2 - x1); //傾き
     return a * (x - x1) + y1
   }
-
 }
 
 class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningSessionMap>{
   className?: string | undefined;
-
-
 
   constructor(
     public readonly main: ConflictsWarningSessionMap, 

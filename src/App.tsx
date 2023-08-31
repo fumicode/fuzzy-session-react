@@ -6,6 +6,7 @@ import React, { FC, useState } from 'react';
 
 import styled from 'styled-components';
 import update from 'immutability-helper';
+import FuzzyTime from './Components/FuzzyTime';
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(
@@ -141,9 +142,12 @@ const App: FC = styled((props: {className: string})=> {
                 }
 
                 //更新
-                const addingSession = session.changeStartTime((
-                  `${((`00` + (session.timeRange.startHour - 1)).slice(-2))}:00`
-                ));
+                const addingSession = session.changeStartTime(
+                  new FuzzyTime(
+                    session.timeRange.start.hour - 1,
+                    0
+                  )
+                );
 
                 //永続化
                 const newCals = update(calendars, {[calIndex]:{ sessionMap: (list)=>
@@ -167,9 +171,12 @@ const App: FC = styled((props: {className: string})=> {
                 }
 
                 //更新
-                const addingSession = session.changeStartTime((
-                  `${((`00` + (session.timeRange.startHour + 1)).slice(-2))}:00`
-                ));
+                const addingSession = session.changeStartTime(
+                  new FuzzyTime(
+                    session.timeRange.start.hour + 1,
+                    0
+                  )
+                );
 
                 //永続化
                 const newCals = update(calendars, {[calIndex]:{ sessionMap: (list)=>

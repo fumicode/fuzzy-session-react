@@ -5,6 +5,7 @@ import ViewModel from './ViewModel'
 
 import TimeRange, { TimeRangeTextView } from './TimeRange';
 import crypto from 'crypto';
+import FuzzyTime from './FuzzyTime';
 
 export class SessionId{
   private readonly _value: string;
@@ -34,7 +35,7 @@ export class SessionId{
   }
 }
 
-type FuzzyTime = string;
+
 
 export default class SessionEntity{
   readonly id: SessionId;
@@ -116,7 +117,7 @@ export const SessionView: FC<SessionViewModel> = styled(({
       </div>
       <div className="e-time-range-wrapper m-start">
         <div className="e-time-range">
-          {session.timeRange.start}〜
+          {session.timeRange.start.toString()}〜
         </div>
 
         <div className="e-control-buttons">
@@ -132,7 +133,7 @@ export const SessionView: FC<SessionViewModel> = styled(({
       </div>
       <div className="e-time-range-wrapper m-end">
         <div className="e-time-range">
-          〜{session.timeRange.end}
+          〜{session.timeRange.end.toString()}
         </div>
       </div>
       <div className="e-fuzzy-box m-start"></div>
