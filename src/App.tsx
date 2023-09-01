@@ -187,6 +187,63 @@ const App: FC = styled((props: {className: string})=> {
 
                 //検索と永続化をリポジトリに隠蔽したいな。
               }}
+
+              onEndTimeBack={(sId)=>{
+                //要するに何をしたいかと言うと：
+                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
+
+                //検索
+                const session = calendars[calIndex].sessionMap.get(sId);
+                if(session === undefined){
+                  throw new Error("そんなことはありえないはず");
+                }
+
+                //更新
+                const addingSession = session.changeEndTime(
+                  new FuzzyTime(
+                    session.timeRange.end.hour - 1,
+                    0
+                  )
+                );
+
+                //永続化
+                const newCals = update(calendars, {[calIndex]:{ sessionMap: (list)=>
+                  list.set(addingSession.id, addingSession)
+                }});
+                setCalendars( newCals);
+
+
+                //検索と永続化をリポジトリに隠蔽したいな。
+
+              }}
+
+              onEndTimeGo={(sId)=>{
+                //要するに何をしたいかと言うと：
+                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
+
+                //検索
+                const session = calendars[calIndex].sessionMap.get(sId);
+                if(session === undefined){
+                  throw new Error("そんなことはありえないはず");
+                }
+
+                //更新
+                const addingSession = session.changeEndTime(
+                  new FuzzyTime(
+                    session.timeRange.end.hour + 1,
+                    0
+                  )
+                );
+
+                //永続化
+                const newCals = update(calendars, {[calIndex]:{ sessionMap: (list)=>
+                  list.set(addingSession.id, addingSession)
+                }});
+                setCalendars( newCals);
+
+
+                //検索と永続化をリポジトリに隠蔽したいな。
+              }}
             />
           </div>
         )

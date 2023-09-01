@@ -64,7 +64,10 @@ class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningS
     public readonly showsTime: boolean = true,
 
     public onStartTimeBack: (sessionId: SessionId) => void,
-    public onStartTimeGo: (sessionId: SessionId) => void
+    public onStartTimeGo: (sessionId: SessionId) => void,
+
+    public onEndTimeBack: (sessionId: SessionId) => void,
+    public onEndTimeGo: (sessionId: SessionId) => void
   ){
 
     //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
@@ -87,6 +90,9 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
 
   onStartTimeBack,
   onStartTimeGo,
+
+  onEndTimeBack,
+  onEndTimeGo,
 
 }: DailyTimelineWithConflictsViewModel)=>{
   //states
@@ -186,6 +192,13 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                     }
                     onStartTimeGo={
                       ()=>onStartTimeGo(session.id)
+                    }
+
+                    onEndTimeBack={
+                      ()=>onEndTimeBack(session.id)
+                    }
+                    onEndTimeGo={
+                      ()=>onEndTimeGo(session.id)
                     }
                     isHovered={isGrabbed}
                   />

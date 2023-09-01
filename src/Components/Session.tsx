@@ -50,10 +50,8 @@ export default class SessionEntity{
     if(!id){
       id = new SessionId();
     }
-
     this.id = id;
   }
-
 
   overlaps(otherSession: SessionEntity): TimeRange | undefined{
     return this.timeRange.overlaps(otherSession.timeRange);
@@ -68,11 +66,11 @@ export default class SessionEntity{
     ) as this;
   }
 
-  changeEndTime(start: FuzzyTime): this{
+  changeEndTime(end: FuzzyTime): this{
     return new ThisClass(
       this.id,
       this.title,
-      new TimeRange(start, this.timeRange.end),
+      new TimeRange(this.timeRange.start, end),
       this
     ) as this;
   }
@@ -87,14 +85,22 @@ export interface SessionViewModel extends ViewModel<SessionEntity>{
   onStartTimeBack : ()=>void;
   onStartTimeGo : ()=>void;
 
+  onEndTimeBack : ()=>void;
+  onEndTimeGo : ()=>void;
+
   isHovered: boolean;
 }
 
 export const SessionView: FC<SessionViewModel> = styled(({ 
   className: c,
   main: session,
+
   onStartTimeBack,
   onStartTimeGo,
+
+  onEndTimeBack,
+  onEndTimeGo,
+
   isHovered
 }: SessionViewModel)=>{
   const timeRange = session.timeRange;
@@ -134,6 +140,16 @@ export const SessionView: FC<SessionViewModel> = styled(({
       <div className="e-time-range-wrapper m-end">
         <div className="e-time-range">
           〜{session.timeRange.end.toString()}
+        </div>
+
+        <div className="e-control-buttons">
+          <button className="e-button m-up" onClick={(e)=>{
+            onEndTimeBack()
+          }}>▲</button>
+          <button className="e-button m-down" onClick={(e)=>{
+            onEndTimeGo()
+          }}
+          >▼</button>
         </div>
       </div>
       <div className="e-fuzzy-box m-start"></div>
