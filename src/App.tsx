@@ -232,6 +232,34 @@ const App: FC = styled((props: {className: string})=> {
 
                 //検索と永続化をリポジトリに隠蔽したいな。
               }}
+
+              onTimeRangeChange={(sId, diffHour)=>{
+                //要するに何をしたいかと言うと：
+                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
+
+                //検索
+                const session = calendars[calIndex].sessionMap.get(sId);
+                if(session === undefined){
+                  throw new Error("そんなことはありえないはず");
+                }
+
+                //更新
+                
+                const diffObj = new TimeDiff(
+                  diffHour >= 0 ? 1 : -1,
+                  Math.abs(Math.round(diffHour)), 
+                  0
+                );
+
+                const addingSession = session.changeStartTime(diffObj).changeEndTime(diffObj);
+
+                //永続化
+                const newCals = update(calendars, {[calIndex]:{ sessionMap: (list)=>
+                  list.set(addingSession.id, addingSession)
+                }});
+                setCalendars( newCals);
+
+              }}
             />
           </div>
         )

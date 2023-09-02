@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import ViewModel from './ViewModel'
@@ -6,6 +6,9 @@ import ViewModel from './ViewModel'
 import TimeRange, { TimeRangeTextView } from './TimeRange';
 import crypto from 'crypto';
 import FuzzyTime, { TimeDiff } from './FuzzyTime';
+
+import classNames from 'classnames';
+import { on } from 'events';
 
 export class SessionId{
   private readonly _value: string;
@@ -82,11 +85,17 @@ export interface SessionViewModel extends ViewModel<SessionEntity>{
   //className,
   //main
 
+  hourPx:number;
+
   onStartTimeBack : ()=>void;
   onStartTimeGo : ()=>void;
 
   onEndTimeBack : ()=>void;
   onEndTimeGo : ()=>void;
+
+  onDragStart: ()=>void;
+  onDragging: (hourDiff:number)=>void;
+  onDragEnd: (hourDiff:number)=>void;
 
   isHovered: boolean;
 }
@@ -95,19 +104,31 @@ export const SessionView: FC<SessionViewModel> = styled(({
   className: c,
   main: session,
 
+  hourPx,
+
   onStartTimeBack,
   onStartTimeGo,
 
   onEndTimeBack,
   onEndTimeGo,
 
+  onDragStart,
+  onDragging,
+  onDragEnd,
+
   isHovered
 }: SessionViewModel)=>{
   const timeRange = session.timeRange;
   const hoursNum = timeRange.durationHour;
-  
+
+  const dragAreaRef = useRef<HTMLDivElement>(null);
+
+  const [dragState, setDragState] = useState<number|undefined>(undefined);
+
+  const isDragging = dragState !== undefined;
+
   return (
-    <div className={c + ' ' + (isHovered&&'m-hover')} style={{height:`${hoursNum*50}px`}}>
+    <div className={c + ' ' + (isHovered&&'m-hover')} style={{height:`${hoursNum*hourPx}px`}}>
       {
       /*
       <div style={{fontSize:'13px'}}>
@@ -120,7 +141,9 @@ export const SessionView: FC<SessionViewModel> = styled(({
       </div>
       <div style={{fontSize:'10px'}}>
         <TimeRangeTextView main={timeRange} />
+
       </div>
+      <p>{dragState}</p>
       <div className="e-time-range-wrapper m-start">
         <div className="e-time-range">
           {session.timeRange.start.toString()}〜
@@ -135,7 +158,44 @@ export const SessionView: FC<SessionViewModel> = styled(({
       <div className="e-fuzzy-box m-end"></div>
 
       <div className="e-time-range-controller">
-        <div className="e-drag-area"></div>
+        <div className={classNames('e-drag-area', {'m-dragging': isDragging})}
+          ref={dragAreaRef}
+          onMouseDown={(e)=>{
+            const y = e.clientY;
+            setDragState(y);
+            onDragStart();
+          }}
+          onMouseMove={(e)=>{
+            if(!isDragging){
+              return;
+            }
+            //ドラッグ中なら
+
+            const oldY = dragState;
+            const currentY = e.clientY;
+
+            const diff = currentY - oldY;
+            const hourDiff = diff / hourPx;
+
+            
+            onDragging(hourDiff);
+          }}
+          onMouseUp={(e)=>{
+            if(!isDragging){
+              return;
+            }
+
+            setDragState(undefined);
+
+            const oldY = dragState;
+            const currentY = e.clientY;
+
+            const diff = currentY - oldY;
+            const hourDiff = diff / hourPx;
+            
+            onDragEnd(hourDiff);
+          }}
+        ></div>
         <div className="e-control-buttons m-start">
           <button className="e-button m-up" onClick={(e)=>{
             onStartTimeBack()
@@ -263,6 +323,7 @@ color: white;
 
     &.m-dragging{
       cursor: grabbing;
+      background: #ccc;
     }
 
     //真ん中に配置

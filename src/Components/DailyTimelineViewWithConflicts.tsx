@@ -67,7 +67,9 @@ class DailyTimelineWithConflictsViewModel implements ViewModel<ConflictsWarningS
     public onStartTimeGo: (sessionId: SessionId) => void,
 
     public onEndTimeBack: (sessionId: SessionId) => void,
-    public onEndTimeGo: (sessionId: SessionId) => void
+    public onEndTimeGo: (sessionId: SessionId) => void,
+
+    public onTimeRangeChange: (sessionId: SessionId, hourDiff: number) => void
   ){
 
     //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
@@ -93,6 +95,8 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
 
   onEndTimeBack,
   onEndTimeGo,
+
+  onTimeRangeChange,
 
 }: DailyTimelineWithConflictsViewModel)=>{
   //states
@@ -187,6 +191,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                   }
                   <SessionView 
                     main={session}
+                    hourPx={50}
                     onStartTimeBack={
                       ()=>onStartTimeBack(session.id)
                     }
@@ -200,6 +205,19 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                     onEndTimeGo={
                       ()=>onEndTimeGo(session.id)
                     }
+
+                    onDragStart={
+                      ()=>{}
+                    }
+                    onDragging={
+                      (hourDiff)=>{}
+                    }
+                    onDragEnd={
+                      (hourDiff)=>{
+                        onTimeRangeChange(session.id, hourDiff);
+                      }
+                    }
+
                     isHovered={isGrabbed}
                   />
                 </div>
