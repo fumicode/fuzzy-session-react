@@ -5,7 +5,7 @@ import ViewModel from './ViewModel'
 
 import TimeRange, { TimeRangeTextView } from './TimeRange';
 import crypto from 'crypto';
-import FuzzyTime from './FuzzyTime';
+import FuzzyTime, { TimeDiff } from './FuzzyTime';
 
 export class SessionId{
   private readonly _value: string;
@@ -36,10 +36,8 @@ export class SessionId{
 }
 
 
-
 export default class SessionEntity{
   readonly id: SessionId;
-
 
   constructor(
     id: SessionId | undefined,
@@ -51,29 +49,31 @@ export default class SessionEntity{
       id = new SessionId();
     }
     this.id = id;
+
   }
 
   overlaps(otherSession: SessionEntity): TimeRange | undefined{
     return this.timeRange.overlaps(otherSession.timeRange);
   }
 
-  changeStartTime(start: FuzzyTime): this{
+  changeStartTime(diff: TimeDiff): this{
     return new ThisClass(
       this.id,
       this.title,
-      new TimeRange(start, this.timeRange.end),
+      new TimeRange(this.timeRange.start.change(diff), this.timeRange.end),
       this
     ) as this;
   }
 
-  changeEndTime(end: FuzzyTime): this{
+  changeEndTime(diff: TimeDiff): this{
     return new ThisClass(
       this.id,
       this.title,
-      new TimeRange(this.timeRange.start, end),
+      new TimeRange(this.timeRange.start, this.timeRange.end.change(diff)),
       this
     ) as this;
   }
+
 }
 
 const ThisClass = SessionEntity;

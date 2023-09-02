@@ -6,7 +6,7 @@ import React, { FC, useState } from 'react';
 
 import styled from 'styled-components';
 import update from 'immutability-helper';
-import FuzzyTime from './Components/FuzzyTime';
+import FuzzyTime, { TimeDiff } from './Components/FuzzyTime';
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(
@@ -143,10 +143,7 @@ const App: FC = styled((props: {className: string})=> {
 
                 //更新
                 const addingSession = session.changeStartTime(
-                  new FuzzyTime(
-                    session.timeRange.start.hour - 1,
-                    0
-                  )
+                  new TimeDiff(-1, 1, 0)
                 );
 
                 //永続化
@@ -172,10 +169,7 @@ const App: FC = styled((props: {className: string})=> {
 
                 //更新
                 const addingSession = session.changeStartTime(
-                  new FuzzyTime(
-                    session.timeRange.start.hour + 1,
-                    0
-                  )
+                  new TimeDiff(+1, 1, 0)
                 );
 
                 //永続化
@@ -200,10 +194,7 @@ const App: FC = styled((props: {className: string})=> {
 
                 //更新
                 const addingSession = session.changeEndTime(
-                  new FuzzyTime(
-                    session.timeRange.end.hour - 1,
-                    0
-                  )
+                  new TimeDiff(-1, 1, 0)
                 );
 
                 //永続化
@@ -229,10 +220,7 @@ const App: FC = styled((props: {className: string})=> {
 
                 //更新
                 const addingSession = session.changeEndTime(
-                  new FuzzyTime(
-                    session.timeRange.end.hour + 1,
-                    0
-                  )
+                  new TimeDiff(+1, 1, 0)
                 );
 
                 //永続化
