@@ -93,9 +93,8 @@ export interface SessionViewModel extends ViewModel<SessionEntity>{
   onEndTimeBack : ()=>void;
   onEndTimeGo : ()=>void;
 
-  onDragStart: ()=>void;
-  onDragging: (hourDiff:number)=>void;
-  onDragEnd: (hourDiff:number)=>void;
+  onDragStart: (startY: number)=>void;
+  onDragEnd: (hourDiff: number)=>void;
 
   isHovered: boolean;
 }
@@ -113,7 +112,6 @@ export const SessionView: FC<SessionViewModel> = styled(({
   onEndTimeGo,
 
   onDragStart,
-  onDragging,
   onDragEnd,
 
   isHovered
@@ -121,11 +119,6 @@ export const SessionView: FC<SessionViewModel> = styled(({
   const timeRange = session.timeRange;
   const hoursNum = timeRange.durationHour;
 
-  const dragAreaRef = useRef<HTMLDivElement>(null);
-
-  const [dragState, setDragState] = useState<number|undefined>(undefined);
-
-  const isDragging = dragState !== undefined;
 
   return (
     <div className={c + ' ' + (isHovered&&'m-hover')} style={{height:`${hoursNum*hourPx}px`}}>
@@ -143,7 +136,6 @@ export const SessionView: FC<SessionViewModel> = styled(({
         <TimeRangeTextView main={timeRange} />
 
       </div>
-      <p>{dragState}</p>
       <div className="e-time-range-wrapper m-start">
         <div className="e-time-range">
           {session.timeRange.start.toString()}〜
@@ -158,42 +150,10 @@ export const SessionView: FC<SessionViewModel> = styled(({
       <div className="e-fuzzy-box m-end"></div>
 
       <div className="e-time-range-controller">
-        <div className={classNames('e-drag-area', {'m-dragging': isDragging})}
-          ref={dragAreaRef}
+        <div className={classNames('e-drag-area', {'m-dragging': /*isDragging*/ false})}
           onMouseDown={(e)=>{
             const y = e.clientY;
-            setDragState(y);
-            onDragStart();
-          }}
-          onMouseMove={(e)=>{
-            if(!isDragging){
-              return;
-            }
-            //ドラッグ中なら
-
-            const oldY = dragState;
-            const currentY = e.clientY;
-
-            const diff = currentY - oldY;
-            const hourDiff = diff / hourPx;
-
-            
-            onDragging(hourDiff);
-          }}
-          onMouseUp={(e)=>{
-            if(!isDragging){
-              return;
-            }
-
-            setDragState(undefined);
-
-            const oldY = dragState;
-            const currentY = e.clientY;
-
-            const diff = currentY - oldY;
-            const hourDiff = diff / hourPx;
-            
-            onDragEnd(hourDiff);
+            onDragStart(y);
           }}
         ></div>
         <div className="e-control-buttons m-start">

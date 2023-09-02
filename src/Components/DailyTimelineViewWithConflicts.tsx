@@ -108,6 +108,13 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   const hoursMax = 24;
   const hoursArray = [...Array(hoursMax).keys()];
 
+  const hourPx = 30;
+
+
+  const [dragTargetAndStartY, setDragTargetAndStartY] = useState<{session:SessionEntitly, startY:number}|undefined>(undefined);
+  const isDragging = dragTargetAndStartY !== undefined;
+
+  const [hourDiff, setHourDiff] = useState<number>(0);
 
   //const sessionsBelongsToHour = distributeSessionsToHours(sessions);
 
@@ -134,12 +141,57 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   });
 
 
+  const handleDragEnd = (currentY:number)=>{
+    if(!isDragging){
+      return;
+    }
+
+
+    const oldY = dragTargetAndStartY.startY;
+
+    const diff = currentY - oldY;
+    const hourDiff = diff / hourPx;
+    
+    onTimeRangeChange(dragTargetAndStartY.session.id, hourDiff);
+
+    setDragTargetAndStartY(undefined);
+    setHourDiff(0);
+  }
   
   return (
-    <div className={className}>
+    <div className={className}
+      onMouseMove={(e)=>{
+        if(!isDragging){
+          return;
+        }
+        //ドラッグ中なら
+
+        const oldY = dragTargetAndStartY.startY
+        const currentY = e.clientY;
+
+        const diff = currentY - oldY;
+        const hd = diff / hourPx;
+
+        setHourDiff(hd);
+      }}
+
+      onMouseUp={(e)=>{
+        handleDragEnd(e.clientY);
+      }}
+
+      onMouseLeave={(e)=>{
+        handleDragEnd(e.clientY);
+      }}
+
+    >
+      <div className="e-status-panel">
+        {grabbedSessionBVM && '✊'+grabbedSessionBVM.session.title || '🖐'}<br/>
+        {dragTargetAndStartY?.session ? '👆'+dragTargetAndStartY.session.title : ''} 
+
+      </div>
       {
         hoursArray.map((hour)=>
-          <div className='e-hour-line' key={hour}>
+          <div className='e-hour-line' key={hour} style={{height:hourPx}}>
             {
               showsTime && 
                 <div className="e-hour-label">{hour}:00</div>
@@ -153,17 +205,16 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
         {
           sesBVMs.map((sesBVM, index)=>
             {
-              //todo: 50がマジックナンバーになっている！！ DOM描画時に取得するようにする。
               const session = sesBVM.session;
 
               const x = sesBVM.leftPx;
-              const y = session.timeRange.startHour * 50;
+              const y = session.timeRange.startHour * hourPx;
 
               const isGrabbed = grabbedSessionBVM ? sesBVM.sessionId.equals(grabbedSessionBVM.sessionId) : false; 
 
               return (
                 <div className="e-session-box" 
-                  style={{top: y +'px', left: x+'px', zIndex: zIndexCalcurator.getZIndex(sesBVM.sessionId.toString())}} 
+                  style={{top: (dragTargetAndStartY?.session === session ? hourDiff*hourPx : 0)+y +'px', left: x+'px', zIndex: zIndexCalcurator.getZIndex(sesBVM.sessionId.toString())}} 
                   key={session.id.toString()}
                   onClick={()=>{
                     if(grabbedSessionBVM && grabbedSessionBVM.sessionId.equals(sesBVM.sessionId)){
@@ -191,7 +242,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                   }
                   <SessionView 
                     main={session}
-                    hourPx={50}
+                    hourPx={hourPx}
                     onStartTimeBack={
                       ()=>onStartTimeBack(session.id)
                     }
@@ -207,10 +258,9 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                     }
 
                     onDragStart={
-                      ()=>{}
-                    }
-                    onDragging={
-                      (hourDiff)=>{}
+                      (startY:number)=>{
+                        setDragTargetAndStartY({session, startY});
+                      }
                     }
                     onDragEnd={
                       (hourDiff)=>{
@@ -232,7 +282,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
             {
               const comflictVM = new ConflictViewModel(conflict, 0);
 
-              const y = conflict.overlappingTimeRange.startHour * 50;
+              const y = conflict.overlappingTimeRange.startHour * hourPx;
               const conflictId = conflict.sessionIds.join('-');
 
               return (
@@ -261,10 +311,23 @@ width: 300px; //仮ぎめ
 
 border-left: solid 1px #ccc;
 
+>.e-status-panel{
+  position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+  background: white;
+  font-size: 10px;
+  color: black;
+  padding: 3px;
+  border-radius: 3px;
+  border: solid 1px black;
+}
+
 >.e-hour-line{
   position: relative;
 
-  height: 50px;
+  height: 30px;
   &::before{
     position: absolute;
       top: 0;

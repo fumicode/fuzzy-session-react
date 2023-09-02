@@ -49,7 +49,6 @@ export default class FuzzyTime{
 
   change(diff: TimeDiff): FuzzyTime{
     const d = new Date(`2020-01-01T${zeroPadStr(this.hour, 2)}:${zeroPadStr(this.minute, 2)}:00`);
-    console.log(d);
     
     const func = diff.sign === -1 ? sub : add;
     const newD = func(d, {minutes: diff.minute, hours: diff.hour});
