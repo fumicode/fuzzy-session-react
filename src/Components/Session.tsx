@@ -125,8 +125,18 @@ export const SessionView: FC<SessionViewModel> = styled(({
         <div className="e-time-range">
           {session.timeRange.start.toString()}〜
         </div>
+      </div>
+      <div className="e-time-range-wrapper m-end">
+        <div className="e-time-range">
+          〜{session.timeRange.end.toString()}
+        </div>
+      </div>
+      <div className="e-fuzzy-box m-start"></div>
+      <div className="e-fuzzy-box m-end"></div>
 
-        <div className="e-control-buttons">
+      <div className="e-time-range-controller">
+        <div className="e-drag-area"></div>
+        <div className="e-control-buttons m-start">
           <button className="e-button m-up" onClick={(e)=>{
             onStartTimeBack()
           }}>▲</button>
@@ -135,14 +145,7 @@ export const SessionView: FC<SessionViewModel> = styled(({
           }}
           >▼</button>
         </div>
-
-      </div>
-      <div className="e-time-range-wrapper m-end">
-        <div className="e-time-range">
-          〜{session.timeRange.end.toString()}
-        </div>
-
-        <div className="e-control-buttons">
+        <div className="e-control-buttons m-end">
           <button className="e-button m-up" onClick={(e)=>{
             onEndTimeBack()
           }}>▲</button>
@@ -151,9 +154,8 @@ export const SessionView: FC<SessionViewModel> = styled(({
           }}
           >▼</button>
         </div>
+
       </div>
-      <div className="e-fuzzy-box m-start"></div>
-      <div className="e-fuzzy-box m-end"></div>
     </div>
   );
 })`
@@ -179,10 +181,10 @@ color: white;
       color: black;
     }
 
-    > .e-control-buttons{
-      display:block;
+  }
 
-    }
+  > .e-time-range-controller{
+    display:block;
   }
 }
 
@@ -235,11 +237,59 @@ color: white;
     white-space: nowrap;
   }
 
+
+
+}
+
+> .e-time-range-controller{
+  display: none;
+  position: absolute;
+    top:0;
+    bottom: 0;
+    right: 0;
+
+    width: 1em;
+
+  > .e-drag-area{
+    position: absolute;
+      top:0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    
+    user-select: none;
+
+    cursor: grab; //grabbingにもかわる
+
+    &.m-dragging{
+      cursor: grabbing;
+    }
+
+    //真ん中に配置
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+
+    background:#ddd;
+    line-height: 1;
+
+    &::before{
+      content: '三三';
+    }
+
+  }
+
   > .e-control-buttons{
-    display:none;
     position: absolute;
       right: 0;
     width: 0;
+
+    &.m-start{
+      top: 0;
+    }
+    &.m-end{
+      bottom: 0;
+    }
 
     > .e-button{
       position: absolute;
@@ -253,7 +303,6 @@ color: white;
       
     }
   }
-
 
 }
 
