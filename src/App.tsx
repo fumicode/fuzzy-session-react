@@ -93,7 +93,7 @@ const App: FC = styled((props: { className: string }) => {
   const { className } = props;
   const [calendars, setCalendars] = useState<Calendar[]>(_calendars);
 
-  const goIntoFutureSession = (calIndex:number, sId: SessionId, sessionFuture: SessionFuture) => {
+  const goIntoFutureCalendar = (calIndex:number, sId: SessionId, sessionFuture: SessionFuture) => {
     //要するに何をしたいかと言うと：
     //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
@@ -127,19 +127,17 @@ const App: FC = styled((props: { className: string }) => {
       <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
       <div className="e-calendar-columns">
         {calendars.map((cal, calIndex) => {
-          const goIntoFutureCalendar =  (
+          const goIntoFutureSession =  (
             sId:SessionId, 
             future:SessionFuture
-          ) => goIntoFutureSession(calIndex, sId, future);
+          ) => goIntoFutureCalendar(calIndex, sId, future);
           return (
             <div className="e-column" key={calIndex}>
               <h2>{cal.title}</h2>
               <DailyTimelineWithConflictsView
                 main={cal.sessionMap}
                 showsTime={calIndex === 0}
-                onStartTimeChange = { goIntoFutureCalendar }
-                onEndTimeChange   = { goIntoFutureCalendar }
-                onTimeRangeChange = { goIntoFutureCalendar }
+                onSessionChange = { goIntoFutureSession }
               />
             </div>
           )

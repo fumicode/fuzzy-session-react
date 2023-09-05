@@ -60,11 +60,8 @@ class DailyTimelineWithConflictsViewModel
     public readonly main: ConflictsWarningSessionMap,
     public readonly showsTime: boolean = true,
 
-    public onStartTimeChange: (sessionId: SessionId, future:SessionFuture) => void,
+    public onSessionChange: (sessionId: SessionId, future:SessionFuture) => void,
 
-    public onEndTimeChange: (sessionId: SessionId, future:SessionFuture) => void,
-
-    public onTimeRangeChange: (sessionId: SessionId, future:SessionFuture) => void
   ) {
     //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
     //const metaConflicts = this.main.conflicts;
@@ -76,14 +73,11 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   main: { sessions, conflicts },
   showsTime,
 
-  onStartTimeChange,
+  onSessionChange,
 
-  onEndTimeChange,
-
-  onTimeRangeChange,
 }: DailyTimelineWithConflictsViewModel) => {
   //states
-  const [topId, setTopId] = useState<string | undefined>(undefined);
+  const [hoveredSessionId, setHoveredSessionId] = useState<SessionId | undefined>(undefined);
   const [grabbedSessionBVM, setGrabbedSessionBVM] = useState<
     SessionBoxViewModel | undefined
   >(undefined);
@@ -107,8 +101,11 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   //const sessionsBelongsToHour = distributeSessionsToHours(sessions);
 
   const zIndexCalcurator = new ZIndexCalcurator(
-    sesBVMs.map((vm) => vm.sessionId.toString()),
-    (grabbedSessionBVM && grabbedSessionBVM.sessionId.toString()) || topId
+    sesBVMs
+      .sort((a,b)=>a.session.timeRange.compare(b.session.timeRange))
+      .map((vm) => vm.sessionId.toString())
+    ,
+    (grabbedSessionBVM?.sessionId.toString()) || hoveredSessionId?.toString()
   );
 
   conflicts.forEach((conflict) => {
@@ -154,11 +151,12 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     };
 
 
-    onTimeRangeChange(dragTargetAndStartY.session.id, timeRangeChangingFuture);
+    onSessionChange(dragTargetAndStartY.session.id, timeRangeChangingFuture);
 
     setDragTargetAndStartY(undefined);
     setHourDiff(0);
   };
+
 
   return (
     <div
@@ -198,7 +196,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
         </div>
       ))}
       <div className="e-contents">
-        {sesBVMs.map((sesBVM, index) => {
+        {sesBVMs.map((sesBVM) => {
           const session = sesBVM.session;
 
           const x = sesBVM.leftPx;
@@ -207,6 +205,8 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
           const isGrabbed = grabbedSessionBVM
             ? sesBVM.sessionId.equals(grabbedSessionBVM.sessionId)
             : false;
+
+          const passFuture = (future:SessionFuture) => onSessionChange(session.id, future);
 
           return (
             <div
@@ -233,10 +233,10 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                 }
               }}
               onMouseOver={() => {
-                setTopId(sesBVM.sessionId.toString());
+                setHoveredSessionId(sesBVM.sessionId);
               }}
               onMouseOut={() => {
-                setTopId(undefined);
+                setHoveredSessionId(undefined);
               }}
             >
               {isGrabbed && (
@@ -250,8 +250,8 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
               <SessionView
                 main={session}
                 hourPx={hourPx}
-                onStartTimeChange={(future:SessionFuture) => onStartTimeChange(session.id, future)}
-                onEndTimeChange={(future:SessionFuture) => onEndTimeChange(session.id, future)}
+                onStartTimeChange={passFuture}
+                onEndTimeChange={passFuture}
                 onDragStart={(startY: number) => {
                   setDragTargetAndStartY({ session, startY });
                 }}

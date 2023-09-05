@@ -14,7 +14,9 @@ export default class ConflictsWarningSessionMap {
       sessions.map((session) => [session.id.toString(), session])
     );
 
-    this._conflicts = this.findConflicts(Array.from(this._sessions.values()));
+    this._conflicts = this.findConflicts(
+      Array.from(this._sessions.values())
+    );
   }
 
   get(key: SessionId): SessionEntity | undefined {
@@ -63,6 +65,9 @@ export default class ConflictsWarningSessionMap {
   }
 
   private findConflicts(sessions: SessionEntity[]): Conflict[] {
+
+    //予めソートしておいたほうが、楽にコンフリクトを探せる。
+    sessions = sessions.sort((a, b) => a.timeRange.compare(b.timeRange));
     let conflicts: Conflict[] = [];
     for (let i = 0; i < sessions.length; i++) {
       for (let j = i + 1; j < sessions.length; j++) {

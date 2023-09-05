@@ -103,9 +103,9 @@ const compare = (a: TimeRange, b: TimeRange): number => {
     return 1; // > 0
   } else {
     if (a.endHour < b.endHour) {
-      return -1; // < 0
-    } else if (a.endHour > b.endHour) {
       return 1; // > 0
+    } else if (a.endHour > b.endHour) {
+      return -1; // < 0
     }
 
     return 0;
