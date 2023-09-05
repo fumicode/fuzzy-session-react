@@ -132,32 +132,7 @@ const App: FC = styled((props: { className: string }) => {
               main={cal.sessionMap}
               showsTime={calIndex === 0}
               onStartTimeChange={ (sId, future)=>{goIntoFutureSession(calIndex, sId, future)} }
-              onStartTimeGo={(sId) => {
-                //要するに何をしたいかと言うと：
-                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
-                //検索
-                const session = calendars[calIndex].sessionMap.get(sId);
-                if (session === undefined) {
-                  throw new Error("そんなことはありえないはず");
-                }
-
-                //更新
-                const addingSession = session.changeStartTime(
-                  new TimeDiff(+1, 1, 0)
-                );
-
-                //永続化
-                const newCals = update(calendars, {
-                  [calIndex]: {
-                    sessionMap: (list) =>
-                      list.set(addingSession.id, addingSession),
-                  },
-                });
-                setCalendars(newCals);
-
-                //検索と永続化をリポジトリに隠蔽したいな。
-              }}
               onEndTimeBack={(sId) => {
                 //要するに何をしたいかと言うと：
                 //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。

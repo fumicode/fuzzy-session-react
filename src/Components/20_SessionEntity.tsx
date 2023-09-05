@@ -87,7 +87,6 @@ export interface SessionViewModel extends ViewModel<SessionEntity> {
   hourPx: number;
 
   onStartTimeChange: (sessionFuture: SessionFuture) => void;
-  onStartTimeGo: () => void;
 
   onEndTimeBack: () => void;
   onEndTimeGo: () => void;
@@ -106,7 +105,6 @@ export const SessionView: FC<SessionViewModel> = styled(
     hourPx,
 
     onStartTimeChange,
-    onStartTimeGo,
 
     onEndTimeBack,
     onEndTimeGo,
@@ -167,23 +165,17 @@ export const SessionView: FC<SessionViewModel> = styled(
             >
               ▲
             </button>
+            <button
+              className="e-button m-down"
+              onClick={(e) => {
+                onStartTimeChange((session)=>{
+                  return session.changeStartTime(new TimeDiff(1, 1, 0));
+                });
+              }}
+            >
+             ▼ 
+            </button>
 
-            {typeof session.timeRange.tryChangeStartTime(
-              new TimeDiff(1, 1, 0)
-            ) === "string" ? (
-              <button className="e-button m-down" disabled>
-                ▼
-              </button>
-            ) : (
-              <button
-                className="e-button m-down"
-                onClick={(e) => {
-                  onStartTimeGo();
-                }}
-              >
-                ▼
-              </button>
-            )}
           </div>
           <div className="e-control-buttons m-end">
             <button
