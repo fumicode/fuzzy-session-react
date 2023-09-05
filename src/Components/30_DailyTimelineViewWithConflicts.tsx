@@ -61,8 +61,7 @@ class DailyTimelineWithConflictsViewModel
 
     public onStartTimeChange: (sessionId: SessionId, future:SessionFuture) => void,
 
-    public onEndTimeBack: (sessionId: SessionId) => void,
-    public onEndTimeGo: (sessionId: SessionId) => void,
+    public onEndTimeChange: (sessionId: SessionId, future:SessionFuture) => void,
 
     public onTimeRangeChange: (sessionId: SessionId, hourDiff: number) => void
   ) {
@@ -78,8 +77,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
 
   onStartTimeChange,
 
-  onEndTimeBack,
-  onEndTimeGo,
+  onEndTimeChange,
 
   onTimeRangeChange,
 }: DailyTimelineWithConflictsViewModel) => {
@@ -242,8 +240,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                 main={session}
                 hourPx={hourPx}
                 onStartTimeChange={(future:SessionFuture) => onStartTimeChange(session.id, future)}
-                onEndTimeBack={() => onEndTimeBack(session.id)}
-                onEndTimeGo={() => onEndTimeGo(session.id)}
+                onEndTimeChange={(future:SessionFuture) => onEndTimeChange(session.id, future)}
                 onDragStart={(startY: number) => {
                   setDragTargetAndStartY({ session, startY });
                 }}

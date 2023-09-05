@@ -88,8 +88,7 @@ export interface SessionViewModel extends ViewModel<SessionEntity> {
 
   onStartTimeChange: (sessionFuture: SessionFuture) => void;
 
-  onEndTimeBack: () => void;
-  onEndTimeGo: () => void;
+  onEndTimeChange: (sessionFuture: SessionFuture) => void;
 
   onDragStart: (startY: number) => void;
   onDragEnd: (hourDiff: number) => void;
@@ -106,8 +105,8 @@ export const SessionView: FC<SessionViewModel> = styled(
 
     onStartTimeChange,
 
-    onEndTimeBack,
-    onEndTimeGo,
+    onEndTimeChange,
+
 
     onDragStart,
     onDragEnd,
@@ -178,10 +177,13 @@ export const SessionView: FC<SessionViewModel> = styled(
 
           </div>
           <div className="e-control-buttons m-end">
+
             <button
               className="e-button m-up"
               onClick={(e) => {
-                onEndTimeBack();
+                onEndTimeChange((session)=>{
+                  return session.changeEndTime(new TimeDiff(-1, 1, 0));
+                });
               }}
             >
               ▲
@@ -189,10 +191,12 @@ export const SessionView: FC<SessionViewModel> = styled(
             <button
               className="e-button m-down"
               onClick={(e) => {
-                onEndTimeGo();
+                onEndTimeChange((session)=>{
+                  return session.changeEndTime(new TimeDiff(1, 1, 0));
+                });
               }}
             >
-              ▼
+             ▼ 
             </button>
           </div>
         </div>
