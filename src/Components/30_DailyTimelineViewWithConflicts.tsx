@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import "core-js/features/array";
 
-import SessionEntitly, { SessionId, SessionView } from "./20_SessionEntity";
+import SessionEntitly, { SessionFuture, SessionId, SessionView } from "./20_SessionEntity";
 import ViewModel from "./00_ViewModel";
 import ConflictsWarningSessionMap from "./20_ConflictsWarningSessionList";
 import { TimeRangeView } from "./10_TimeRange";
@@ -59,7 +59,7 @@ class DailyTimelineWithConflictsViewModel
     public readonly main: ConflictsWarningSessionMap,
     public readonly showsTime: boolean = true,
 
-    public onStartTimeChange: (sessionId: SessionId) => void,
+    public onStartTimeChange: (sessionId: SessionId, future:SessionFuture) => void,
     public onStartTimeGo: (sessionId: SessionId) => void,
 
     public onEndTimeBack: (sessionId: SessionId) => void,
@@ -243,7 +243,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
               <SessionView
                 main={session}
                 hourPx={hourPx}
-                onStartTimeChange={() => onStartTimeChange(session.id)}
+                onStartTimeChange={(future:SessionFuture) => onStartTimeChange(session.id, future)}
                 onStartTimeGo={() => onStartTimeGo(session.id)}
                 onEndTimeBack={() => onEndTimeBack(session.id)}
                 onEndTimeGo={() => onEndTimeGo(session.id)}

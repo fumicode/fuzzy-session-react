@@ -1,13 +1,12 @@
 import ConflictsWarningSessionMap from "./Components/20_ConflictsWarningSessionList";
 import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
-import SessionEntity from "./Components/20_SessionEntity";
+import SessionEntity, { SessionFuture, SessionId } from "./Components/20_SessionEntity";
 import TimeRange from "./Components/10_TimeRange";
 import { FC, useState } from "react";
 
 import styled from "styled-components";
 import update from "immutability-helper";
 import { TimeDiff } from "./Components/10_FuzzyTime";
-import { log } from "console";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
@@ -94,6 +93,34 @@ const App: FC = styled((props: { className: string }) => {
   const { className } = props;
   const [calendars, setCalendars] = useState<Calendar[]>(_calendars);
 
+  const goIntoFutureSession = (calIndex:number, sId: SessionId, sessionFuture: SessionFuture) => {
+    //要するに何をしたいかと言うと：
+    //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
+
+    //検索
+    const session = calendars[calIndex].sessionMap.get(sId);
+    if (session === undefined) {
+      throw new Error("そんなことはありえないはず");
+    }
+
+    try{
+      const futureSession = sessionFuture(session);
+
+      //永続化
+      const newCals = update(calendars, {
+        [calIndex]: {
+          sessionMap: (list) =>
+            list.set(futureSession.id, futureSession),
+        },
+      });
+      setCalendars(newCals);
+    }
+    catch(e){
+      console.log(e);
+    }
+  }
+
+
   return (
     <div className={className}>
       <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
@@ -104,44 +131,7 @@ const App: FC = styled((props: { className: string }) => {
             <DailyTimelineWithConflictsView
               main={cal.sessionMap}
               showsTime={calIndex === 0}
-              onStartTimeChange={(sId) => {
-                //要するに何をしたいかと言うと：
-                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
-
-                //検索
-                const session = calendars[calIndex].sessionMap.get(sId);
-                if (session === undefined) {
-                  throw new Error("そんなことはありえないはず");
-                }
-
-
-                //更新
-                const sessionFuture = (s:SessionEntity):SessionEntity=>{
-                  const diffObj = new TimeDiff(-1, 1, 0);
-                  const changingSession = session.changeStartTime(
-                    diffObj 
-                  );
-                  return changingSession;
-                }
-
-                try{
-                  const futureSession = sessionFuture(session);
-
-                  //永続化
-                  const newCals = update(calendars, {
-                    [calIndex]: {
-                      sessionMap: (list) =>
-                        list.set(futureSession.id, futureSession),
-                    },
-                  });
-                  setCalendars(newCals);
-                }
-                catch(e){
-                  console.log(e);
-                }
-
-                //検索と永続化をリポジトリに隠蔽したいな。
-              }}
+              onStartTimeChange={ (sId, future)=>{goIntoFutureSession(calIndex, sId, future)} }
               onStartTimeGo={(sId) => {
                 //要するに何をしたいかと言うと：
                 //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。

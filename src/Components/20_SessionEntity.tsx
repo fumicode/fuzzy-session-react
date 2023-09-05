@@ -77,13 +77,16 @@ export default class SessionEntity {
 
 const ThisClass = SessionEntity;
 
+export type SessionFuture = (s:SessionEntity)=>SessionEntity;
+
+
 export interface SessionViewModel extends ViewModel<SessionEntity> {
   //className,
   //main
 
   hourPx: number;
 
-  onStartTimeChange: () => void;
+  onStartTimeChange: (sessionFuture: SessionFuture) => void;
   onStartTimeGo: () => void;
 
   onEndTimeBack: () => void;
@@ -157,7 +160,9 @@ export const SessionView: FC<SessionViewModel> = styled(
             <button
               className="e-button m-up"
               onClick={(e) => {
-                onStartTimeChange();
+                onStartTimeChange((session)=>{
+                  return session.changeStartTime(new TimeDiff(-1, 1, 0));
+                });
               }}
             >
               ▲
