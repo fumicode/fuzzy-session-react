@@ -121,64 +121,29 @@ const App: FC = styled((props: { className: string }) => {
   }
 
 
+
   return (
     <div className={className}>
       <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
       <div className="e-calendar-columns">
-        {calendars.map((cal, calIndex) => (
-          <div className="e-column" key={calIndex}>
-            <h2>{cal.title}</h2>
-            <DailyTimelineWithConflictsView
-              main={cal.sessionMap}
-              showsTime={calIndex === 0}
-              onStartTimeChange={ (sId, future)=>{goIntoFutureSession(calIndex, sId, future)} }
-              onEndTimeChange={ (sId, future)=>{goIntoFutureSession(calIndex, sId, future)} }
-
-              onTimeRangeChange={(sId, diffHour) => {
-                //要するに何をしたいかと言うと：
-                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
-
-                //検索
-                const session = calendars[calIndex].sessionMap.get(sId);
-                if (session === undefined) {
-                  throw new Error("そんなことはありえないはず");
-                }
-
-                //更新
-
-                const sessionFuture = (
-                  session: SessionEntity
-                ): SessionEntity => {
-                  const diffObj = new TimeDiff(
-                    diffHour >= 0 ? 1 : -1,
-                    Math.abs(Math.round(diffHour)),
-                    0
-                  );
-                  const addingSession = session
-                    .changeStartTime(diffObj)
-                    .changeEndTime(diffObj);
-
-                  return addingSession;
-                };
-
-                try {
-                  const futureSession = sessionFuture(session);
-
-                  //永続化
-                  const newCals = update(calendars, {
-                    [calIndex]: {
-                      sessionMap: (list) =>
-                        list.set(futureSession.id, futureSession),
-                    },
-                  });
-                  setCalendars(newCals);
-                } catch (e) {
-                  return;
-                }
-              }}
-            />
-          </div>
-        ))}
+        {calendars.map((cal, calIndex) => {
+          const goIntoFutureCalendar =  (
+            sId:SessionId, 
+            future:SessionFuture
+          ) => goIntoFutureSession(calIndex, sId, future);
+          return (
+            <div className="e-column" key={calIndex}>
+              <h2>{cal.title}</h2>
+              <DailyTimelineWithConflictsView
+                main={cal.sessionMap}
+                showsTime={calIndex === 0}
+                onStartTimeChange = { goIntoFutureCalendar }
+                onEndTimeChange   = { goIntoFutureCalendar }
+                onTimeRangeChange = { goIntoFutureCalendar }
+              />
+            </div>
+          )
+        })}
       </div>
     </div>
   );
@@ -193,3 +158,5 @@ const App: FC = styled((props: { className: string }) => {
 `;
 
 export default App;
+
+

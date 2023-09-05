@@ -9,6 +9,7 @@ import ConflictsWarningSessionMap from "./20_ConflictsWarningSessionList";
 import { TimeRangeView } from "./10_TimeRange";
 import Conflict from "./20_Conflict";
 import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
+import { TimeDiff } from "./10_FuzzyTime";
 
 class SessionBoxViewModel implements ViewModel<SessionEntitly> {
   public readonly sessionId: SessionId;
@@ -63,7 +64,7 @@ class DailyTimelineWithConflictsViewModel
 
     public onEndTimeChange: (sessionId: SessionId, future:SessionFuture) => void,
 
-    public onTimeRangeChange: (sessionId: SessionId, hourDiff: number) => void
+    public onTimeRangeChange: (sessionId: SessionId, future:SessionFuture) => void
   ) {
     //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
     //const metaConflicts = this.main.conflicts;
@@ -143,7 +144,21 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     const diff = currentY - oldY;
     const hourDiff = diff / hourPx;
 
-    onTimeRangeChange(dragTargetAndStartY.session.id, hourDiff);
+    const timeRangeChangingFuture: SessionFuture = (session) => {
+      const diffObj = new TimeDiff(
+        hourDiff >= 0 ? 1 : -1,
+        Math.abs(Math.round(hourDiff)),
+        0
+      );
+      const addingSession = session
+        .changeStartTime(diffObj)
+        .changeEndTime(diffObj);
+
+      return addingSession;
+    };
+
+
+    onTimeRangeChange(dragTargetAndStartY.session.id, timeRangeChangingFuture);
 
     setDragTargetAndStartY(undefined);
     setHourDiff(0);
