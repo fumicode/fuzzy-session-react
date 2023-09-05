@@ -7,6 +7,7 @@ import { FC, useState } from "react";
 import styled from "styled-components";
 import update from "immutability-helper";
 import { TimeDiff } from "./Components/10_FuzzyTime";
+import { log } from "console";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
@@ -113,19 +114,31 @@ const App: FC = styled((props: { className: string }) => {
                   throw new Error("そんなことはありえないはず");
                 }
 
-                //更新
-                const addingSession = session.changeStartTime(
-                  new TimeDiff(-1, 1, 0)
-                );
 
-                //永続化
-                const newCals = update(calendars, {
-                  [calIndex]: {
-                    sessionMap: (list) =>
-                      list.set(addingSession.id, addingSession),
-                  },
-                });
-                setCalendars(newCals);
+                //更新
+                const sessionFuture = (s:SessionEntity):SessionEntity=>{
+                  const diffObj = new TimeDiff(-1, 1, 0);
+                  const changingSession = session.changeStartTime(
+                    diffObj 
+                  );
+                  return changingSession;
+                }
+
+                try{
+                  const futureSession = sessionFuture(session);
+
+                  //永続化
+                  const newCals = update(calendars, {
+                    [calIndex]: {
+                      sessionMap: (list) =>
+                        list.set(futureSession.id, futureSession),
+                    },
+                  });
+                  setCalendars(newCals);
+                }
+                catch(e){
+                  console.log(e);
+                }
 
                 //検索と永続化をリポジトリに隠蔽したいな。
               }}
