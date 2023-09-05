@@ -124,16 +124,16 @@ export const SessionView: FC<SessionViewModel> = styled(
     const hoursNum = timeRange.durationHour;
 
     const startTimeBackFuture:SessionFuture = (session:SessionEntity)=>
-      session.changeStartTime(new TimeDiff(-1, 1, 0));
+      session.changeStartTime(new TimeDiff('-', 1, 0));
 
     const startTimeGoFuture:SessionFuture = (session:SessionEntity)=>
-      session.changeStartTime(new TimeDiff(1, 1, 0));
+      session.changeStartTime(new TimeDiff('+', 1, 0));
 
     const endTimeBackFuture:SessionFuture = (session:SessionEntity)=>
-      session.changeEndTime(new TimeDiff(-1, 1, 0));
+      session.changeEndTime(new TimeDiff('-', 1, 0));
 
     const endTimeGoFuture:SessionFuture = (session:SessionEntity)=>
-      session.changeEndTime(new TimeDiff(1, 1, 0));
+      session.changeEndTime(new TimeDiff('+', 1, 0));
 
     const peekIntoFuture = (session:SessionEntity, future:SessionFuture):boolean=>{
       try{
@@ -150,11 +150,8 @@ export const SessionView: FC<SessionViewModel> = styled(
         className={c + " " + (isHovered && "m-hover")}
         style={{ height: `${hoursNum * hourPx}px` }}
       >
-        {/*
-      <div style={{fontSize:'13px'}}>
-        #{session.id.toString('short')}
-      </div>
-      */}
+        { /* <div style={{fontSize:'13px'}}> 
+        #{session.id.toString('short')} </div> */ }
         <div style={{ fontSize: "13px" }}>{session.title}</div>
         <div style={{ fontSize: "10px" }}>
           <TimeRangeTextView main={timeRange} />

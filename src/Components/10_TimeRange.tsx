@@ -115,12 +115,12 @@ const compare = (a: TimeRange, b: TimeRange): number => {
 export type TimeRangeViewModel = ViewModel<TimeRange> & {
   children?: React.ReactNode;
   background?: string;
+  hourPx?: number;
 };
 
 export const TimeRangeTextView: FC<TimeRangeViewModel> = (
-  props: TimeRangeViewModel
+  {main: range}: TimeRangeViewModel
 ) => {
-  const range: TimeRange = props.main;
   return (
     <>
       {range.start.toString()} 〜 {range.end.toString()}
@@ -129,21 +129,20 @@ export const TimeRangeTextView: FC<TimeRangeViewModel> = (
 };
 
 export const TimeRangeView: FC<TimeRangeViewModel> = styled(
-  (props: TimeRangeViewModel) => {
-    const className = props.className || "";
-    const range = props.main;
+  ({className, main:range, background, hourPx, children}: TimeRangeViewModel) => {
 
     const hoursNum = range.durationHour;
+    hourPx = hourPx || 50;
 
     return (
       <div
         className={className}
         style={{
-          height: `${hoursNum * 50}px`,
-          background: props.background || "hsl(0, 100%, 70%)",
+          height: `${hoursNum * hourPx}px`,
+          background: background || "hsl(0, 100%, 70%)",
         }}
       >
-        <div className="e-content">{props.children}</div>
+        <div className="e-content">{children}</div>
         <div className="e-time-range-wrappers">
           <div className="e-time-range-wrapper m-start">
             <div className="e-time-range">{range.start.toString()}〜</div>

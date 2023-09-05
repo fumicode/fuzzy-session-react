@@ -146,9 +146,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
 
     const timeRangeChangingFuture: SessionFuture = (session) => {
       const diffObj = new TimeDiff(
-        hourDiff >= 0 ? 1 : -1,
-        Math.abs(Math.round(hourDiff)),
-        0
+        Math.round(hourDiff)
       );
       const addingSession = session.changeTimeRange(diffObj);
 
@@ -279,6 +277,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
               <TimeRangeView
                 main={conflict.overlappingTimeRange}
                 background={`hsla(${comflictVM.horriblenessHue}, 100%, 50%, 0.7)`}
+                hourPx={hourPx}
               >
                 {conflict.toString("horribleness-emoji")}
               </TimeRangeView>

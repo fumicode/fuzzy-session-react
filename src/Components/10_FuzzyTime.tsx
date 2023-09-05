@@ -42,7 +42,7 @@ export default class FuzzyTime {
       `2020-01-01T${zeroPadStr(this.hour, 2)}:${zeroPadStr(this.minute, 2)}:00`
     );
 
-    const func = diff.sign === -1 ? sub : add;
+    const func = diff.sign === '-' ? sub : add;
     const newD = func(d, { minutes: diff.minute, hours: diff.hour });
 
     return new FuzzyTime(newD.getHours(), newD.getMinutes());
@@ -67,16 +67,36 @@ export default class FuzzyTime {
   }
 }
 
+type PlusOrMinus = '+' | '-';
+
+const isPlusOrMinus = (str: string): str is PlusOrMinus => {
+  return str === '+' || str === '-';
+}
+
 export class TimeDiff {
   //year(年), month(月), date(日), hour(時), minutes(分), second(秒), mili-second(ミリ秒)
   //いったん、時間と分だけ実装
+
+  private _sign: PlusOrMinus;
+  private _hour: number = 0;
+  private _minute: number = 0;
+
+  constructor( signedHour: number );
+  constructor( sign: '+' | '-', hour: number );
+  constructor( sign: '+' | '-', hour: number , minute: number );
   constructor(
-    public sign: 1 | -1 = 1,
-    public readonly hour: number = 0,
-    public readonly minute: number = 0
+    sign: PlusOrMinus | number = '+',
+    hour: number = 0,
+    minute: number = 0
   ) {
-    if (!(sign === 1 || sign === -1)) {
-      throw new Error("sign must be 1 or -1");
+    if (typeof sign === 'number') {
+      const signedHour = sign;
+      sign = signedHour >= 0 ? '+' : '-';
+      hour = Math.abs(signedHour);
+    }
+
+    if (!isPlusOrMinus(sign)) {
+      throw new Error("sign must be + or -");
     }
 
     if (!(hour >= 0)) {
@@ -86,9 +106,27 @@ export class TimeDiff {
     if (!(minute >= 0)) {
       throw new Error("minute must be positive");
     }
+
+    this._sign = sign;
+    this._hour = hour;
+    this._minute = minute;
+  }
+
+  get sign(): PlusOrMinus{
+    return this._sign;
+  }
+
+  get hour(): number {
+    return this._hour;
+  }
+
+  get minute(): number {
+    return this._minute;
   }
 
   toString(): string {
     return `${(`00` + this.hour).slice(-2)}:${(`00` + this.minute).slice(-2)}`;
   }
 }
+
+const ThisClass = TimeDiff;
