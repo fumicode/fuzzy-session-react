@@ -1,5 +1,5 @@
-import SessionEntity, { SessionId } from "./Session";
-import TimeRange from "./TimeRange";
+import SessionEntity, { SessionId } from "./20_SessionEntity";
+import TimeRange from "./10_TimeRange";
 
 export default class Conflict {
   public readonly overlappingTimeRange: TimeRange;

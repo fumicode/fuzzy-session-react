@@ -1,12 +1,12 @@
-import ConflictsWarningSessionMap from "./Components/ConflictsWarningSessionList";
-import { DailyTimelineWithConflictsView } from "./Components/DailyTimelineViewWithConflicts";
-import SessionEntity from "./Components/Session";
-import TimeRange from "./Components/TimeRange";
+import ConflictsWarningSessionMap from "./Components/20_ConflictsWarningSessionList";
+import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
+import SessionEntity from "./Components/20_SessionEntity";
+import TimeRange from "./Components/10_TimeRange";
 import { FC, useState } from "react";
 
 import styled from "styled-components";
 import update from "immutability-helper";
-import { TimeDiff } from "./Components/FuzzyTime";
+import { TimeDiff } from "./Components/10_FuzzyTime";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),

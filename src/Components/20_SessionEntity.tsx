@@ -1,11 +1,11 @@
 import { FC } from "react";
 import styled from "styled-components";
 
-import ViewModel from "./ViewModel";
+import ViewModel from "./00_ViewModel";
 
-import TimeRange, { TimeRangeTextView } from "./TimeRange";
+import TimeRange, { TimeRangeTextView } from "./10_TimeRange";
 import crypto from "crypto";
-import { TimeDiff } from "./FuzzyTime";
+import { TimeDiff } from "./10_FuzzyTime";
 
 import classNames from "classnames";
 

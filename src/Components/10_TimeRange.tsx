@@ -1,8 +1,8 @@
 import React, { FC } from "react";
 
-import ViewModel from "./ViewModel";
+import ViewModel from "./00_ViewModel";
 import styled from "styled-components";
-import FuzzyTime, { TimeDiff } from "./FuzzyTime";
+import FuzzyTime, { TimeDiff } from "./10_FuzzyTime";
 
 export default class TimeRange {
   readonly start: FuzzyTime;

@@ -3,12 +3,12 @@ import styled from "styled-components";
 
 import "core-js/features/array";
 
-import SessionEntitly, { SessionId, SessionView } from "./Session";
-import ViewModel from "./ViewModel";
-import ConflictsWarningSessionMap from "./ConflictsWarningSessionList";
-import { TimeRangeView } from "./TimeRange";
-import Conflict from "./Conflict";
-import ZIndexCalcurator from "../Utils/ZIndexCalcurator";
+import SessionEntitly, { SessionId, SessionView } from "./20_SessionEntity";
+import ViewModel from "./00_ViewModel";
+import ConflictsWarningSessionMap from "./20_ConflictsWarningSessionList";
+import { TimeRangeView } from "./10_TimeRange";
+import Conflict from "./20_Conflict";
+import ZIndexCalcurator from "../Utils/01_ZIndexCalcurator";
 
 class SessionBoxViewModel implements ViewModel<SessionEntitly> {
   public readonly sessionId: SessionId;

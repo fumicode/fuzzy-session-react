@@ -1,0 +1,14 @@
+{
+  "explorer.sortOrder": "mixed",
+
+  "folders": [
+    {
+      "path": "src/App.tsx"
+    },
+    {
+      "path": "src/Components",
+      "explorer.sortOrder": ""
+
+    },
+  ]
+}

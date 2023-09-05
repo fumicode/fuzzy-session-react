@@ -1,6 +1,6 @@
-import SessionEntity, { SessionId } from "./Session";
+import SessionEntity, { SessionId } from "./20_SessionEntity";
 
-import Conflict from "./Conflict";
+import Conflict from "./20_Conflict";
 
 export default class ConflictsWarningSessionMap {
   private readonly _conflicts: Conflict[];
