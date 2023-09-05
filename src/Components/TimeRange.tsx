@@ -1,225 +1,229 @@
-import React, { FC } from 'react';
+import React, { FC } from "react";
 
-import ViewModel from './ViewModel'
-import styled from 'styled-components';
-import FuzzyTime from './FuzzyTime';
+import ViewModel from "./ViewModel";
+import styled from "styled-components";
+import FuzzyTime, { TimeDiff } from "./FuzzyTime";
 
-export default class TimeRange{
-
+export default class TimeRange {
   readonly start: FuzzyTime;
   readonly end: FuzzyTime;
 
-  constructor( start: string, end: string);
-  constructor( start: FuzzyTime, end: FuzzyTime);
+  constructor(start: string | FuzzyTime, end: string | FuzzyTime);
 
-
-  constructor(
-    start: string | FuzzyTime,
-    end: string | FuzzyTime
-  ){ 
-    if(typeof start === 'string'){
+  constructor(start: string | FuzzyTime, end: string | FuzzyTime) {
+    if (typeof start === "string") {
       start = new FuzzyTime(start);
     }
-    if(typeof end === 'string'){
+    if (typeof end === "string") {
       end = new FuzzyTime(end);
+    }
+
+    if (!(start.compare(end) < 0)) {
+      throw new Error(
+        `開始時刻は終了時刻よりも前である必要があります。 start: ${start.toString()}, end: ${end.toString()}`
+      );
     }
 
     this.start = start;
     this.end = end;
   }
 
-  get startHour():number{
+  tryChangeStartTime(diff: FuzzyTime | TimeDiff): TimeRange | string {
+    try {
+      return this.changeStartTime(diff);
+    } catch (e) {
+      if (e instanceof Error) {
+        return e.message;
+      } else {
+        throw e;
+      }
+    }
+  }
+  changeStartTime(diff: FuzzyTime | TimeDiff): TimeRange {
+    if (diff instanceof FuzzyTime) {
+      const start = diff;
+      return new TimeRange(start, this.end);
+    } else if (diff instanceof TimeDiff) {
+      return new TimeRange(this.start.change(diff), this.end);
+    } else {
+      throw new Error("diff must be FuzzyTime or TimeDiff");
+    }
+  }
+
+  get startHour(): number {
     return this.start.hour;
     //TODO ここで、parseIntを使うのは、よくない。
   }
 
-  get endHour():number{
+  get endHour(): number {
     return this.end.hour;
     //TODO ここで、parseIntを使うのは、よくない。
   }
 
-  get durationHour():number{
+  get durationHour(): number {
     const startDate = new Date(`2023-08-22T${this.start.toString()}`);
     const endDate = new Date(`2023-08-22T${this.end.toString()}`);
 
     //TODO: 簡易的な計算!!!! いずれ、date-fnsなどのlibを使って厳密に計算したい。
     const duration = endDate.getHours() - startDate.getHours();
 
-    return duration ;
+    return duration;
   }
 
-  overlaps(otherTR: TimeRange): TimeRange | undefined{
-
-    if(!overlaps(this, otherTR)){
+  overlaps(otherTR: TimeRange): TimeRange | undefined {
+    if (!overlaps(this, otherTR)) {
       return undefined;
-    }
-    else{
-      const start = this.startHour > otherTR.startHour ? 
-        this.start : 
-        otherTR.start;
+    } else {
+      const start =
+        this.startHour > otherTR.startHour ? this.start : otherTR.start;
 
-      const end = this.endHour < otherTR.endHour ? 
-        this.end : 
-        otherTR.end;
+      const end = this.endHour < otherTR.endHour ? this.end : otherTR.end;
 
-      return new TimeRange(start, end); 
+      return new TimeRange(start, end);
     }
   }
 
-  compare(otherTR: TimeRange): number{
+  compare(otherTR: TimeRange): number {
     return compare(this, otherTR);
   }
 
-  toString(): string{
+  toString(): string {
     return `${this.start}〜${this.end}`;
   }
 }
 
-const overlaps = (a:TimeRange, b:TimeRange):boolean => {
-  return !(
-    (a.end <= b.start) ||
-    (b.end <= a.start)
-  );
-}
+const overlaps = (a: TimeRange, b: TimeRange): boolean => {
+  return !(a.end <= b.start || b.end <= a.start);
+};
 
-const compare =  (a:TimeRange, b:TimeRange):number => {
-  if(a.startHour < b.startHour){
+const compare = (a: TimeRange, b: TimeRange): number => {
+  if (a.startHour < b.startHour) {
     return -1; // < 0
-  }
-  else if(a.startHour > b.startHour){
+  } else if (a.startHour > b.startHour) {
     return 1; // > 0
-  }
-  else{
-    if(a.endHour < b.endHour){
+  } else {
+    if (a.endHour < b.endHour) {
       return -1; // < 0
-    }
-    else if(a.endHour > b.endHour){
+    } else if (a.endHour > b.endHour) {
       return 1; // > 0
     }
 
     return 0;
-  } 
+  }
 };
 
 export type TimeRangeViewModel = ViewModel<TimeRange> & {
   children?: React.ReactNode;
   background?: string;
-
 };
 
-export const TimeRangeTextView: FC<TimeRangeViewModel> = (props:TimeRangeViewModel) => {
+export const TimeRangeTextView: FC<TimeRangeViewModel> = (
+  props: TimeRangeViewModel
+) => {
   const range: TimeRange = props.main;
   return (
     <>
       {range.start.toString()} 〜 {range.end.toString()}
     </>
   );
-}
+};
 
-export const TimeRangeView: FC<TimeRangeViewModel> = styled((props:TimeRangeViewModel)=>{
-  const className = props.className || '';
-  const range = props.main;
+export const TimeRangeView: FC<TimeRangeViewModel> = styled(
+  (props: TimeRangeViewModel) => {
+    const className = props.className || "";
+    const range = props.main;
 
-  const hoursNum = range.durationHour;
+    const hoursNum = range.durationHour;
 
-  return (
-    <div className={className} style={{
-      height:`${hoursNum*50}px`,
-      background: props.background || 'hsl(0, 100%, 70%)'
-      }}>
-      <div className="e-content">
-        
-        {props.children}
-
-      </div>
-      <div className="e-time-range-wrappers">
-        <div className="e-time-range-wrapper m-start">
-          <div className="e-time-range">
-            {range.start.toString()}〜
+    return (
+      <div
+        className={className}
+        style={{
+          height: `${hoursNum * 50}px`,
+          background: props.background || "hsl(0, 100%, 70%)",
+        }}
+      >
+        <div className="e-content">{props.children}</div>
+        <div className="e-time-range-wrappers">
+          <div className="e-time-range-wrapper m-start">
+            <div className="e-time-range">{range.start.toString()}〜</div>
           </div>
-        </div>
-        <div className="e-time-range-wrapper m-end">
-          <div className="e-time-range">
-            〜{range.end.toString()}
+          <div className="e-time-range-wrapper m-end">
+            <div className="e-time-range">〜{range.end.toString()}</div>
           </div>
         </div>
       </div>
-    </div>
-  );
-})`
-position: relative;
-
-height:  200px; //とりあえず仮で
-
-border:1px solid white;
-
-//background: hsl(0, 100%, 70%);
-
-
-&:hover{
-  > .e-time-range-wrapper > .e-time-range{
-    max-height: 100px;
-    padding: 3px; //TODO: ここにこれ書くの汚い
+    );
   }
-}
-
-> .e-content{
+)`
   position: relative;
-  height: 100%;
-  width: 100%;
 
-}
+  height: 200px; //とりあえず仮で
 
-> .e-time-range-wrappers{
-  > .e-time-range-wrapper{
-    position: absolute;
+  border: 1px solid white;
+
+  //background: hsl(0, 100%, 70%);
+
+  &:hover {
+    > .e-time-range-wrapper > .e-time-range {
+      max-height: 100px;
+      padding: 3px; //TODO: ここにこれ書くの汚い
+    }
+  }
+
+  > .e-content {
+    position: relative;
+    height: 100%;
+    width: 100%;
+  }
+
+  > .e-time-range-wrappers {
+    > .e-time-range-wrapper {
+      position: absolute;
       left: 0;
       z-index: 1;
 
-    &.m-start{
-      position: absolute;
+      &.m-start {
+        position: absolute;
         top: 0;
 
-      > .e-time-range{
+        > .e-time-range {
+          bottom: 0;
+
+          border-radius: 5px 5px 0 0;
+        }
+      }
+
+      &.m-end {
+        position: absolute;
         bottom: 0;
 
-        border-radius: 5px 5px 0 0;
+        > .e-time-range {
+          top: 0;
+
+          border-radius: 0 0 5px 5px;
+        }
       }
-    }
 
-    &.m-end{
-      position: absolute;
-        bottom: 0;
-
-      > .e-time-range{
-        top: 0;
-
-        border-radius: 0 0 5px 5px;
-      }
-    }
-
-    > .e-time-range{
-      position: absolute;
+      > .e-time-range {
+        position: absolute;
         left: 0;
-      box-sizing: border-box;
+        box-sizing: border-box;
 
-      max-height: 0;
-      padding: 0; //TODO: ここにこれ書くの汚い
+        max-height: 0;
+        padding: 0; //TODO: ここにこれ書くの汚い
 
+        overflow: hidden;
 
-      overflow: hidden;
+        padding-right: 10px;
+        line-height: 1;
 
-      padding-right: 10px;
-      line-height: 1;
+        font-size: 10px;
 
-      font-size: 10px;
+        background-color: #ddd;
 
-      background-color: #ddd;
-
-      white-space: nowrap;
+        white-space: nowrap;
+      }
     }
   }
-}
-
 `;
-
