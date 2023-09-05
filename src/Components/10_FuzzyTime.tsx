@@ -26,7 +26,7 @@ export default class FuzzyTime {
       this.minute = minute;
     }
 
-    if (!(0 <= hour && hour < 24)) {
+    if (!(0 <= hour && hour <= 24)) {
       throw new Error("hour must be 0-23. given: " + hour);
     }
     if (!(0 <= minute && minute < 60)) {

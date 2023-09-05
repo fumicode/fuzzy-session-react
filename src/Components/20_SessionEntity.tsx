@@ -73,6 +73,15 @@ export default class SessionEntity {
       this
     ) as this;
   }
+
+  changeTimeRange(diff: TimeDiff): this {
+    return new ThisClass(
+      this.id,
+      this.title,
+      new TimeRange(this.timeRange.start.change(diff), this.timeRange.end.change(diff)),
+      this
+    ) as this;
+  }
 }
 
 const ThisClass = SessionEntity;
@@ -91,7 +100,6 @@ export interface SessionViewModel extends ViewModel<SessionEntity> {
   onEndTimeChange: (sessionFuture: SessionFuture) => void;
 
   onDragStart: (startY: number) => void;
-  onDragEnd: (hourDiff: number) => void;
 
   isHovered: boolean;
 }
@@ -109,12 +117,33 @@ export const SessionView: FC<SessionViewModel> = styled(
 
 
     onDragStart,
-    onDragEnd,
 
     isHovered,
   }: SessionViewModel) => {
     const timeRange = session.timeRange;
     const hoursNum = timeRange.durationHour;
+
+    const startTimeBackFuture:SessionFuture = (session:SessionEntity)=>
+      session.changeStartTime(new TimeDiff(-1, 1, 0));
+
+    const startTimeGoFuture:SessionFuture = (session:SessionEntity)=>
+      session.changeStartTime(new TimeDiff(1, 1, 0));
+
+    const endTimeBackFuture:SessionFuture = (session:SessionEntity)=>
+      session.changeEndTime(new TimeDiff(-1, 1, 0));
+
+    const endTimeGoFuture:SessionFuture = (session:SessionEntity)=>
+      session.changeEndTime(new TimeDiff(1, 1, 0));
+
+    const peekIntoFuture = (session:SessionEntity, future:SessionFuture):boolean=>{
+      try{
+        future(session)
+        return true;
+      }
+      catch(e){
+        return false;
+      }
+    }
 
     return (
       <section
@@ -156,20 +185,18 @@ export const SessionView: FC<SessionViewModel> = styled(
           <div className="e-control-buttons m-start">
             <button
               className="e-button m-up"
+              disabled={ !peekIntoFuture(session, startTimeBackFuture) }
               onClick={(e) => {
-                onStartTimeChange((session)=>{
-                  return session.changeStartTime(new TimeDiff(-1, 1, 0));
-                });
+                onStartTimeChange( startTimeBackFuture );
               }}
             >
               ▲
             </button>
             <button
               className="e-button m-down"
-              onClick={(e) => {
-                onStartTimeChange((session)=>{
-                  return session.changeStartTime(new TimeDiff(1, 1, 0));
-                });
+              disabled={ !peekIntoFuture(session, startTimeGoFuture) }
+              onClick={(e) => { 
+                onStartTimeChange( startTimeGoFuture );
               }}
             >
              ▼ 
@@ -180,20 +207,18 @@ export const SessionView: FC<SessionViewModel> = styled(
 
             <button
               className="e-button m-up"
+              disabled={ !peekIntoFuture(session, endTimeBackFuture) }
               onClick={(e) => {
-                onEndTimeChange((session)=>{
-                  return session.changeEndTime(new TimeDiff(-1, 1, 0));
-                });
+                onEndTimeChange( endTimeBackFuture );
               }}
             >
               ▲
             </button>
             <button
               className="e-button m-down"
-              onClick={(e) => {
-                onEndTimeChange((session)=>{
-                  return session.changeEndTime(new TimeDiff(1, 1, 0));
-                });
+              disabled={ !peekIntoFuture(session, endTimeGoFuture) }
+              onClick={(e) => { 
+                onEndTimeChange( endTimeGoFuture );
               }}
             >
              ▼ 

@@ -150,9 +150,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
         Math.abs(Math.round(hourDiff)),
         0
       );
-      const addingSession = session
-        .changeStartTime(diffObj)
-        .changeEndTime(diffObj);
+      const addingSession = session.changeTimeRange(diffObj);
 
       return addingSession;
     };
@@ -258,9 +256,6 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                 onEndTimeChange={(future:SessionFuture) => onEndTimeChange(session.id, future)}
                 onDragStart={(startY: number) => {
                   setDragTargetAndStartY({ session, startY });
-                }}
-                onDragEnd={(hourDiff) => {
-                  onTimeRangeChange(session.id, hourDiff);
                 }}
                 isHovered={isGrabbed}
               />
