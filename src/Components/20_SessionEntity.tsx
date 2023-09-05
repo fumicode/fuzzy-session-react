@@ -83,7 +83,7 @@ export interface SessionViewModel extends ViewModel<SessionEntity> {
 
   hourPx: number;
 
-  onStartTimeBack: () => void;
+  onStartTimeChange: () => void;
   onStartTimeGo: () => void;
 
   onEndTimeBack: () => void;
@@ -102,7 +102,7 @@ export const SessionView: FC<SessionViewModel> = styled(
 
     hourPx,
 
-    onStartTimeBack,
+    onStartTimeChange,
     onStartTimeGo,
 
     onEndTimeBack,
@@ -117,7 +117,7 @@ export const SessionView: FC<SessionViewModel> = styled(
     const hoursNum = timeRange.durationHour;
 
     return (
-      <div
+      <section
         className={c + " " + (isHovered && "m-hover")}
         style={{ height: `${hoursNum * hourPx}px` }}
       >
@@ -157,7 +157,7 @@ export const SessionView: FC<SessionViewModel> = styled(
             <button
               className="e-button m-up"
               onClick={(e) => {
-                onStartTimeBack();
+                onStartTimeChange();
               }}
             >
               ▲
@@ -199,7 +199,7 @@ export const SessionView: FC<SessionViewModel> = styled(
             </button>
           </div>
         </div>
-      </div>
+      </section>
     );
   }
 )`

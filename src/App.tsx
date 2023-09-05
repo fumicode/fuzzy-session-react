@@ -95,157 +95,173 @@ const App: FC = styled((props: { className: string }) => {
 
   return (
     <div className={className}>
-      {calendars.map((cal, calIndex) => (
-        <div className="e-column" key={calIndex}>
-          <h2>{cal.title}</h2>
-          <DailyTimelineWithConflictsView
-            main={cal.sessionMap}
-            showsTime={calIndex === 0}
-            onStartTimeBack={(sId) => {
-              //要するに何をしたいかと言うと：
-              //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
+      <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
+      <div className="e-calendar-columns">
+        {calendars.map((cal, calIndex) => (
+          <div className="e-column" key={calIndex}>
+            <h2>{cal.title}</h2>
+            <DailyTimelineWithConflictsView
+              main={cal.sessionMap}
+              showsTime={calIndex === 0}
+              onStartTimeChange={(sId) => {
+                //要するに何をしたいかと言うと：
+                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
-              //検索
-              const session = calendars[calIndex].sessionMap.get(sId);
-              if (session === undefined) {
-                throw new Error("そんなことはありえないはず");
-              }
+                //検索
+                const session = calendars[calIndex].sessionMap.get(sId);
+                if (session === undefined) {
+                  throw new Error("そんなことはありえないはず");
+                }
 
-              //更新
-              const addingSession = session.changeStartTime(
-                new TimeDiff(-1, 1, 0)
-              );
+                //更新
+                const addingSession = session.changeStartTime(
+                  new TimeDiff(-1, 1, 0)
+                );
 
-              //永続化
-              const newCals = update(calendars, {
-                [calIndex]: {
-                  sessionMap: (list) =>
-                    list.set(addingSession.id, addingSession),
-                },
-              });
-              setCalendars(newCals);
+                //永続化
+                const newCals = update(calendars, {
+                  [calIndex]: {
+                    sessionMap: (list) =>
+                      list.set(addingSession.id, addingSession),
+                  },
+                });
+                setCalendars(newCals);
 
-              //検索と永続化をリポジトリに隠蔽したいな。
-            }}
-            onStartTimeGo={(sId) => {
-              //要するに何をしたいかと言うと：
-              //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
+                //検索と永続化をリポジトリに隠蔽したいな。
+              }}
+              onStartTimeGo={(sId) => {
+                //要するに何をしたいかと言うと：
+                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
-              //検索
-              const session = calendars[calIndex].sessionMap.get(sId);
-              if (session === undefined) {
-                throw new Error("そんなことはありえないはず");
-              }
+                //検索
+                const session = calendars[calIndex].sessionMap.get(sId);
+                if (session === undefined) {
+                  throw new Error("そんなことはありえないはず");
+                }
 
-              //更新
-              const addingSession = session.changeStartTime(
-                new TimeDiff(+1, 1, 0)
-              );
+                //更新
+                const addingSession = session.changeStartTime(
+                  new TimeDiff(+1, 1, 0)
+                );
 
-              //永続化
-              const newCals = update(calendars, {
-                [calIndex]: {
-                  sessionMap: (list) =>
-                    list.set(addingSession.id, addingSession),
-                },
-              });
-              setCalendars(newCals);
+                //永続化
+                const newCals = update(calendars, {
+                  [calIndex]: {
+                    sessionMap: (list) =>
+                      list.set(addingSession.id, addingSession),
+                  },
+                });
+                setCalendars(newCals);
 
-              //検索と永続化をリポジトリに隠蔽したいな。
-            }}
-            onEndTimeBack={(sId) => {
-              //要するに何をしたいかと言うと：
-              //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
+                //検索と永続化をリポジトリに隠蔽したいな。
+              }}
+              onEndTimeBack={(sId) => {
+                //要するに何をしたいかと言うと：
+                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
-              //検索
-              const session = calendars[calIndex].sessionMap.get(sId);
-              if (session === undefined) {
-                throw new Error("そんなことはありえないはず");
-              }
+                //検索
+                const session = calendars[calIndex].sessionMap.get(sId);
+                if (session === undefined) {
+                  throw new Error("そんなことはありえないはず");
+                }
 
-              //更新
-              const addingSession = session.changeEndTime(
-                new TimeDiff(-1, 1, 0)
-              );
+                //更新
+                const addingSession = session.changeEndTime(
+                  new TimeDiff(-1, 1, 0)
+                );
 
-              //永続化
-              const newCals = update(calendars, {
-                [calIndex]: {
-                  sessionMap: (list) =>
-                    list.set(addingSession.id, addingSession),
-                },
-              });
-              setCalendars(newCals);
+                //永続化
+                const newCals = update(calendars, {
+                  [calIndex]: {
+                    sessionMap: (list) =>
+                      list.set(addingSession.id, addingSession),
+                  },
+                });
+                setCalendars(newCals);
 
-              //検索と永続化をリポジトリに隠蔽したいな。
-            }}
-            onEndTimeGo={(sId) => {
-              //要するに何をしたいかと言うと：
-              //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
+                //検索と永続化をリポジトリに隠蔽したいな。
+              }}
+              onEndTimeGo={(sId) => {
+                //要するに何をしたいかと言うと：
+                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
-              //検索
-              const session = calendars[calIndex].sessionMap.get(sId);
-              if (session === undefined) {
-                throw new Error("そんなことはありえないはず");
-              }
+                //検索
+                const session = calendars[calIndex].sessionMap.get(sId);
+                if (session === undefined) {
+                  throw new Error("そんなことはありえないはず");
+                }
 
-              //更新
-              const addingSession = session.changeEndTime(
-                new TimeDiff(+1, 1, 0)
-              );
+                //更新
+                const addingSession = session.changeEndTime(
+                  new TimeDiff(+1, 1, 0)
+                );
 
-              //永続化
-              const newCals = update(calendars, {
-                [calIndex]: {
-                  sessionMap: (list) =>
-                    list.set(addingSession.id, addingSession),
-                },
-              });
-              setCalendars(newCals);
+                //永続化
+                const newCals = update(calendars, {
+                  [calIndex]: {
+                    sessionMap: (list) =>
+                      list.set(addingSession.id, addingSession),
+                  },
+                });
+                setCalendars(newCals);
 
-              //検索と永続化をリポジトリに隠蔽したいな。
-            }}
-            onTimeRangeChange={(sId, diffHour) => {
-              //要するに何をしたいかと言うと：
-              //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
+                //検索と永続化をリポジトリに隠蔽したいな。
+              }}
+              onTimeRangeChange={(sId, diffHour) => {
+                //要するに何をしたいかと言うと：
+                //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
-              //検索
-              const session = calendars[calIndex].sessionMap.get(sId);
-              if (session === undefined) {
-                throw new Error("そんなことはありえないはず");
-              }
+                //検索
+                const session = calendars[calIndex].sessionMap.get(sId);
+                if (session === undefined) {
+                  throw new Error("そんなことはありえないはず");
+                }
 
-              //更新
+                //更新
 
-              const diffObj = new TimeDiff(
-                diffHour >= 0 ? 1 : -1,
-                Math.abs(Math.round(diffHour)),
-                0
-              );
+                const sessionFuture = (
+                  session: SessionEntity
+                ): SessionEntity => {
+                  const diffObj = new TimeDiff(
+                    diffHour >= 0 ? 1 : -1,
+                    Math.abs(Math.round(diffHour)),
+                    0
+                  );
+                  const addingSession = session
+                    .changeStartTime(diffObj)
+                    .changeEndTime(diffObj);
 
-              const addingSession = session
-                .changeStartTime(diffObj)
-                .changeEndTime(diffObj);
+                  return addingSession;
+                };
 
-              //永続化
-              const newCals = update(calendars, {
-                [calIndex]: {
-                  sessionMap: (list) =>
-                    list.set(addingSession.id, addingSession),
-                },
-              });
-              setCalendars(newCals);
-            }}
-          />
-        </div>
-      ))}
+                try {
+                  const futureSession = sessionFuture(session);
+
+                  //永続化
+                  const newCals = update(calendars, {
+                    [calIndex]: {
+                      sessionMap: (list) =>
+                        list.set(futureSession.id, futureSession),
+                    },
+                  });
+                  setCalendars(newCals);
+                } catch (e) {
+                  return;
+                }
+              }}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 })`
-  display: flex;
-  flex-direction: row;
+  .e-calendar-columns {
+    display: flex;
+    flex-direction: row;
 
-  > .e-column {
+    > .e-column {
+    }
   }
 `;
 

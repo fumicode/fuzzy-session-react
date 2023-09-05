@@ -1,5 +1,5 @@
 import { add, sub } from "date-fns";
-import zeroPadStr from "../Utils/01_zeroPadStr";
+import zeroPadStr from "../01_Utils/01_zeroPadStr";
 
 export default class FuzzyTime {
   //いったんファジーさの実装はおいておく。

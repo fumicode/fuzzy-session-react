@@ -8,7 +8,7 @@ import ViewModel from "./00_ViewModel";
 import ConflictsWarningSessionMap from "./20_ConflictsWarningSessionList";
 import { TimeRangeView } from "./10_TimeRange";
 import Conflict from "./20_Conflict";
-import ZIndexCalcurator from "../Utils/01_ZIndexCalcurator";
+import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
 
 class SessionBoxViewModel implements ViewModel<SessionEntitly> {
   public readonly sessionId: SessionId;
@@ -59,7 +59,7 @@ class DailyTimelineWithConflictsViewModel
     public readonly main: ConflictsWarningSessionMap,
     public readonly showsTime: boolean = true,
 
-    public onStartTimeBack: (sessionId: SessionId) => void,
+    public onStartTimeChange: (sessionId: SessionId) => void,
     public onStartTimeGo: (sessionId: SessionId) => void,
 
     public onEndTimeBack: (sessionId: SessionId) => void,
@@ -77,7 +77,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   main: { sessions, conflicts },
   showsTime,
 
-  onStartTimeBack,
+  onStartTimeChange,
   onStartTimeGo,
 
   onEndTimeBack,
@@ -243,7 +243,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
               <SessionView
                 main={session}
                 hourPx={hourPx}
-                onStartTimeBack={() => onStartTimeBack(session.id)}
+                onStartTimeChange={() => onStartTimeChange(session.id)}
                 onStartTimeGo={() => onStartTimeGo(session.id)}
                 onEndTimeBack={() => onEndTimeBack(session.id)}
                 onEndTimeGo={() => onEndTimeGo(session.id)}
