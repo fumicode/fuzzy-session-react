@@ -23,14 +23,17 @@ export default class ZIndexCalcurator{
 
   getZIndex(id: string){
     if(id === this.topId){
-      return this.maxZIndex + 1; 
+      return this.maxTopZIndex; 
     }
 
     return this.ids.indexOf(id);
   }
 
-  get maxZIndex(){
+  get maxNormalZIndex(){
     return this.ids.length;
+  }
+  get maxTopZIndex(){
+    return this.ids.length + (typeof this.topId === 'string' ? 1 : 0);
   }
 
 }

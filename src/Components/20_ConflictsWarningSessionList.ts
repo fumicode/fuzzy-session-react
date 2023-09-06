@@ -2,16 +2,16 @@ import SessionEntity, { SessionId } from "./20_SessionEntity";
 
 import Conflict from "./20_Conflict";
 
-export default class ConflictsWarningSessionMap {
+export default class Timeline {
   private readonly _conflicts: Conflict[];
 
   //あえて外に見せるkeyの型は、SessionIdにしている。
   //外からは、SessionIdで参照でき、内部的には確実なstringで参照できる。
   private readonly _sessions: Map<string, SessionEntity>; //TODO: これは、禁忌かもしれない。ID参照になおすべきかも。
 
-  constructor(sessions: SessionEntity[]) {
+  constructor(sessions: Iterable<SessionEntity>) {
     this._sessions = new Map(
-      sessions.map((session) => [session.id.toString(), session])
+      [...sessions].map((session) => [session.id.toString(), session])
     );
 
     this._conflicts = this.findConflicts(
@@ -36,18 +36,6 @@ export default class ConflictsWarningSessionMap {
   }
   get size(): number {
     return this._sessions.size;
-  }
-  entries(): IterableIterator<[SessionId, SessionEntity]> {
-    throw new Error("Method not implemented.");
-  }
-  keys(): IterableIterator<SessionId> {
-    throw new Error("Method not implemented.");
-  }
-  values(): IterableIterator<SessionEntity> {
-    throw new Error("Method not implemented.");
-  }
-  toJSON() {
-    throw new Error("Method not implemented.");
   }
 
   get [Symbol.toStringTag](): string {
@@ -84,4 +72,4 @@ export default class ConflictsWarningSessionMap {
   }
 }
 
-const ThisClass = ConflictsWarningSessionMap;
+const ThisClass = Timeline;

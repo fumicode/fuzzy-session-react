@@ -128,5 +128,3 @@ export class TimeDiff {
     return `${(`00` + this.hour).slice(-2)}:${(`00` + this.minute).slice(-2)}`;
   }
 }
-
-const ThisClass = TimeDiff;

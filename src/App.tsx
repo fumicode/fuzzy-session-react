@@ -1,4 +1,4 @@
-import ConflictsWarningSessionMap from "./Components/20_ConflictsWarningSessionList";
+import Timeline from "./Components/20_ConflictsWarningSessionList";
 import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
 import SessionEntity, { SessionFuture, SessionId } from "./Components/20_SessionEntity";
 import TimeRange from "./Components/10_TimeRange";
@@ -6,7 +6,6 @@ import { FC, useState } from "react";
 
 import styled from "styled-components";
 import update from "immutability-helper";
-import { TimeDiff } from "./Components/10_FuzzyTime";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
@@ -65,27 +64,24 @@ const ashitaroSessions: SessionEntity[] = [
   ),
 ];
 
-const inchoSessionMap = new ConflictsWarningSessionMap(inchoSessions);
-const taineiSessionMap = new ConflictsWarningSessionMap(taineiSessions);
-const ashitaroSessionMap = new ConflictsWarningSessionMap(ashitaroSessions);
 
 interface Calendar {
   title: string;
-  sessionMap: ConflictsWarningSessionMap;
+  sessionMap: Timeline;
 }
 
 const _calendars: Calendar[] = [
   {
     title: "院長",
-    sessionMap: inchoSessionMap,
+    sessionMap: new Timeline(inchoSessions)
   },
   {
     title: "タイ姉",
-    sessionMap: taineiSessionMap,
+    sessionMap: new Timeline(taineiSessions),
   },
   {
     title: "アシ太郎",
-    sessionMap: ashitaroSessionMap,
+    sessionMap: new Timeline(ashitaroSessions),
   },
 ];
 

@@ -5,7 +5,7 @@ import "core-js/features/array";
 
 import SessionEntitly, { SessionFuture, SessionId, SessionView } from "./20_SessionEntity";
 import ViewModel from "./00_ViewModel";
-import ConflictsWarningSessionMap from "./20_ConflictsWarningSessionList";
+import Calendar from "./20_ConflictsWarningSessionList";
 import { TimeRangeView } from "./10_TimeRange";
 import Conflict from "./20_Conflict";
 import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
@@ -31,33 +31,42 @@ class ConflictViewModel implements ViewModel<Conflict> {
   }
 
   private calcHorriblenessHue(horribleness: number): number {
-    const x = horribleness;
-
-    const x1 = 0,
-      y1 = 50,
-      x2 = 3,
-      y2 = 0;
-
-    if (x > x2) {
-      //とてもひどいなら真っ赤
-      return y2;
-    } else if (x < x1) {
-      //ちょっとかさなってるだけなら真っ黄
-      return y1;
-    }
-
-    const a = (y2 - y1) / (x2 - x1); //傾き
-    return a * (x - x1) + y1;
+    return scaleNumber(horribleness, {start:0, end:3}, {start:50, end:0});
   }
 }
 
+interface NumberRange{
+  start:number;
+  end:number;
+}
+
+function scaleNumber(input:number, from:NumberRange = {start:0, end:1}, to:NumberRange = {start:0, end:1} ): number {
+  const x = input;
+
+  const x1 = from.start,
+    y1 = to.start,
+    x2 = from.end,
+    y2 = to.end;
+
+  if (x > x2) {
+    //とてもひどいなら真っ赤
+    return y2;
+  } else if (x < x1) {
+    //ちょっとかさなってるだけなら真っ黄
+    return y1;
+  }
+
+  const a = (y2 - y1) / (x2 - x1); //傾き
+  return a * (x - x1) + y1;
+}
+
 class DailyTimelineWithConflictsViewModel
-  implements ViewModel<ConflictsWarningSessionMap>
+  implements ViewModel<Calendar>
 {
   className?: string | undefined;
 
   constructor(
-    public readonly main: ConflictsWarningSessionMap,
+    public readonly main: Calendar,
     public readonly showsTime: boolean = true,
 
     public onSessionChange: (sessionId: SessionId, future:SessionFuture) => void,
@@ -67,6 +76,8 @@ class DailyTimelineWithConflictsViewModel
     //const metaConflicts = this.main.conflicts;
   }
 }
+
+
 
 const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   className,
@@ -82,9 +93,9 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     SessionBoxViewModel | undefined
   >(undefined);
 
-  const sesBVMs = sessions.map(
-    (session) => new SessionBoxViewModel(session, 0)
-  );
+  const sesBVMs = new Map(sessions.map(
+    (session) => [session.id, new SessionBoxViewModel(session, 0)]
+  ));
 
   const hoursMax = 24;
   const hoursArray = [...Array(hoursMax).keys()];
@@ -99,37 +110,34 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   const [hourDiff, setHourDiff] = useState<number>(0);
 
   //const sessionsBelongsToHour = distributeSessionsToHours(sessions);
+  const leftUnitPx = 20;
 
-  const zIndexCalcurator = new ZIndexCalcurator(
-    sesBVMs
-      .sort((a,b)=>a.session.timeRange.compare(b.session.timeRange))
-      .map((vm) => vm.sessionId.toString())
-    ,
-    (grabbedSessionBVM?.sessionId.toString()) || hoveredSessionId?.toString()
-  );
 
-  conflicts.forEach((conflict) => {
+  conflicts
+    .forEach((conflict) => {
     //かぶってるやつのうしろのやつ
 
-    const baseSessionId = conflict.sessionIds[0];
-    const baseSessionVM = sesBVMs.find(
-      (sesVM) => sesVM.sessionId === baseSessionId
-    );
 
-    const slidingSessionId = conflict.sessionIds[1];
-    const slidingSessionVM = sesBVMs.find(
-      (sesVM) => sesVM.sessionId === slidingSessionId
-    );
+    const [prevSessionVM, nextSessionVM] = conflict.sessionIds.map((id) => sesBVMs.get(id));
 
-    if (baseSessionVM === undefined || slidingSessionVM === undefined) {
+
+    if (prevSessionVM === undefined || nextSessionVM === undefined) {
       // ありえないはず
       throw new Error(
         "コンフリクトがあるということは、その対象のセッションは必ず存在するはず。何かがおかしい。"
       );
     }
 
-    slidingSessionVM.leftPx = baseSessionVM.leftPx + 20;
+    nextSessionVM.leftPx = prevSessionVM.leftPx + leftUnitPx;
   });
+
+  const zIndexCalcurator = new ZIndexCalcurator(
+    Array.from(sesBVMs.values())
+      .sort((a,b)=>a.leftPx - b.leftPx)
+      .map((vm) => vm.sessionId.toString())
+    ,
+    (grabbedSessionBVM?.sessionId.toString()) || hoveredSessionId?.toString()
+  );
 
   const handleDragEnd = (currentY: number) => {
     if (!isDragging) {
@@ -196,7 +204,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
         </div>
       ))}
       <div className="e-contents">
-        {sesBVMs.map((sesBVM) => {
+        {[...sesBVMs.values()].map((sesBVM) => {
           const session = sesBVM.session;
 
           const x = sesBVM.leftPx;
@@ -207,6 +215,8 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
             : false;
 
           const passFuture = (future:SessionFuture) => onSessionChange(session.id, future);
+
+          const zIndex = zIndexCalcurator.getZIndex(sesBVM.sessionId.toString());
 
           return (
             <div
@@ -219,7 +229,9 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                   y +
                   "px",
                 left: x + "px",
-                zIndex: zIndexCalcurator.getZIndex(sesBVM.sessionId.toString()),
+                zIndex,
+                transform: `scale(${scaleNumber(x, {start:0, end:3 * leftUnitPx}, {start:1, end:1.2})})`,
+                boxShadow: isGrabbed ? "0 0 10px 5px rgba(0,0,0,0.5)" : "none",
               }}
               key={session.id.toString()}
               onClick={() => {
@@ -344,6 +356,7 @@ export const DailyTimelineWithConflictsView = styled(Component).withConfig({
     > .e-session-box {
       position: absolute;
       z-index: 1;
+      transform-origin: top left;
 
       > .e-grabbed-status {
         position: absolute;
