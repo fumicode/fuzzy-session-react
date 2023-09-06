@@ -1,4 +1,4 @@
-import Timeline from "./Components/20_ConflictsWarningSessionList";
+import Timeline from "./Components/20_Timeline";
 import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
 import SessionEntity, { SessionFuture, SessionId } from "./Components/20_SessionEntity";
 import TimeRange from "./Components/10_TimeRange";

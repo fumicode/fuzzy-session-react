@@ -3,9 +3,13 @@ import styled from "styled-components";
 
 import "core-js/features/array";
 
-import SessionEntitly, { SessionFuture, SessionId, SessionView } from "./20_SessionEntity";
+import SessionEntitly, {
+  SessionFuture,
+  SessionId,
+  SessionView,
+} from "./20_SessionEntity";
 import ViewModel from "./00_ViewModel";
-import Calendar from "./20_ConflictsWarningSessionList";
+import Timeline from "./20_Timeline";
 import { TimeRangeView } from "./10_TimeRange";
 import Conflict from "./20_Conflict";
 import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
@@ -31,16 +35,24 @@ class ConflictViewModel implements ViewModel<Conflict> {
   }
 
   private calcHorriblenessHue(horribleness: number): number {
-    return scaleNumber(horribleness, {start:0, end:3}, {start:50, end:0});
+    return scaleNumber(
+      horribleness,
+      { start: 0, end: 3 },
+      { start: 50, end: 0 }
+    );
   }
 }
 
-interface NumberRange{
-  start:number;
-  end:number;
+interface NumberRange {
+  start: number;
+  end: number;
 }
 
-function scaleNumber(input:number, from:NumberRange = {start:0, end:1}, to:NumberRange = {start:0, end:1} ): number {
+function scaleNumber(
+  input: number,
+  from: NumberRange = { start: 0, end: 1 },
+  to: NumberRange = { start: 0, end: 1 }
+): number {
   const x = input;
 
   const x1 = from.start,
@@ -60,23 +72,22 @@ function scaleNumber(input:number, from:NumberRange = {start:0, end:1}, to:Numbe
   return a * (x - x1) + y1;
 }
 
-class DailyTimelineWithConflictsViewModel
-  implements ViewModel<Calendar>
-{
+class DailyTimelineWithConflictsViewModel implements ViewModel<Timeline> {
   className?: string | undefined;
 
   constructor(
-    public readonly main: Calendar,
+    public readonly main: Timeline,
     public readonly showsTime: boolean = true,
 
-    public onSessionChange: (sessionId: SessionId, future:SessionFuture) => void,
-  ){
+    public onSessionChange: (
+      sessionId: SessionId,
+      future: SessionFuture
+    ) => void
+  ) {
     //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
     //const metaConflicts = this.main.conflicts;
   }
 }
-
-
 
 const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   className,
@@ -84,17 +95,18 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   showsTime,
 
   onSessionChange,
-
 }: DailyTimelineWithConflictsViewModel) => {
   //states
-  const [hoveredSessionId, setHoveredSessionId] = useState<SessionId | undefined>(undefined);
+  const [hoveredSessionId, setHoveredSessionId] = useState<
+    SessionId | undefined
+  >(undefined);
   const [grabbedSessionBVM, setGrabbedSessionBVM] = useState<
     SessionBoxViewModel | undefined
   >(undefined);
 
-  const sesBVMs = new Map(sessions.map(
-    (session) => [session.id, new SessionBoxViewModel(session, 0)]
-  ));
+  const sesBVMs = new Map(
+    sessions.map((session) => [session.id, new SessionBoxViewModel(session, 0)])
+  );
 
   const hoursMax = 24;
   const hoursArray = [...Array(hoursMax).keys()];
@@ -111,14 +123,12 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   //const sessionsBelongsToHour = distributeSessionsToHours(sessions);
   const leftUnitPx = 20;
 
-
-  conflicts
-    .forEach((conflict) => {
+  conflicts.forEach((conflict) => {
     //かぶってるやつのうしろのやつ
 
-
-    const [prevSessionVM, nextSessionVM] = conflict.sessionIds.map((id) => sesBVMs.get(id));
-
+    const [prevSessionVM, nextSessionVM] = conflict.sessionIds.map((id) =>
+      sesBVMs.get(id)
+    );
 
     if (prevSessionVM === undefined || nextSessionVM === undefined) {
       // ありえないはず
@@ -132,10 +142,9 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
 
   const zIndexCalcurator = new ZIndexCalcurator(
     Array.from(sesBVMs.values())
-      .sort((a,b)=>a.leftPx - b.leftPx)
-      .map((vm) => vm.sessionId.toString())
-    ,
-    (grabbedSessionBVM?.sessionId.toString()) || hoveredSessionId?.toString()
+      .sort((a, b) => a.leftPx - b.leftPx)
+      .map((vm) => vm.sessionId.toString()),
+    grabbedSessionBVM?.sessionId.toString() || hoveredSessionId?.toString()
   );
 
   const handleDragEnd = (currentY: number) => {
@@ -149,21 +158,17 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     const hourDiff = diff / hourPx;
 
     const timeRangeChangingFuture: SessionFuture = (session) => {
-      const diffObj = new TimeDiff(
-        Math.round(hourDiff)
-      );
+      const diffObj = new TimeDiff(Math.round(hourDiff));
       const addingSession = session.changeTimeRange(diffObj);
 
       return addingSession;
     };
-
 
     onSessionChange(dragTargetAndStartY.session.id, timeRangeChangingFuture);
 
     setDragTargetAndStartY(undefined);
     setHourDiff(0);
   };
-
 
   return (
     <div
@@ -213,12 +218,23 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
             ? sesBVM.sessionId.equals(grabbedSessionBVM.sessionId)
             : false;
 
-          const passFuture = (future:SessionFuture) => onSessionChange(session.id, future);
+          const passFuture = (future: SessionFuture) =>
+            onSessionChange(session.id, future);
 
-          const zIndex = zIndexCalcurator.getZIndex(sesBVM.sessionId.toString());
+          const zIndex = zIndexCalcurator.getZIndex(
+            sesBVM.sessionId.toString()
+          );
 
-          const layerScaleRatio = scaleNumber(x, {start:0, end:3 * leftUnitPx}, {start:1, end:1.1});
-          const shadowPx = scaleNumber(x, {start:0, end:3 * leftUnitPx}, {start:0, end:3});
+          const layerScaleRatio = scaleNumber(
+            x,
+            { start: 0, end: 3 * leftUnitPx },
+            { start: 1, end: 1.1 }
+          );
+          const shadowPx = scaleNumber(
+            x,
+            { start: 0, end: 3 * leftUnitPx },
+            { start: 0, end: 3 }
+          );
           return (
             <div
               className="e-session-box"
@@ -231,10 +247,16 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                   "px",
                 left: x + "px",
                 zIndex,
-                transform: isGrabbed ? `scale(1.1)`:`scale(${layerScaleRatio })`,
-                boxShadow: isGrabbed ? "0 0 10px 5px hsla(47,100%,49%,0.57)" :
-                  x > 0 ? `${shadowPx/3}px ${shadowPx/3}px ${shadowPx}px ${shadowPx}px rgba(0,0,0,0.5)` :
-                  'none',
+                transform: isGrabbed
+                  ? `scale(1.1)`
+                  : `scale(${layerScaleRatio})`,
+                boxShadow: isGrabbed
+                  ? "0 0 10px 5px hsla(47,100%,49%,0.57)"
+                  : x > 0
+                  ? `${shadowPx / 3}px ${
+                      shadowPx / 3
+                    }px ${shadowPx}px ${shadowPx}px rgba(0,0,0,0.5)`
+                  : "none",
               }}
               key={session.id.toString()}
               onClick={() => {
@@ -359,7 +381,8 @@ export const DailyTimelineWithConflictsView = styled(Component).withConfig({
     > .e-session-box {
       position: absolute;
       z-index: 1;
-      transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+      transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out,
+        left 0.2s ease-in-out;
       /*transform-origin: top left;*/
 
       > .e-grabbed-status {
