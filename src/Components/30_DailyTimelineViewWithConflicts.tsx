@@ -70,8 +70,7 @@ class DailyTimelineWithConflictsViewModel
     public readonly showsTime: boolean = true,
 
     public onSessionChange: (sessionId: SessionId, future:SessionFuture) => void,
-
-  ) {
+  ){
     //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
     //const metaConflicts = this.main.conflicts;
   }
@@ -218,6 +217,8 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
 
           const zIndex = zIndexCalcurator.getZIndex(sesBVM.sessionId.toString());
 
+          const layerScaleRatio = scaleNumber(x, {start:0, end:3 * leftUnitPx}, {start:1, end:1.1});
+          const shadowPx = scaleNumber(x, {start:0, end:3 * leftUnitPx}, {start:0, end:3});
           return (
             <div
               className="e-session-box"
@@ -230,8 +231,10 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                   "px",
                 left: x + "px",
                 zIndex,
-                transform: `scale(${scaleNumber(x, {start:0, end:3 * leftUnitPx}, {start:1, end:1.2})})`,
-                boxShadow: isGrabbed ? "0 0 10px 5px rgba(0,0,0,0.5)" : "none",
+                transform: isGrabbed ? `scale(1.1)`:`scale(${layerScaleRatio })`,
+                boxShadow: isGrabbed ? "0 0 10px 5px hsla(47,100%,49%,0.57)" :
+                  x > 0 ? `${shadowPx/3}px ${shadowPx/3}px ${shadowPx}px ${shadowPx}px rgba(0,0,0,0.5)` :
+                  'none',
               }}
               key={session.id.toString()}
               onClick={() => {
@@ -356,7 +359,8 @@ export const DailyTimelineWithConflictsView = styled(Component).withConfig({
     > .e-session-box {
       position: absolute;
       z-index: 1;
-      transform-origin: top left;
+      transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+      /*transform-origin: top left;*/
 
       > .e-grabbed-status {
         position: absolute;
