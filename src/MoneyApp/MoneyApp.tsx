@@ -4,53 +4,35 @@ import ViewModel from "../Components/00_ViewModel";
 
 import { FC } from "react";
 import styled from "styled-components";
+import Money from "./Money";
+import Wallet from "./WalletEntity";
 
 
 
-class Money{
-  constructor(
-    readonly amount: number
-  ){ }
-
-  subtract(amount:number){
-    return new Money(this.amount - amount);
-  }
-
-  toString(){
-    return '¥'+this.amount.toString();
-  }
-}
 
 
-class MoneyAppViewModel implements ViewModel<string>{
-  constructor(
-    readonly main: string,
-    readonly className?: string,
-  ){ }
-}
+const MoneyApp: FC = styled(({
+  className
+}: {className:string}) => {
+  const a = new Wallet(1, new Money(10000));
+  const b = new Wallet(2, new Money(2000));
+  const c = new Wallet(3, new Money(300));
 
-const DB = {
-  moneyAmount: new Money(1_0000),
-
-}
-
-const MoneyApp: FC<MoneyAppViewModel> = styled(({
-  main: gaiaCode,
-  className: c
-}: MoneyAppViewModel) => {
+  const wallets = [a, b, c];
   return (
-  <table className={c}>
-    <tbody>
+    <>
+      <h1>Point Flow</h1>
 
-      <tr>
-        <td>
-          {DB.moneyAmount.toString()}
-
-        </td>
-      </tr>
-
-    </tbody>
-  </table>
+      <table className={className}>
+        <tbody>
+          {wallets.map(w=>
+            <tr>
+              <th>{w.id}</th> <td> {w.toString()} </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </>
   );
 })`
 border-collapse: collapse;
