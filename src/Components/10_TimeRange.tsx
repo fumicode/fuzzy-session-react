@@ -51,13 +51,11 @@ export default class TimeRange {
   }
 
   get startHour(): number {
-    return this.start.hour;
-    //TODO ここで、parseIntを使うのは、よくない。
+    return this.start.hour + this.start.minute / 60;
   }
 
   get endHour(): number {
-    return this.end.hour;
-    //TODO ここで、parseIntを使うのは、よくない。
+    return this.end.hour + this.end.minute / 60;
   }
 
   get durationHour(): number {
@@ -65,7 +63,7 @@ export default class TimeRange {
     const endDate = new Date(`2023-08-22T${this.end.toString()}`);
 
     //TODO: 簡易的な計算!!!! いずれ、date-fnsなどのlibを使って厳密に計算したい。
-    const duration = endDate.getHours() - startDate.getHours();
+    const duration = (endDate.getHours() + endDate.getMinutes()/60) - (startDate.getHours() + startDate.getMinutes()/60);
 
     return duration;
   }

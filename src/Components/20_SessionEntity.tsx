@@ -140,10 +140,10 @@ export const SessionView: FC<SessionViewModel> = styled(
     const hoursNum = timeRange.durationHour;
 
     const startTimeBackFuture: SessionFuture = (session: SessionEntity) =>
-      session.changeStartTime(new TimeDiff("-", 1, 0));
+      session.changeStartTime(new TimeDiff("-", 0, 15));
 
     const startTimeGoFuture: SessionFuture = (session: SessionEntity) =>
-      session.changeStartTime(new TimeDiff("+", 1, 0));
+      session.changeStartTime(new TimeDiff("+", 0, 15));
 
     const endTimeBackFuture: SessionFuture = (session: SessionEntity) =>
       session.changeEndTime(new TimeDiff("-", 1, 0));

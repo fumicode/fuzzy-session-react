@@ -6,6 +6,7 @@ import { FC, useState } from "react";
 
 import styled from "styled-components";
 import update from "immutability-helper";
+import GaiaCode, { GaiaCodeView, ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
@@ -116,10 +117,16 @@ const App: FC = styled((props: { className: string }) => {
     }
   }
 
+  const code:ThreeRows  = [
+    [5, 8, 9, 5, 5, 9, 8],
+    [0, 3, 6, 0, 0, 6, 3],
+    [5, 3, 1, 5, 5, 1, 3],
+  ];
 
 
   return (
     <div className={className}>
+
       <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
       <div className="e-calendar-columns">
         {calendars.map((cal, calIndex) => {
@@ -139,6 +146,12 @@ const App: FC = styled((props: { className: string }) => {
           )
         })}
       </div>
+
+
+        {/**? 
+      <h1>ガイアコード！</h1>
+      <GaiaCodeView main={new GaiaCode(code)}/>
+*/}
     </div>
   );
 })`

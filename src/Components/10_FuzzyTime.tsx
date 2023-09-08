@@ -92,7 +92,9 @@ export class TimeDiff {
     if (typeof sign === 'number') {
       const signedHour = sign;
       sign = signedHour >= 0 ? '+' : '-';
-      hour = Math.abs(signedHour);
+      const abs =  Math.abs(signedHour);
+      hour =  Math.round(abs);
+      minute =  Math.round((abs % 1)*4) * 60 / 4;
     }
 
     if (!isPlusOrMinus(sign)) {

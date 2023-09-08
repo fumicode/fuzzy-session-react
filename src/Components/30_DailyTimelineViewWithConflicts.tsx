@@ -158,7 +158,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     const hourDiff = diff / hourPx;
 
     const timeRangeChangingFuture: SessionFuture = (session) => {
-      const diffObj = new TimeDiff(Math.round(hourDiff));
+      const diffObj = new TimeDiff(hourDiff);
       const addingSession = session.changeTimeRange(diffObj);
 
       return addingSession;
@@ -228,7 +228,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
           const layerScaleRatio = scaleNumber(
             x,
             { start: 0, end: 3 * leftUnitPx },
-            { start: 1, end: 1.1 }
+            { start: 1, end: 1 }
           );
           const shadowPx = scaleNumber(
             x,
@@ -248,7 +248,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                 left: x + "px",
                 zIndex,
                 transform: isGrabbed
-                  ? `scale(1.1)`
+                  ? `scale(1)`
                   : `scale(${layerScaleRatio})`,
                 boxShadow: isGrabbed
                   ? "0 0 10px 5px hsla(47,100%,49%,0.57)"
