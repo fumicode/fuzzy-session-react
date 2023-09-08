@@ -111,7 +111,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   const hoursMax = 24;
   const hoursArray = [...Array(hoursMax).keys()];
 
-  const hourPx = 30;
+  const hourPx = 50;
 
   const [dragTargetAndStartY, setDragTargetAndStartY] = useState<
     { session: SessionEntitly; startY: number } | undefined
@@ -121,7 +121,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   const [hourDiff, setHourDiff] = useState<number>(0);
 
   //const sessionsBelongsToHour = distributeSessionsToHours(sessions);
-  const leftUnitPx = 20;
+  const leftUnitPx = 80;
 
   conflicts.forEach((conflict) => {
     //かぶってるやつのうしろのやつ
