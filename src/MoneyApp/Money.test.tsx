@@ -15,7 +15,6 @@ test('お金を分けることができる', () => {
   expect(splitted.amount).toBe(4000);
 });
 
-
 test('お金を合わせることができる', () => {
   //given
   const a = new Money(10000);

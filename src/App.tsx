@@ -6,7 +6,7 @@ import { FC, useState } from "react";
 
 import styled from "styled-components";
 import update from "immutability-helper";
-import GaiaCode, { GaiaCodeView, ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
+import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
 import MoneyApp from "./MoneyApp/MoneyApp";
 
 let inchoSessions: SessionEntity[] = [
