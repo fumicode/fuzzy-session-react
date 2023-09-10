@@ -3,6 +3,7 @@ import ViewModel from "../Components/00_ViewModel";
 import { FC, useState } from "react";
 import styled from "styled-components";
 import Wallet, { WalletId } from "./WalletEntity";
+import { SessionId } from "../Components/20_SessionEntity";
 
 export interface WalletControllViewModel extends ViewModel<Wallet> {
   otherWallets: Wallet[];
@@ -58,16 +59,14 @@ export const WalletControlView: FC<WalletControllViewModel> = styled(
           円
           <select onChange={(e)=>{
             
-            const w = otherWallets.find((w)=>w.id === parseInt(e.target.value));
-            if(w){
-              console.log(w.id);
-              setDistinationWalletId(w.id);
-            }
+            const w = otherWallets.find((w)=>w.id.equals(new WalletId(e.target.value)));
+
+            setDistinationWalletId(w?.id||undefined);
           }}>
             <option value={undefined} />
             {otherWallets.map((distinationWallet) => (
-              <option value={distinationWallet.id} key={distinationWallet.id}>
-                {distinationWallet.id}
+              <option value={distinationWallet.id.toString()} key={distinationWallet.id.toString()}>
+                {distinationWallet.id.toString()}
               </option>
             ))}
           </select>

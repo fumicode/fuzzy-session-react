@@ -1,7 +1,18 @@
 import Money from "./Money";
 
+export class WalletId{
+  constructor(
+    readonly value: string
+  ){ }
 
-export type WalletId = number;
+  toString(){
+    return this.value;
+  }
+
+  equals(other: WalletId){
+    return this.value === other.value;
+  }
+}
   
 
 export default class Wallet{
@@ -27,9 +38,8 @@ export default class Wallet{
   }
 
   sendMoney(otherWallet: Wallet, amount: number): [Wallet, Wallet]{
-
     if(otherWallet.id === this.id){
-      throw new Error(`自分自身${this.id}に${otherWallet.id}送金することはできません。`);
+      throw new Error(`自分自身${this.id}に送金することはできません。`);
     }
 
     if(!(amount > 0)){

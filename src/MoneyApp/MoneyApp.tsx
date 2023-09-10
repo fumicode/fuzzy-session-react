@@ -10,11 +10,10 @@ import { WalletControlView } from "./WalletControlView";
 
 
 const MoneyApp: FC = styled(({ className }: { className: string }) => {
-
   const [wallets, setWallets]  = useState<Wallet[]>([
-    new Wallet(100, new Money(10000)),
-    new Wallet(200, new Money(2000)),
-    new Wallet(300, new Money(300))
+    new Wallet(new WalletId('田中'), new Money(10000)),
+    new Wallet(new WalletId('佐藤'), new Money(2000)),
+    new Wallet(new WalletId('石井'), new Money(300))
   ]);
 
   const calcSum = (wallets: Iterable<Wallet>) =>
@@ -31,24 +30,34 @@ const MoneyApp: FC = styled(({ className }: { className: string }) => {
     senderFuture: (sender: Wallet, receiver: Wallet) => [Wallet, Wallet],
   ) => {
     //検索
-    const senderWallet = wallets.find((w)=>w.id === senderWalletId);
-    const receiverWallet = wallets.find((w)=>w.id === receiverWalletId);
+    const senderWallet = wallets.find((w)=>w.id.equals(senderWalletId));
+    const receiverWallet = wallets.find((w)=>w.id.equals(receiverWalletId));
 
-    if(senderWallet === undefined || receiverWallet === undefined){
-      throw new Error(`指定されたウォレット${senderWalletId.toString()}->${receiverWalletId.toString()}が見つかりませんでした。`);
+    try{
+      if(senderWallet === undefined || receiverWallet === undefined){
+        throw new Error(`指定されたウォレット${senderWalletId.toString()}->${receiverWalletId.toString()}が見つかりませんでした。`);
+      }
+
+      //更新
+      const [newSenderWallet, newReceiverWallet] = senderFuture(senderWallet, receiverWallet);
+
+      //永続化
+      const sendedWallets = update(wallets, {
+        $splice: [
+          [wallets.findIndex((w)=>w.id.equals(senderWalletId)), 1, newSenderWallet],
+          [wallets.findIndex((w)=>w.id.equals(receiverWalletId)), 1, newReceiverWallet]
+        ],
+      });
+      setWallets(sendedWallets);
     }
-
-    //更新
-    const [newSenderWallet, newReceiverWallet] = senderFuture(senderWallet, receiverWallet);
-
-    //永続化
-    const sendedWallets = update(wallets, {
-      $splice: [
-        [wallets.findIndex((w)=>w.id === senderWalletId), 1, newSenderWallet],
-        [wallets.findIndex((w)=>w.id === receiverWalletId), 1, newReceiverWallet]
-      ],
-    });
-    setWallets(sendedWallets);
+    catch(e){
+      if(e instanceof Error){
+        alert(e.message);
+      }
+      else{
+        alert(e);
+      }
+    }
   }
 
   return (
@@ -58,8 +67,8 @@ const MoneyApp: FC = styled(({ className }: { className: string }) => {
       <table className={className}>
         <tbody>
           {wallets.map((thisWallet) => (
-            <tr key={thisWallet.id}>
-              <th>{thisWallet.id}</th>
+            <tr key={thisWallet.id.toString()}>
+              <th>{thisWallet.id.toString()}</th>
               <td> {thisWallet.toString()} </td>
               <td>
                 <WalletControlView 
