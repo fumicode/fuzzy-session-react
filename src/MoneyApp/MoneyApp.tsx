@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import ViewModel from "../Components/00_ViewModel";
+import ViewModel from "../00_Framework/00_ViewModel";
 
 import update from "immutability-helper";
 import { FC, useState } from "react";
