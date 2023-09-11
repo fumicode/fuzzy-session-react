@@ -12,7 +12,7 @@ export const peekIntoFuture = <T>(
   }
 };
 
-export const errorReason = <T>(
+export const calcErrorReason = <T>(
   entity: T,
   future: Future<T>
 ): string | undefined => {
