@@ -8,6 +8,7 @@ import crypto from "crypto";
 import { TimeDiff } from "./10_FuzzyTime";
 
 import classNames from "classnames";
+import { Future, peekIntoFuture } from "../00_Framework/00_Future";
 
 export class SessionId {
   private readonly _value: string;
@@ -15,23 +16,19 @@ export class SessionId {
   static fromString(str: string): SessionId {
     return new SessionId(str);
   }
-
   constructor(value: string | undefined = undefined) {
     if (value === undefined) {
       //TODO: なぜかcrypto.randomUUIDが使えないので、簡易的なやりかた
       value = crypto.randomBytes(20).toString("hex");
     }
-
     this._value = value;
   }
-
   toString(mode: string | undefined = undefined): string {
     if (mode === "short") {
       return this._value.substring(0, 8);
     }
     return this._value;
   }
-
   equals(otherId: SessionId): boolean {
     return this._value === otherId._value;
   }
@@ -39,7 +36,6 @@ export class SessionId {
 
 export default class SessionEntity {
   readonly id: SessionId;
-
   constructor(
     id: SessionId | undefined,
     readonly title: string,
@@ -51,11 +47,9 @@ export default class SessionEntity {
     }
     this.id = id;
   }
-
   overlaps(otherSession: SessionEntity): TimeRange | undefined {
     return this.timeRange.overlaps(otherSession.timeRange);
   }
-
   changeStartTime(diff: TimeDiff): this {
     return new ThisClass(
       this.id,
@@ -64,7 +58,6 @@ export default class SessionEntity {
       this
     ) as this;
   }
-
   changeEndTime(diff: TimeDiff): this {
     return new ThisClass(
       this.id,
@@ -73,7 +66,6 @@ export default class SessionEntity {
       this
     ) as this;
   }
-
   changeTimeRange(diff: TimeDiff): this {
     const nextState = new ThisClass(
       this.id,
@@ -84,27 +76,23 @@ export default class SessionEntity {
       ),
       this
     );
-
     //diffの向きに変化した場合のみ、変更する。
     //=diffと違う向きに変化したら、例外を投げる。
     const sign: number = parseInt(diff.sign + "1");
-
-
-    const diffDirection = this.timeRange.start.compare(nextState.timeRange.start) * -1;
-
+    const diffDirection =
+      this.timeRange.start.compare(nextState.timeRange.start) * -1;
     if (diffDirection * sign < 0) {
       throw new Error(
         `changeTimeRange: diff.sign === ${diff.sign}, but start time has changed to different direction`
       );
     }
-
     return nextState as this;
   }
 }
 
 const ThisClass = SessionEntity;
 
-export type SessionFuture = (s: SessionEntity) => SessionEntity;
+export type SessionFuture = Future<SessionEntity>;
 
 export interface SessionViewModel extends ViewModel<SessionEntity> {
   //className,
@@ -151,17 +139,7 @@ export const SessionView: FC<SessionViewModel> = styled(
     const endTimeGoFuture: SessionFuture = (session: SessionEntity) =>
       session.changeEndTime(new TimeDiff("+", 0, 15));
 
-    const peekIntoFuture = (
-      session: SessionEntity,
-      future: SessionFuture
-    ): boolean => {
-      try {
-        future(session);
-        return true;
-      } catch (e) {
-        return false;
-      }
-    };
+    
 
     return (
       <section
