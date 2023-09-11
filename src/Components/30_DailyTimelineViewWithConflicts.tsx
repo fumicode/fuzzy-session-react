@@ -8,7 +8,7 @@ import SessionEntitly, {
   SessionId,
   SessionView,
 } from "./20_SessionEntity";
-import ViewModel from "./00_ViewModel";
+import ViewModel from "../00_Framework/00_ViewModel";
 import Timeline from "./20_Timeline";
 import { TimeRangeView } from "./10_TimeRange";
 import Conflict from "./20_Conflict";

@@ -94,7 +94,7 @@ export class TimeDiff {
       sign = signedHour >= 0 ? '+' : '-';
       const absTime =  Math.abs(signedHour);
       hour =  Math.floor(absTime);
-      const hourDividingNumber = 4;
+      const hourDividingNumber = 6;
       //ここにこの知識を埋め込むのどうなん？というのはある。
       minute =  Math.round((absTime - hour)*hourDividingNumber) * 60 / hourDividingNumber;
     }

@@ -1,7 +1,12 @@
 export default class Money{
   constructor(
     readonly amount: number
-  ){ }
+  ){
+    if(!(amount >= 0)){
+      throw new Error(`お金はマイナスにはなり得ません。このままだと${amount}円になってしまいます。`);
+    }
+
+  }
 
   split(splittingAmount:number): [Money, Money]{
     if(!(splittingAmount > 0)){
