@@ -6,7 +6,7 @@ import { FC, useState } from "react";
 import styled from "styled-components";
 import Money from "./Money";
 import Wallet, { WalletId } from "./WalletEntity";
-import { WalletControlView } from "./WalletControlView";
+import { WalletControlView, WalletPairFuture } from "./WalletControlView";
 
 const MoneyApp: FC = styled(({ className }: { className: string }) => {
   const [wallets, setWallets] = useState<Wallet[]>([
@@ -25,7 +25,7 @@ const MoneyApp: FC = styled(({ className }: { className: string }) => {
 
   const handleWalletPairChange = (
     [senderWalletId, receiverWalletId]: [WalletId, WalletId],
-    senderFuture: ([sender, receiver]:[Wallet, Wallet]) => [Wallet, Wallet]
+    senderFuture: WalletPairFuture 
   ) => {
     //検索
     const senderWallet = wallets.find((w) => w.id.equals(senderWalletId));

@@ -5,17 +5,18 @@ import styled from "styled-components";
 import Wallet, { WalletId } from "./WalletEntity";
 import { Future, errorReason, peekIntoFuture } from "../00_Framework/00_Future";
 
+export type WalletPairFuture = Future<[Wallet | undefined, Wallet | undefined]>; //送金元、送金先
+
 export interface WalletControllViewModel extends ViewModel<Wallet> {
   otherWallets: Wallet[];
 
   onWalletChange: (
     [senderWalletId, receiverWalletId]: [WalletId, WalletId],
-    walletsFuture: ([sender, receiver]:[Wallet, Wallet]) => [Wallet, Wallet]
+    walletsFuture: WalletPairFuture 
   ) => void;
 }
 
 
-type WalletPairFuture = Future<[Wallet, Wallet]>; //送金元、送金先
 
 
 export const WalletControlView: FC<WalletControllViewModel> = styled(
@@ -35,8 +36,14 @@ export const WalletControlView: FC<WalletControllViewModel> = styled(
 
     const createWalletPairSendMoneyFuture: (amount:number | undefined) => WalletPairFuture = (amount: number | undefined)=>{
       return ([thisWallet, distinationWallet]) => {
+        if(!thisWallet){
+          throw new Error(`送信元のウォレットを指定してください。`);
+        }
+        if(!distinationWallet){
+          throw new Error(`送信先のウォレットを指定してください。`);
+        }
         if(!(amount && amount >= 0)){
-          throw new Error(`総金額はいくらですか？正の整数が必要です。頂いた値：${amount}`);
+          throw new Error(`送金額はいくらですか？正の整数が必要です。頂いた値：${amount}`);
         }
         return thisWallet.sendMoney(distinationWallet, amount);
       };
@@ -93,16 +100,16 @@ export const WalletControlView: FC<WalletControllViewModel> = styled(
           <button
             className="e-submit-button"
             disabled={!(
-              allInfoIsFilled && 
               peekIntoFuture([thisWallet, distinationWallet], createWalletPairSendMoneyFuture(amount))
             )} 
-          type="submit">
+            type="submit"
+          >
             送る
             <div className="e-disabled-reason-container">
               <div className="e-box">
                 ⚠️
                 {
-                  allInfoIsFilled && errorReason([thisWallet, distinationWallet], createWalletPairSendMoneyFuture(amount))
+                  errorReason([thisWallet, distinationWallet], createWalletPairSendMoneyFuture(amount))
                 }
               </div>
             </div>

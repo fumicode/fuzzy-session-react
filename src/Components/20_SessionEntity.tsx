@@ -117,9 +117,7 @@ export const SessionView: FC<SessionViewModel> = styled(
     hourPx,
 
     onStartTimeChange,
-
     onEndTimeChange,
-
     onDragStart,
 
     isHovered,
@@ -139,7 +137,6 @@ export const SessionView: FC<SessionViewModel> = styled(
     const endTimeGoFuture: SessionFuture = (session: SessionEntity) =>
       session.changeEndTime(new TimeDiff("+", 0, 15));
 
-    
 
     return (
       <section

@@ -1,6 +1,6 @@
 
 import classNames from "classnames";
-import ViewModel from "../00_ViewModel";
+import ViewModel from "../../00_Framework/00_ViewModel";
 
 import { FC } from "react";
 import styled from "styled-components";
