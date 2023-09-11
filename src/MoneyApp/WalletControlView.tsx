@@ -3,7 +3,7 @@ import ViewModel from "../00_Framework/00_ViewModel";
 import { FC, useState } from "react";
 import styled from "styled-components";
 import Wallet, { WalletId } from "./WalletEntity";
-import { Future, errorReason, peekIntoFuture } from "../00_Framework/00_Future";
+import { Future, calcErrorReason, peekIntoFuture } from "../00_Framework/00_Future";
 
 export type WalletPairFuture = Future<[Wallet | undefined, Wallet | undefined]>; //送金元、送金先
 
@@ -15,9 +15,6 @@ export interface WalletControllViewModel extends ViewModel<Wallet> {
     walletsFuture: WalletPairFuture 
   ) => void;
 }
-
-
-
 
 export const WalletControlView: FC<WalletControllViewModel> = styled(
   ({
@@ -34,7 +31,8 @@ export const WalletControlView: FC<WalletControllViewModel> = styled(
 
     const distinationWallet = otherWallets.find((w) =>distinationWalletId && w.id.equals(distinationWalletId));
 
-    const createWalletPairSendMoneyFuture: (amount:number | undefined) => WalletPairFuture = (amount: number | undefined)=>{
+    const createWalletPairSendMoneyFuture: (amount:number | undefined) => WalletPairFuture = 
+    (amount: number | undefined)=>{
       return ([thisWallet, distinationWallet]) => {
         if(!thisWallet){
           throw new Error(`送信元のウォレットを指定してください。`);
@@ -45,11 +43,12 @@ export const WalletControlView: FC<WalletControllViewModel> = styled(
         if(!(amount && amount >= 0)){
           throw new Error(`送金額はいくらですか？正の整数が必要です。頂いた値：${amount}`);
         }
+
         return thisWallet.sendMoney(distinationWallet, amount);
       };
     }
 
-    const allInfoIsFilled =  distinationWallet && amount && amount >= 0;
+    const errorReason = calcErrorReason([thisWallet, distinationWallet], createWalletPairSendMoneyFuture(amount));
     return (
       <div className={className}>
         <form
@@ -91,6 +90,7 @@ export const WalletControlView: FC<WalletControllViewModel> = styled(
               <option
                 value={distinationWallet.id.toString()}
                 key={distinationWallet.id.toString()}
+                disabled={distinationWallet.id.equals(thisWallet.id)}
               >
                 {distinationWallet.id.toString()}
               </option>
@@ -105,59 +105,89 @@ export const WalletControlView: FC<WalletControllViewModel> = styled(
             type="submit"
           >
             送る
-            <div className="e-disabled-reason-container">
-              <div className="e-box">
-                ⚠️
-                {
-                  errorReason([thisWallet, distinationWallet], createWalletPairSendMoneyFuture(amount))
-                }
-              </div>
-            </div>
+            {
+              errorReason &&
+
+                <div className="e-disabled-reason-container">
+                  <div className="e-box">
+                    ⚠️
+                    {errorReason }
+                  </div>
+                </div>
+            }
           </button>
         </form>
       </div>
     );
   }
 )`
-  display: flex;
+display: flex;
 
-  >.e-form{
+>.e-form{
 
-    >.e-submit-button{
-      position: relative;
+  >.e-submit-button{
+    position: relative;
 
-      &[disabled]:hover{
+    &[disabled]:hover{
 
-        >.e-disabled-reason-container{
-          display: block;
-        }
-      }
-      
       >.e-disabled-reason-container{
-        display: none;
+        display: block;
+      }
+    }
+    
+    >.e-disabled-reason-container{
+      display: none;
+      position: absolute;
+        top: 0;
+        left: auto;
+        right: auto;
+
+
+      >.e-box{
+        text-align:left;
         position: absolute;
-          top: 0;
-          left: auto;
-          right: auto;
+          bottom: 0;
+        
 
+        
+        padding: 0.5ex;
+        line-height: 1;
+        white-space: nowrap;
+        max-width: 20em;
 
-        >.e-box{
-          position: absolute;
-            bottom: 0;
+        color: #fff;
+        border-radius: 2px;
+
+        background: rgba(0,0,0,0.5);
+
+        &:hover{
+          white-space: normal;
+          min-width: 20em;
+
           
-          padding: 0.5ex;
-          line-height: 1;
-          white-space: nowrap;
-          max-width: 20em;
-
-          color: #fff;
-          border-radius: 2px;
-
-          background: rgba(0,0,0,0.5);
+          &::after{
+            display: none;
+          }
         }
 
+        &::after{
+          content: " ";
+
+          position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+          width: 3em;
+
+          //右がだんだん白くなるグラデーション
+          background: linear-gradient(to left, hsla(0,100%,100%,1) 20%, hsla(0,100%,100%,0) 100%);
+          
+
+        }
       }
 
     }
+
   }
+}
 `;
