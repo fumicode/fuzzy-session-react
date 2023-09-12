@@ -7,6 +7,7 @@ import styled from "styled-components";
 import Money from "./Money";
 import WalletEntity, { WalletId } from "./WalletEntity";
 import { WalletSendMoneyView, WalletPairAction } from "./WalletSendMoneyView";
+import MoneyAmountRateView from "./MoneyAmountRateView";
 
 
 const capitalAlphabets: string = "ABCDEFGHIJKLM";
@@ -164,8 +165,6 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
           })}
           {[...receiverWallets.values()].map((thisWallet) => {
 
-            const percentage = thisWallet.money.amount / sum.amount * 100;
-            const cssVariableStyle = { "--percentage": `${percentage}%` } as React.CSSProperties;
 
             const info = sharingInfo.find((info)=> info.customerName === thisWallet.id.value);
             return (
@@ -175,11 +174,7 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
                 <td
                   className="e-money-amount"
                 >
-                  <div className="e-money-amount-div"
-                    style={cssVariableStyle}
-                  >
-                    {thisWallet.money.toString()}{" "}
-                  </div>
+                  <MoneyAmountRateView main={thisWallet.money} max={sum}/>
                 </td>
               </tr>
             );
@@ -213,27 +208,6 @@ border-collapse: collapse;
   .e-money-amount {
     padding: 0;
     margin: 0;
-    .e-money-amount-div {
-      position: relative;
-      width: 10ex;
-      --percentage: 50%;
-      height: 1em;
-
-      text-align: right;
-
-      &::before {
-        position: absolute;
-          top:0;
-          left:0;
-          bottom:0;
-          z-index: -1;
-        content: " ";
-        display: block;
-        width: var(--percentage);
-        background: hsla(200, 50%, 50%, 0.2);
-        transition: width 0.5s ease-in-out;
-      }
-    }
   }
 }
 
