@@ -85,6 +85,8 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
   const receiverWallets = new Map(wallets);
         receiverWallets.delete('弊社');
 
+  console.log({receiverWallets, wallets});
+        
   return (
     <>
       <h1>Point Flow</h1>
@@ -103,6 +105,8 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
             const percentage = originalWallet.money.amount / sum.amount * 100;
             const cssVariableStyle = { "--percentage": `${percentage}%` } as React.CSSProperties;
 
+            console.log({walletsvalues: [...wallets.values()]});
+            
             return (
               <tr key={originalWallet.id.toString()}>
                 <th>{originalWallet.id.toString()}</th>

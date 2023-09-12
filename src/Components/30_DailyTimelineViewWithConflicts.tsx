@@ -90,6 +90,17 @@ class DailyTimelineWithConflictsViewModel implements ViewModel<Timeline> {
   }
 }
 
+const createTimeRangeChangingAction = (hourDiff:number): SessionAction => {
+  const timeRangeChangingAction: SessionAction = (session) => {
+    const diffObj = new TimeDiff(hourDiff);
+    const addingSession = session.changeTimeRange(diffObj);
+
+    return addingSession;
+  };
+
+  return timeRangeChangingAction;
+}
+
 const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   className,
   main: { sessions, conflicts },
@@ -158,12 +169,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     const diff = currentY - oldY;
     const hourDiff = diff / hourPx;
 
-    const timeRangeChangingAction: SessionAction = (session) => {
-      const diffObj = new TimeDiff(hourDiff);
-      const addingSession = session.changeTimeRange(diffObj);
-
-      return addingSession;
-    };
+    const timeRangeChangingAction = createTimeRangeChangingAction(hourDiff);
 
     onTheSessionChange(dragTargetAndStartY.session.id, timeRangeChangingAction);
 

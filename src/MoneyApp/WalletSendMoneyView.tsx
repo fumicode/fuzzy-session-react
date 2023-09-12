@@ -52,6 +52,12 @@ export const WalletSendMoneyView: FC<WalletSendMoneyViewModel> = styled(
     const [distinationWalletId, setDistinationWalletId] = useState<
       WalletId | undefined
     >(undefined);
+    console.log({otherWallets: [...otherWallets]});
+    
+
+    if(Array.from(otherWallets).length === 0){
+      throw new Error("送金先がありません。");
+    }
 
     const distinationWallet = [...otherWallets].find(
       (w) => distinationWalletId && w.id.equals(distinationWalletId)
