@@ -8,7 +8,7 @@ import crypto from "crypto";
 import { TimeDiff } from "./10_FuzzyTime";
 
 import classNames from "classnames";
-import { Future, peekIntoFuture } from "../00_Framework/00_Future";
+import { Action, peekIntoFuture } from "../00_Framework/00_Action";
 
 export class SessionId {
   private readonly _value: string;
@@ -92,7 +92,7 @@ export default class SessionEntity {
 
 const ThisClass = SessionEntity;
 
-export type SessionFuture = Future<SessionEntity>;
+export type SessionAction = Action<SessionEntity>;
 
 export interface SessionViewModel extends ViewModel<SessionEntity> {
   //className,
@@ -100,14 +100,24 @@ export interface SessionViewModel extends ViewModel<SessionEntity> {
 
   hourPx: number;
 
-  onStartTimeChange: (sessionFuture: SessionFuture) => void;
-
-  onEndTimeChange: (sessionFuture: SessionFuture) => void;
-
+  onStartTimeChange: (sessionAction: SessionAction) => void;
+  onEndTimeChange: (sessionAction: SessionAction) => void;
   onDragStart: (startY: number) => void;
 
   isHovered: boolean;
 }
+
+export const startTimeBackAction: SessionAction = (session: SessionEntity) =>
+  session.changeTimeRange(new TimeDiff("-", 0, 15));
+
+export const startTimeGoAction: SessionAction = (session: SessionEntity) =>
+  session.changeTimeRange(new TimeDiff("+", 0, 15));
+
+export const endTimeBackAction: SessionAction = (session: SessionEntity) =>
+  session.changeEndTime(new TimeDiff("-", 0, 15));
+
+export const endTimeGoAction: SessionAction = (session: SessionEntity) =>
+  session.changeEndTime(new TimeDiff("+", 0, 15));
 
 export const SessionView: FC<SessionViewModel> = styled(
   ({
@@ -125,17 +135,6 @@ export const SessionView: FC<SessionViewModel> = styled(
     const timeRange = session.timeRange;
     const hoursNum = timeRange.durationHour;
 
-    const startTimeBackFuture: SessionFuture = (session: SessionEntity) =>
-      session.changeTimeRange(new TimeDiff("-", 0, 15));
-
-    const startTimeGoFuture: SessionFuture = (session: SessionEntity) =>
-      session.changeTimeRange(new TimeDiff("+", 0, 15));
-
-    const endTimeBackFuture: SessionFuture = (session: SessionEntity) =>
-      session.changeEndTime(new TimeDiff("-", 0, 15));
-
-    const endTimeGoFuture: SessionFuture = (session: SessionEntity) =>
-      session.changeEndTime(new TimeDiff("+", 0, 15));
 
 
     return (
@@ -175,18 +174,18 @@ export const SessionView: FC<SessionViewModel> = styled(
           <div className="e-control-buttons m-start">
             <button
               className="e-button m-up"
-              disabled={!peekIntoFuture(session, startTimeBackFuture)}
-              onClick={(e) => {
-                onStartTimeChange(startTimeBackFuture);
+              disabled={!peekIntoFuture(session, startTimeBackAction)}
+              onClick={() => {
+                onStartTimeChange(startTimeBackAction);
               }}
             >
               ▲
             </button>
             <button
               className="e-button m-down"
-              disabled={!peekIntoFuture(session, startTimeGoFuture)}
-              onClick={(e) => {
-                onStartTimeChange(startTimeGoFuture);
+              disabled={!peekIntoFuture(session, startTimeGoAction)}
+              onClick={() => {
+                onStartTimeChange(startTimeGoAction);
               }}
             >
               ▼
@@ -195,18 +194,18 @@ export const SessionView: FC<SessionViewModel> = styled(
           <div className="e-control-buttons m-end">
             <button
               className="e-button m-up"
-              disabled={!peekIntoFuture(session, endTimeBackFuture)}
-              onClick={(e) => {
-                onEndTimeChange(endTimeBackFuture);
+              disabled={!peekIntoFuture(session, endTimeBackAction)}
+              onClick={() => {
+                onEndTimeChange(endTimeBackAction);
               }}
             >
               ▲
             </button>
             <button
               className="e-button m-down"
-              disabled={!peekIntoFuture(session, endTimeGoFuture)}
-              onClick={(e) => {
-                onEndTimeChange(endTimeGoFuture);
+              disabled={!peekIntoFuture(session, endTimeGoAction)}
+              onClick={() => {
+                onEndTimeChange(endTimeGoAction);
               }}
             >
               ▼

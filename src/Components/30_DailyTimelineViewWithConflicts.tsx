@@ -4,7 +4,7 @@ import styled from "styled-components";
 import "core-js/features/array";
 
 import SessionEntitly, {
-  SessionFuture,
+  SessionAction,
   SessionId,
   SessionView,
 } from "./20_SessionEntity";
@@ -72,6 +72,7 @@ function scaleNumber(
   return a * (x - x1) + y1;
 }
 
+//TODO: classなのはいいのだろうか？
 class DailyTimelineWithConflictsViewModel implements ViewModel<Timeline> {
   className?: string | undefined;
 
@@ -79,9 +80,9 @@ class DailyTimelineWithConflictsViewModel implements ViewModel<Timeline> {
     public readonly main: Timeline,
     public readonly showsTime: boolean = true,
 
-    public onSessionChange: (
+    public onTheSessionChange: (
       sessionId: SessionId,
-      future: SessionFuture
+      action: SessionAction
     ) => void
   ) {
     //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
@@ -94,7 +95,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   main: { sessions, conflicts },
   showsTime,
 
-  onSessionChange,
+  onTheSessionChange
 }: DailyTimelineWithConflictsViewModel) => {
   //states
   const [hoveredSessionId, setHoveredSessionId] = useState<
@@ -157,14 +158,14 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     const diff = currentY - oldY;
     const hourDiff = diff / hourPx;
 
-    const timeRangeChangingFuture: SessionFuture = (session) => {
+    const timeRangeChangingAction: SessionAction = (session) => {
       const diffObj = new TimeDiff(hourDiff);
       const addingSession = session.changeTimeRange(diffObj);
 
       return addingSession;
     };
 
-    onSessionChange(dragTargetAndStartY.session.id, timeRangeChangingFuture);
+    onTheSessionChange(dragTargetAndStartY.session.id, timeRangeChangingAction);
 
     setDragTargetAndStartY(undefined);
     setHourDiff(0);
@@ -218,8 +219,8 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
             ? sesBVM.sessionId.equals(grabbedSessionBVM.sessionId)
             : false;
 
-          const passFuture = (future: SessionFuture) =>
-            onSessionChange(session.id, future);
+          const onSessionChange = (action: SessionAction) =>
+            onTheSessionChange(session.id, action);
 
           const zIndex = zIndexCalcurator.getZIndex(
             sesBVM.sessionId.toString()
@@ -287,8 +288,8 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
               <SessionView
                 main={session}
                 hourPx={hourPx}
-                onStartTimeChange={passFuture}
-                onEndTimeChange={passFuture}
+                onStartTimeChange={onSessionChange}
+                onEndTimeChange={onSessionChange}
                 onDragStart={(startY: number) => {
                   setDragTargetAndStartY({ session, startY });
                 }}

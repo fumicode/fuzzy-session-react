@@ -8,11 +8,23 @@ import Money from "./Money";
 import Wallet, { WalletId } from "./WalletEntity";
 import { WalletSendMoneyView, WalletPairAction } from "./WalletSendMoneyView";
 
-const MoneyApp: FC = styled(({ className }: { className: string }) => {
+
+const capitalAlphabets: string = "ABCDEFGHIJKLM";
+
+const sharingInfo: { customerName:string, percentage: number }[] = Array.from(capitalAlphabets).map((c, index) => {
+  return { 
+    customerName: "お客様"+c, 
+    percentage: index % 2 === 0 ? 5 : 3
+  };
+});
+
+const SharingApp: FC = styled(({ className }: { className: string }) => {
+
   const [wallets, setWallets] = useState<Wallet[]>([
-    new Wallet(new WalletId("田中"), new Money(10000)),
-    new Wallet(new WalletId("佐藤"), new Money(2000)),
-    new Wallet(new WalletId("石井"), new Money(300)),
+    new Wallet(new WalletId("合同会社社長のミカタ"), new Money(1000000)),
+    ...sharingInfo.map((info) => 
+      new Wallet(new WalletId(info.customerName), new Money(0)),
+    )
   ]);
 
   const calcSum = (wallets: Iterable<Wallet>) =>
@@ -76,18 +88,78 @@ const MoneyApp: FC = styled(({ className }: { className: string }) => {
         <thead>
           <tr>
             <th>ユーザー</th>
+            <th>分配率</th>
             <th>所持金</th>
             <th>操作</th>
           </tr>
         </thead>
         <tbody>
-          {wallets.map((thisWallet) => {
+          {wallets.slice(0, 1).map((originalWallet) => {
+            const percentage = originalWallet.money.amount / sum.amount * 100;
+            const cssVariableStyle = { "--percentage": `${percentage}%` } as React.CSSProperties;
+
+            return (
+              <tr key={originalWallet.id.toString()}>
+                <th>{originalWallet.id.toString()}</th>
+                <td></td>
+                <td
+                  className="e-money-amount"
+                >
+                  <div className="e-money-amount-div"
+                    style={cssVariableStyle}
+                  >
+                    {originalWallet.money.toString()}{" "}
+                  </div>
+                </td>
+                <td>
+                  <WalletSendMoneyView
+                    main={originalWallet}
+                    otherWallets={wallets}
+                    onWalletChange={handleWalletPairChange}
+                  />
+                  <button onClick={(e)=>{
+                    const totalPercentage = sharingInfo.reduce((memo, info)=> memo + info.percentage, 0);
+                    if(totalPercentage >= 100){
+                      throw new Error ("分配率の合計が100%を超えています。");
+                    }
+
+                    const totalMoney = originalWallet.money.amount;
+                    let newOriginalWallet = originalWallet;
+
+                    const receiverWallets = wallets.slice(1);
+                    const newReceiverWallets = receiverWallets.map((w)=>{
+                      const info = sharingInfo.find((info)=> info.customerName === w.id.value);
+                      if(!info){
+                        throw new Error ("分配先の情報が見つかりませんでした。");
+                      }
+
+                      const newMoney = Math.floor(totalMoney * info.percentage / 100);
+
+                      let newW: Wallet;
+                      [newOriginalWallet, newW] = newOriginalWallet.sendMoney(w, newMoney);
+
+
+                      return newW;
+                    });
+
+                    setWallets([newOriginalWallet, ...newReceiverWallets]);
+                  }}>
+                    分配率に応じて分配
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+          {wallets.slice(1).map((thisWallet) => {
 
             const percentage = thisWallet.money.amount / sum.amount * 100;
             const cssVariableStyle = { "--percentage": `${percentage}%` } as React.CSSProperties;
+
+            const info = sharingInfo.find((info)=> info.customerName === thisWallet.id.value);
             return (
               <tr key={thisWallet.id.toString()}>
                 <th>{thisWallet.id.toString()}</th>
+                <td>{info?.percentage && (info.percentage + '%')}</td>
                 <td
                   className="e-money-amount"
                 >
@@ -97,13 +169,6 @@ const MoneyApp: FC = styled(({ className }: { className: string }) => {
                     {thisWallet.money.toString()}{" "}
                   </div>
                 </td>
-                <td>
-                  <WalletSendMoneyView
-                    main={thisWallet}
-                    otherWallets={wallets}
-                    onWalletChange={handleWalletPairChange}
-                  />
-                </td>
               </tr>
             );
           })}
@@ -111,6 +176,7 @@ const MoneyApp: FC = styled(({ className }: { className: string }) => {
         <tfoot>
           <tr>
             <th>計</th>
+            <td></td>
             <td className="e-sum-amount">{sum.toString()}</td>
           </tr>
         </tfoot>
@@ -171,4 +237,4 @@ border-collapse: collapse;
 }
 `;
 
-export default MoneyApp;
+export default SharingApp;
