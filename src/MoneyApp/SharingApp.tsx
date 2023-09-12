@@ -21,7 +21,7 @@ const sharingInfo: { customerName:string, percentage: number }[] = Array.from(ca
 const SharingApp: FC = styled(({ className }: { className: string }) => {
 
   const [wallets, setWallets] = useState<Wallet[]>([
-    new Wallet(new WalletId("合同会社社長のミカタ"), new Money(1000000)),
+    new Wallet(new WalletId("弊社"), new Money(1000000)),
     ...sharingInfo.map((info) => 
       new Wallet(new WalletId(info.customerName), new Money(0)),
     )
