@@ -60,6 +60,7 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
           `Actionの結果、新しいウォレットペアのどちらか( ${senderWalletId.toString()} -> ${receiverWalletId.toString()} )が空になりました。削除したいってこと？`
         );
       }
+
       //永続化
       const sendedWallets = update(wallets, {
         $add: [
@@ -82,10 +83,9 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
     throw new Error("弊社のウォレットが見つかりませんでした。");
   }
 
-  const receiverWallets = new Map(wallets);
+  const receiverWallets = new Map([...wallets]);
         receiverWallets.delete('弊社');
 
-  console.log({receiverWallets, wallets});
         
   return (
     <>
@@ -105,8 +105,7 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
             const percentage = originalWallet.money.amount / sum.amount * 100;
             const cssVariableStyle = { "--percentage": `${percentage}%` } as React.CSSProperties;
 
-            console.log({walletsvalues: [...wallets.values()]});
-            
+
             return (
               <tr key={originalWallet.id.toString()}>
                 <th>{originalWallet.id.toString()}</th>
@@ -123,7 +122,7 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
                 <td>
                   <WalletSendMoneyView
                     main={originalWallet}
-                    otherWallets={wallets.values()}
+                    otherWallets={[...wallets.values()]}
                     onWalletChange={handleWalletPairChange}
                   />
                   <button onClick={(e)=>{
