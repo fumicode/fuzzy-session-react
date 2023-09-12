@@ -103,8 +103,6 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
         </thead>
         <tbody>
           {[originalWallet].map((originalWallet) => {
-            const percentage = originalWallet.money.amount / sum.amount * 100;
-            const cssVariableStyle = { "--percentage": `${percentage}%` } as React.CSSProperties;
 
 
             return (
@@ -114,11 +112,7 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
                 <td
                   className="e-money-amount"
                 >
-                  <div className="e-money-amount-div"
-                    style={cssVariableStyle}
-                  >
-                    {originalWallet.money.toString()}{" "}
-                  </div>
+                  <MoneyAmountRateView main={originalWallet.money} max={sum}/>
                 </td>
                 <td>
                   <WalletSendMoneyView
