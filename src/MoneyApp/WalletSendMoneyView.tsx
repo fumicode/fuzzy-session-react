@@ -2,17 +2,17 @@ import ViewModel from "../00_Framework/00_ViewModel";
 
 import { FC, useState } from "react";
 import styled from "styled-components";
-import Wallet, { WalletId } from "./WalletEntity";
+import WalletEntity, { WalletId } from "./WalletEntity";
 import {
   Action,
   calcErrorReason,
   peekIntoFuture,
 } from "../00_Framework/00_Action";
 
-export type WalletPairAction = Action<[Wallet|undefined, Wallet|undefined]>; //送金元、送金先
+export type WalletPairAction = Action<[WalletEntity|undefined, WalletEntity|undefined]>; //送金元、送金先
 
-export interface WalletSendMoneyViewModel extends ViewModel<Wallet> {
-  otherWallets: Wallet[];
+export interface WalletSendMoneyViewModel extends ViewModel<WalletEntity> {
+  otherWallets: Iterable<WalletEntity>;
 
   onWalletChange: (
     [senderWalletId, receiverWalletId]: [WalletId, WalletId],
@@ -53,7 +53,7 @@ export const WalletSendMoneyView: FC<WalletSendMoneyViewModel> = styled(
       WalletId | undefined
     >(undefined);
 
-    const distinationWallet = otherWallets.find(
+    const distinationWallet = [...otherWallets].find(
       (w) => distinationWalletId && w.id.equals(distinationWalletId)
     );
 
@@ -90,7 +90,7 @@ export const WalletSendMoneyView: FC<WalletSendMoneyViewModel> = styled(
           円
           <select
             onChange={(e) => {
-              const w = otherWallets.find((w) =>
+              const w = [...otherWallets].find((w) =>
                 w.id.equals(new WalletId(e.target.value))
               );
 
@@ -98,7 +98,7 @@ export const WalletSendMoneyView: FC<WalletSendMoneyViewModel> = styled(
             }}
           >
             <option value={undefined} />
-            {otherWallets.map((distinationWallet) => (
+            {[...otherWallets].map((distinationWallet) => (
               <option
                 value={distinationWallet.id.toString()}
                 key={distinationWallet.id.toString()}

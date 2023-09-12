@@ -5,7 +5,7 @@ import update from "immutability-helper";
 import { FC, useState } from "react";
 import styled from "styled-components";
 import Money from "./Money";
-import Wallet, { WalletId } from "./WalletEntity";
+import WalletEntity, { WalletId } from "./WalletEntity";
 import { WalletSendMoneyView, WalletPairAction } from "./WalletSendMoneyView";
 
 
@@ -20,28 +20,28 @@ const sharingInfo: { customerName:string, percentage: number }[] = Array.from(ca
 
 const SharingApp: FC = styled(({ className }: { className: string }) => {
 
-  const [wallets, setWallets] = useState<Wallet[]>([
-    new Wallet(new WalletId("弊社"), new Money(1000000)),
+  const [wallets, setWallets] = useState(new Map<string, WalletEntity>([
+    ["弊社", new WalletEntity(new WalletId("弊社"), new Money(1000000))],
     ...sharingInfo.map((info) => 
-      new Wallet(new WalletId(info.customerName), new Money(0)),
+      [info.customerName, new WalletEntity(new WalletId(info.customerName), new Money(0))] as [string, WalletEntity]
     )
-  ]);
+  ]));
 
-  const calcSum = (wallets: Iterable<Wallet>) =>
+  const calcSum = (wallets: Iterable<WalletEntity>) =>
     [...wallets].reduce(
-      (memo: Money, other: Wallet) => memo.merge(other.money),
+      (memo: Money, other: WalletEntity) => memo.merge(other.money),
       new Money(0)
     );
 
-  const sum = calcSum(wallets);
+  const sum = calcSum(wallets.values());
 
   const handleWalletPairChange = (
     [senderWalletId, receiverWalletId]: [WalletId, WalletId],
     walletPairAction: WalletPairAction 
   ) => {
     //検索
-    const senderWallet = wallets.find((w) => w.id.equals(senderWalletId));
-    const receiverWallet = wallets.find((w) => w.id.equals(receiverWalletId));
+    const senderWallet   = wallets.get(senderWalletId.value);
+    const receiverWallet = wallets.get(receiverWalletId.value);
 
     try {
       if (senderWallet === undefined || receiverWallet === undefined) {
@@ -55,19 +55,16 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
         [senderWallet, receiverWallet]
       );
 
+      if(newSenderWallet === undefined || newReceiverWallet === undefined){
+        throw new Error(
+          `Actionの結果、新しいウォレットペアのどちらか( ${senderWalletId.toString()} -> ${receiverWalletId.toString()} )が空になりました。削除したいってこと？`
+        );
+      }
       //永続化
       const sendedWallets = update(wallets, {
-        $splice: [
-          [
-            wallets.findIndex((w) => w.id.equals(senderWalletId)),
-            1,
-            newSenderWallet,
-          ],
-          [
-            wallets.findIndex((w) => w.id.equals(receiverWalletId)),
-            1,
-            newReceiverWallet,
-          ],
+        $add: [
+          [newSenderWallet.id.value, newSenderWallet],
+          [newReceiverWallet.id.value, newReceiverWallet],
         ],
       });
       setWallets(sendedWallets);
@@ -79,6 +76,14 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
       }
     }
   };
+
+  const originalWallet = wallets.get("弊社");
+  if(originalWallet === undefined){
+    throw new Error("弊社のウォレットが見つかりませんでした。");
+  }
+
+  const receiverWallets = new Map(wallets);
+        receiverWallets.delete('弊社');
 
   return (
     <>
@@ -94,7 +99,7 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
           </tr>
         </thead>
         <tbody>
-          {wallets.slice(0, 1).map((originalWallet) => {
+          {[originalWallet].map((originalWallet) => {
             const percentage = originalWallet.money.amount / sum.amount * 100;
             const cssVariableStyle = { "--percentage": `${percentage}%` } as React.CSSProperties;
 
@@ -114,7 +119,7 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
                 <td>
                   <WalletSendMoneyView
                     main={originalWallet}
-                    otherWallets={wallets}
+                    otherWallets={wallets.values()}
                     onWalletChange={handleWalletPairChange}
                   />
                   <button onClick={(e)=>{
@@ -126,8 +131,8 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
                     const totalMoney = originalWallet.money.amount;
                     let newOriginalWallet = originalWallet;
 
-                    const receiverWallets = wallets.slice(1);
-                    const newReceiverWallets = receiverWallets.map((w)=>{
+
+                    const newReceiverWallets = [...receiverWallets.values()].map((w)=>{
                       const info = sharingInfo.find((info)=> info.customerName === w.id.value);
                       if(!info){
                         throw new Error ("分配先の情報が見つかりませんでした。");
@@ -135,14 +140,18 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
 
                       const newMoney = Math.floor(totalMoney * info.percentage / 100);
 
-                      let newW: Wallet;
+                      let newW: WalletEntity;
                       [newOriginalWallet, newW] = newOriginalWallet.sendMoney(w, newMoney);
 
 
                       return newW;
                     });
 
-                    setWallets([newOriginalWallet, ...newReceiverWallets]);
+                    setWallets(new Map([
+                      [newOriginalWallet.id.toString(), newOriginalWallet],
+                      ...(newReceiverWallets.map((w)=> 
+                      [w.id.toString(), w] as [string, WalletEntity]))
+                    ]));
                   }}>
                     分配率に応じて分配
                   </button>
@@ -150,7 +159,7 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
               </tr>
             );
           })}
-          {wallets.slice(1).map((thisWallet) => {
+          {[...receiverWallets.values()].map((thisWallet) => {
 
             const percentage = thisWallet.money.amount / sum.amount * 100;
             const cssVariableStyle = { "--percentage": `${percentage}%` } as React.CSSProperties;

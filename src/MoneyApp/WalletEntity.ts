@@ -15,26 +15,26 @@ export class WalletId{
 }
   
 
-export default class Wallet{
+export default class WalletEntity{
   constructor(
     readonly id: WalletId,
     readonly money: Money
   ){ }
 
-  disposeMoney(disposingAmount:number): [Wallet, Money]{
+  disposeMoney(disposingAmount:number): [WalletEntity, Money]{
     if(!(disposingAmount > 0)){
       throw new Error('放棄する金額は正の値である必要があります。');
     }
 
     const [money, rest] = this.money.split(disposingAmount);
-    return [new Wallet(this.id, money), rest];
+    return [new WalletEntity(this.id, money), rest];
   }
 
-  receiveMoney(otherMoney: Money): Wallet{
-    return new Wallet(this.id, this.money.merge(otherMoney));
+  receiveMoney(otherMoney: Money): WalletEntity{
+    return new WalletEntity(this.id, this.money.merge(otherMoney));
   }
 
-  sendMoney(otherWallet: Wallet, amount: number): [Wallet, Wallet]{
+  sendMoney(otherWallet: WalletEntity, amount: number): [WalletEntity, WalletEntity]{
     if(otherWallet.id === this.id){
       throw new Error(`自分自身（${this.id}）に送金することはできません。`);
     }

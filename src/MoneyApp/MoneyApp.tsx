@@ -5,19 +5,19 @@ import update from "immutability-helper";
 import { FC, useState } from "react";
 import styled from "styled-components";
 import Money from "./Money";
-import Wallet, { WalletId } from "./WalletEntity";
+import WalletEntity, { WalletId } from "./WalletEntity";
 import { WalletSendMoneyView, WalletPairAction } from "./WalletSendMoneyView";
 
 const MoneyApp: FC = styled(({ className }: { className: string }) => {
-  const [wallets, setWallets] = useState<Wallet[]>([
-    new Wallet(new WalletId("田中"), new Money(10000)),
-    new Wallet(new WalletId("佐藤"), new Money(2000)),
-    new Wallet(new WalletId("石井"), new Money(300)),
+  const [wallets, setWallets] = useState<WalletEntity[]>([
+    new WalletEntity(new WalletId("田中"), new Money(10000)),
+    new WalletEntity(new WalletId("佐藤"), new Money(2000)),
+    new WalletEntity(new WalletId("石井"), new Money(300)),
   ]);
 
-  const calcSum = (wallets: Iterable<Wallet>) =>
+  const calcSum = (wallets: Iterable<WalletEntity>) =>
     [...wallets].reduce(
-      (memo: Money, other: Wallet) => memo.merge(other.money),
+      (memo: Money, other: WalletEntity) => memo.merge(other.money),
       new Money(0)
     );
 
