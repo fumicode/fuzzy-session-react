@@ -1,11 +1,11 @@
-export type Future<T> = (current: T) => T;
+export type Action<T> = (current: T) => T;
 
 export const peekIntoFuture = <T>(
   session: T,
-  future: Future<T>
+  action: Action<T>
 ): boolean => {
   try {
-    future(session);
+    action(session);
     return true;
   } catch (e) {
     return false;
@@ -14,10 +14,10 @@ export const peekIntoFuture = <T>(
 
 export const calcErrorReason = <T>(
   entity: T,
-  future: Future<T>
+  action: Action<T>
 ): string | undefined => {
   try {
-    future(entity);
+    action(entity);
     return undefined;
   } catch (e) {
     if(e instanceof Error)

@@ -21,6 +21,8 @@ export default class Money{
 
   toString(){
     //カンマつけたい。
-    return '¥'+this.amount.toString();
+    return '¥'+Number(this.amount).toLocaleString();
   }
 }
+
+

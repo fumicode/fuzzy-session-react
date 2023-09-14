@@ -1,6 +1,6 @@
 import Timeline from "./Components/20_Timeline";
 import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
-import SessionEntity, { SessionFuture, SessionId } from "./Components/20_SessionEntity";
+import SessionEntity, { SessionAction, SessionId } from "./Components/20_SessionEntity";
 import TimeRange from "./Components/10_TimeRange";
 import { FC, useState } from "react";
 
@@ -8,6 +8,7 @@ import styled from "styled-components";
 import update from "immutability-helper";
 import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
 import MoneyApp from "./MoneyApp/MoneyApp";
+import SharingApp from "./MoneyApp/SharingApp";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
@@ -91,7 +92,7 @@ const App: FC = styled((props: { className: string }) => {
   const { className } = props;
   const [calendars, setCalendars] = useState<Calendar[]>(_calendars);
 
-  const goIntoFutureCalendar = (calIndex:number, sId: SessionId, sessionFuture: SessionFuture) => {
+  const goIntoFutureCalendar = (calIndex:number, sId: SessionId, sessionAction: SessionAction) => {
     //要するに何をしたいかと言うと：
     //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
@@ -102,7 +103,7 @@ const App: FC = styled((props: { className: string }) => {
     }
 
     try{
-      const futureSession = sessionFuture(session);
+      const futureSession = sessionAction(session);
 
       //永続化
       const newCals = update(calendars, {
@@ -127,22 +128,23 @@ const App: FC = styled((props: { className: string }) => {
 
   return (
     <div className={className}>
-      <MoneyApp/>
+      <SharingApp/>
+      {/*<MoneyApp/>*/}
 
       <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
       <div className="e-calendar-columns">
         {calendars.map((cal, calIndex) => {
           const goIntoFutureSession =  (
             sId:SessionId, 
-            future:SessionFuture
-          ) => goIntoFutureCalendar(calIndex, sId, future);
+            action:SessionAction
+          ) => goIntoFutureCalendar(calIndex, sId, action);
           return (
             <div className="e-column" key={calIndex}>
               <h2>{cal.title}</h2>
               <DailyTimelineWithConflictsView
                 main={cal.sessionMap}
                 showsTime={calIndex === 0}
-                onSessionChange = { goIntoFutureSession }
+                onTheSessionChange = { goIntoFutureSession }
               />
             </div>
           )
