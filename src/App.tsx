@@ -9,6 +9,7 @@ import update from "immutability-helper";
 import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
 import MoneyApp from "./MoneyApp/MoneyApp";
 import SharingApp from "./MoneyApp/SharingApp";
+import PanelSystem from "./00_Framework/02_PanelSystem";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
@@ -127,9 +128,15 @@ const App: FC = styled((props: { className: string }) => {
 
 
   return (
+    <PanelSystem main="hogehoge" name="fugafuga" width={100}/>
+
+
+  );
+
+    /*
     <div className={className}>
       <SharingApp/>
-      {/*<MoneyApp/>*/}
+      <MoneyApp/>
 
       <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
       <div className="e-calendar-columns">
@@ -152,12 +159,11 @@ const App: FC = styled((props: { className: string }) => {
       </div>
 
 
-        {/**? 
       <h1>ガイアコード！</h1>
       <GaiaCodeView main={new GaiaCode(code)}/>
-*/}
     </div>
-  );
+    */
+  
 })`
   .e-calendar-columns {
     display: flex;
