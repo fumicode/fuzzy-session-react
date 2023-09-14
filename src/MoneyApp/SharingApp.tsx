@@ -8,6 +8,7 @@ import Money from "./Money";
 import WalletEntity, { WalletId } from "./WalletEntity";
 import { WalletSendMoneyView, WalletPairAction } from "./WalletSendMoneyView";
 import MoneyAmountRateView from "./MoneyAmountRateView";
+import WalletsDistributeButtonView, { DistributerReceiversAction } from "./WalletsDistributeButtonView";
 
 
 const capitalAlphabets: string = "ABCDEFGHIJKLM";
@@ -18,6 +19,8 @@ const sharingInfo: { customerName:string, percentage: number }[] = Array.from(ca
     percentage: index % 2 === 0 ? 5 : 3
   };
 });
+
+const sharingInfoMap = new Map(sharingInfo.map((obj) => [obj.customerName, obj.percentage ]));
 
 const SharingApp: FC = styled(({ className }: { className: string }) => {
 
@@ -79,6 +82,64 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
     }
   };
 
+  const handleDistributeExecute = (
+    [distributerWalletId, receiverWalletIds]: [WalletId, Set<WalletId>],
+    distributerReceiversAction: DistributerReceiversAction
+  ):void => {
+
+    //検索
+    const distributerWallet   = wallets.get(distributerWalletId.value);
+    const receiverWallets = [...receiverWalletIds]
+      .map((id)=> wallets.get(id.value))
+      .filter<WalletEntity>((w):w is WalletEntity => w instanceof WalletEntity);
+
+
+    try {
+      if (distributerWallet === undefined || receiverWallets === undefined) {
+        throw new Error(
+          `指定されたウォレット${distributerWalletId.toString()}->${[...receiverWalletIds].map((id)=>id.toString())}が見つかりませんでした。`
+        );
+      }
+      if (receiverWalletIds.size !== receiverWallets.length){
+        throw new Error(
+          `一部のidのreceiver walletがみつからなかったようです。`
+        );
+      }
+
+      //更新
+      const {distributer: newDistributerWallet, receivers: newReceiverWallets} = distributerReceiversAction(
+        {
+          distributer:distributerWallet, 
+          receivers: new Map(receiverWallets.map((rw)=>[rw?.id.toString() || "", rw]))
+        }
+      );
+
+      if(newDistributerWallet === undefined || newReceiverWallets === undefined){
+        throw new Error(
+          `Actionの結果、新しいウォレットペアのどちらか( ${distributerWalletId.toString()} -> ${receiverWalletIds.toString()} )が空になりました。削除したいってこと？`
+        );
+      }
+
+      //永続化
+      const sendedWallets = update(wallets, {
+        $add: [
+          [newDistributerWallet.id.value, newDistributerWallet],
+          ...newReceiverWallets
+        ],
+      });
+      setWallets(sendedWallets);
+
+    } catch (e) {
+      if (e instanceof Error) {
+        alert(e.message);
+      } else {
+        alert(e);
+      }
+    }
+
+
+  }
+
   const originalWallet = wallets.get("弊社");
   if(originalWallet === undefined){
     throw new Error("弊社のウォレットが見つかりませんでした。");
@@ -120,39 +181,14 @@ const SharingApp: FC = styled(({ className }: { className: string }) => {
                     otherWallets={[...wallets.values()]}
                     onWalletChange={handleWalletPairChange}
                   />
-                  <button onClick={(e)=>{
-                    const totalPercentage = sharingInfo.reduce((memo, info)=> memo + info.percentage, 0);
-                    if(totalPercentage >= 100){
-                      throw new Error ("分配率の合計が100%を超えています。");
+                  <WalletsDistributeButtonView  
+                    main={originalWallet} 
+                    receiverWallets={receiverWallets} 
+                    sharingInfo={sharingInfoMap} 
+                    onDistributeExecute={
+                      handleDistributeExecute
                     }
-
-                    const totalMoney = originalWallet.money.amount;
-                    let newOriginalWallet = originalWallet;
-
-
-                    const newReceiverWallets = [...receiverWallets.values()].map((w)=>{
-                      const info = sharingInfo.find((info)=> info.customerName === w.id.value);
-                      if(!info){
-                        throw new Error ("分配先の情報が見つかりませんでした。");
-                      }
-
-                      const newMoney = Math.floor(totalMoney * info.percentage / 100);
-
-                      let newW: WalletEntity;
-                      [newOriginalWallet, newW] = newOriginalWallet.sendMoney(w, newMoney);
-
-
-                      return newW;
-                    });
-
-                    setWallets(new Map([
-                      [newOriginalWallet.id.toString(), newOriginalWallet],
-                      ...(newReceiverWallets.map((w)=> 
-                      [w.id.toString(), w] as [string, WalletEntity]))
-                    ]));
-                  }}>
-                    分配率に応じて分配
-                  </button>
+                  />
                 </td>
               </tr>
             );
