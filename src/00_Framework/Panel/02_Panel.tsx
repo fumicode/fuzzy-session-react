@@ -101,6 +101,7 @@ export const Panel: FC<PanelProps> = styled(
       }
 
       /////
+
       console.log("parentSize", parentSize);
 
       const r = new SmartRect(panel.getBoundingClientRect(), parentSize);
@@ -121,10 +122,14 @@ export const Panel: FC<PanelProps> = styled(
       phase,
     ]);
 
+    const isMoved = rect
+      ? Math.abs(rect.x - position.x) > 0 || Math.abs(rect.y - position.y) > 0
+      : false;
+
     useEffect(() => {
       console.log("useEffect reset phase");
-      setPhase(0);
-    }, []);
+      setPhase(isMoved ? 0 : 1);
+    }, [phase]);
 
     return (
       <article className={className} ref={panelRef} style={{ zIndex: z }}>
@@ -228,6 +233,7 @@ export const Panel: FC<PanelProps> = styled(
     flex-shrink: 1;
 
     overflow: scroll;
+    transition: background 0.9s;
     p {
       margin: 0;
     }
