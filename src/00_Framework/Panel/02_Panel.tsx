@@ -4,24 +4,24 @@ import ViewModel from "../00_ViewModel";
 import React from "react";
 import { log } from "console";
 import SmartRect from "./01_SmartRect";
+import { Point2, Size2 } from "../00_Point";
 
 interface PanelProps {
   //string: テキトーな型
   className?: string;
   title: string;
 
-  x: number;
-  y: number;
+  position: Point2;
 
-  width: number;
-  height: number;
+  size: Size2;
 
-  parentWidth?: number;
-  parentHeight?: number;
+  parentSize?: Size2;
 
   children?: React.ReactNode;
 
   onPanelChange(smartRect: SmartRect): void;
+
+  onChildOpen(smartRect: SmartRect): void;
 }
 
 export const Panel: FC<PanelProps> = styled(
@@ -29,12 +29,12 @@ export const Panel: FC<PanelProps> = styled(
     className,
     title: name,
 
-    parentWidth,
-    parentHeight,
+    parentSize,
 
     children,
 
     onPanelChange,
+    onChildOpen,
   }: PanelProps) => {
     const panelRef = React.useRef<HTMLDivElement>(null);
     const [rect, setRect] = React.useState<DOMRectReadOnly | undefined>(
@@ -43,11 +43,10 @@ export const Panel: FC<PanelProps> = styled(
 
     const smartRect =
       rect &&
-      parentWidth &&
-      parentHeight &&
+      parentSize &&
       new SmartRect(rect, {
-        width: parentWidth,
-        height: parentHeight,
+        width: parentSize.width,
+        height: parentSize.height,
       });
 
     useEffect(() => {
@@ -58,16 +57,20 @@ export const Panel: FC<PanelProps> = styled(
         return;
       }
 
-      if (parentWidth === undefined || parentHeight === undefined) {
+      if (
+        !parentSize ||
+        parentSize?.width === undefined ||
+        parentSize?.height === undefined
+      ) {
         throw new Error("parentWidth or parentHeight is undefined");
       }
 
       setRect(panel.getBoundingClientRect());
 
-      const smartRect = new SmartRect(panel.getBoundingClientRect(), {
-        width: parentWidth,
-        height: parentHeight,
-      });
+      const smartRect = new SmartRect(
+        panel.getBoundingClientRect(),
+        parentSize
+      );
 
       onPanelChange(smartRect);
     }, [
@@ -75,8 +78,8 @@ export const Panel: FC<PanelProps> = styled(
       rect?.y,
       rect?.width,
       rect?.height,
-      parentHeight,
-      parentWidth,
+      parentSize?.width,
+      parentSize?.height,
     ]);
 
     return (
@@ -87,6 +90,35 @@ export const Panel: FC<PanelProps> = styled(
         <div className="e-body">
           <p>{rect && JSON.stringify(rect, null, "  ")}</p>
           {children}
+          <button
+            onClick={() => {
+              if (!smartRect) {
+                return;
+              }
+
+              onChildOpen(smartRect);
+            }}
+          >
+            Open Child
+          </button>
+
+          <table>
+            <tr>
+              <td>◀{smartRect?.leftSpace}</td>
+              <td>↑{smartRect?.top}</td>
+              <td>▲{smartRect?.topSpace}</td>
+            </tr>
+            <tr>
+              <td>←{smartRect?.left}</td>
+              <td></td>
+              <td>{smartRect?.right}→</td>
+            </tr>
+            <tr>
+              <td>▼{smartRect?.bottomSpace}</td>
+              <td>↓{smartRect?.bottom}</td>
+              <td>{smartRect?.rightSpace}▶</td>
+            </tr>
+          </table>
         </div>
       </article>
     );
@@ -95,15 +127,18 @@ export const Panel: FC<PanelProps> = styled(
   position: absolute;
   background: white;
 
-  left: ${(props) => props.x}px;
-  top: ${(props) => props.y}px;
+  left: ${(props) => props.position.x}px;
+  top: ${(props) => props.position.y}px;
 
-  width: ${(props) => props.width}px;
-  height: ${(props) => props.height}px;
+  width: ${(props) => props.size.width}px;
+  height: ${(props) => props.size.height}px;
 
   display: flex;
   flex-direction: column;
 
+  transition: left 0.3s, top 0.3s, width 0.3s, height 0.3s;
+
+  pointer-events: auto;
   > .e-header {
     //flex-basis: 0;
     flex-grow: 0;
@@ -124,8 +159,6 @@ export const Panel: FC<PanelProps> = styled(
     //flex-basis: 0;
     flex-grow: 1;
     flex-shrink: 1;
-
-    background: red;
 
     overflow: scroll;
     p {

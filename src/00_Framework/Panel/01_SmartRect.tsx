@@ -1,7 +1,4 @@
-interface Size2 {
-  width: number;
-  height: number;
-}
+import { Size2 } from "../00_Point";
 
 export default class SmartRect implements DOMRectReadOnly {
   constructor(readonly domRect: DOMRectReadOnly, readonly parentSize: Size2) {}
@@ -29,6 +26,10 @@ export default class SmartRect implements DOMRectReadOnly {
   }
   get left() {
     return this.domRect.left;
+  }
+
+  get positions(): [number, number, number, number] {
+    return [this.top, this.right, this.bottom, this.left];
   }
 
   get topSpace() {
@@ -67,7 +68,12 @@ export default class SmartRect implements DOMRectReadOnly {
       rightSpace: this.rightSpace,
       bottomSpace: this.bottomSpace,
       leftSpace: this.leftSpace,
-      spaces: this.spaces,
+      spaces: [
+        this.topSpace,
+        this.rightSpace,
+        this.bottomSpace,
+        this.leftSpace,
+      ],
     };
   }
 }

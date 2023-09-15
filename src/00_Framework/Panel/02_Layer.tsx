@@ -5,11 +5,12 @@ import React from "react";
 interface LayerProps {
   //string: テキトーな型
   className?: string;
+  zIndex?: number;
   children?: React.ReactNode;
 }
 
 export const Layer: FC<LayerProps> = styled(
-  ({ className, children }: LayerProps) => {
+  ({ className, children, zIndex }: LayerProps) => {
     //本当はまだいらないかもしれない
     const layerRef = React.useRef<HTMLDivElement>(null);
     const [rect, setRect] = React.useState<DOMRectReadOnly | undefined>(
@@ -25,7 +26,7 @@ export const Layer: FC<LayerProps> = styled(
     }, []); //TODOあとで最適化
 
     return (
-      <div className={className} ref={layerRef}>
+      <div className={className} ref={layerRef} style={{ zIndex }}>
         <p>{rect && JSON.stringify(rect, null, "  ")}</p>
         {children}
       </div>
@@ -36,10 +37,13 @@ export const Layer: FC<LayerProps> = styled(
   top: 0;
   left: 0;
   right: 0;
+  z-index: 0;
 
   min-height: 100%;
 
   overflow: hidden;
+
+  pointer-events: none;
 
   .e-window {
     display: contents;
@@ -47,18 +51,12 @@ export const Layer: FC<LayerProps> = styled(
   }
 
   &:nth-child(1) {
-    top: 30px;
-    left: 30px;
     background: hsla(0, 50%, 50%, 0.5);
   }
   &:nth-child(2) {
-    top: 60px;
-    left: 60px;
     background: hsla(60, 50%, 50%, 0.5);
   }
   &:nth-child(3) {
-    top: 90px;
-    left: 90px;
     background: hsla(120, 50%, 50%, 0.5);
   }
 `;
