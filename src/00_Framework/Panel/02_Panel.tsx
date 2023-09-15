@@ -18,6 +18,9 @@ interface PanelProps { //string: テキトーな型
   width: number;
   height: number;
 
+  parentWidth?: number;
+  parentHeight?: number;
+
   children?: React.ReactNode;
 
 }
@@ -25,10 +28,14 @@ interface PanelProps { //string: テキトーな型
 export const Panel:FC<PanelProps> = styled(({
   className,
   title: name,
+
+  parentWidth,
+  parentHeight,
+
   children,
 }:  PanelProps ) =>{
   const panelRef = React.useRef<HTMLDivElement>(null);
-  const [rect, setRect] = React.useState<DOMRectReadOnly | null>(null);
+  const [rect, setRect] = React.useState<DOMRectReadOnly | undefined>(undefined);
 
   useEffect(() => {
     const panel = panelRef.current; 
