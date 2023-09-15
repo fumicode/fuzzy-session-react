@@ -1,10 +1,35 @@
-import { FC, useEffect } from "react";
+import { FC, RefObject, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import ViewModel from "../00_ViewModel";
 import React from "react";
 import { log } from "console";
 import SmartRect from "./01_SmartRect";
 import { Point2, Size2 } from "../00_Point";
+
+// 引数のtargetProperty をDOMRectのもつPropertyに限定する
+type DOMRectProperty = keyof Omit<DOMRect, "toJSON">;
+
+// RefObjectの型は div, span, p, input などのさまざまなHTML要素に対応できるようにextendsで制限をかけつつ抽象化
+export const useGetElementProperty = <T extends HTMLElement>(
+  elementRef: RefObject<T>
+) => {
+  const getElementProperty = useCallback(
+    (targetProperty: DOMRectProperty): number => {
+      const clientRect = elementRef.current?.getBoundingClientRect();
+      if (clientRect) {
+        return clientRect[targetProperty];
+      }
+
+      // clientRect が undefined のときはデフォルトで0を返すようにする
+      return 0;
+    },
+    [elementRef]
+  );
+
+  return {
+    getElementProperty,
+  };
+};
 
 interface PanelProps {
   //string: テキトーな型
@@ -16,6 +41,8 @@ interface PanelProps {
   size: Size2;
 
   parentSize?: Size2;
+
+  zIndex?: number;
 
   children?: React.ReactNode;
 
@@ -29,27 +56,35 @@ export const Panel: FC<PanelProps> = styled(
     className,
     title: name,
 
+    position,
+    size,
     parentSize,
+
+    zIndex: z,
 
     children,
 
     onPanelChange,
     onChildOpen,
   }: PanelProps) => {
+    const [phase, setPhase] = React.useState<0 | 1>(0);
     const panelRef = React.useRef<HTMLDivElement>(null);
-    const [rect, setRect] = React.useState<DOMRectReadOnly | undefined>(
-      undefined
-    );
+    const { getElementProperty } =
+      useGetElementProperty<HTMLDivElement>(panelRef);
 
-    const smartRect =
-      rect &&
-      parentSize &&
-      new SmartRect(rect, {
-        width: parentSize.width,
-        height: parentSize.height,
-      });
+    const [rect, setRect] = React.useState<SmartRect | undefined>(undefined);
+
+    const [zIndex, setZIndex] = React.useState<number>(z || 0);
+    console.log(`render panel "${name}"`);
+
+    console.log({ position });
 
     useEffect(() => {
+      console.log("useEffect panel ref calc");
+
+      if (phase === 1) {
+        return;
+      }
       const panel = panelRef.current;
       if (!panel) {
         console.log("panel not found");
@@ -65,38 +100,70 @@ export const Panel: FC<PanelProps> = styled(
         throw new Error("parentWidth or parentHeight is undefined");
       }
 
-      setRect(panel.getBoundingClientRect());
+      /////
+      console.log("parentSize", parentSize);
 
-      const smartRect = new SmartRect(
-        panel.getBoundingClientRect(),
-        parentSize
-      );
+      const r = new SmartRect(panel.getBoundingClientRect(), parentSize);
 
-      onPanelChange(smartRect);
+      setRect(r);
+      setZIndex(zIndex);
+      setPhase(1);
+      onPanelChange(r);
     }, [
-      rect?.x,
-      rect?.y,
-      rect?.width,
-      rect?.height,
+      position,
+      position.x,
+      position.y,
+      size.width,
+      size.height,
       parentSize?.width,
       parentSize?.height,
+      z,
+      phase,
     ]);
 
+    useEffect(() => {
+      console.log("useEffect reset phase");
+      setPhase(0);
+    }, []);
+
     return (
-      <article className={className} ref={panelRef}>
+      <article className={className} ref={panelRef} style={{ zIndex: z }}>
         <header className="e-header">
-          <h1 className="e-title">Panel 1: {name}</h1>
+          <h1 className="e-title">
+            Panel 1: {name} {phase}
+          </h1>
         </header>
-        <div className="e-body">
+        <div
+          className="e-body"
+          style={{ background: `hsla(0,0%,${40 + phase * 40}%)` }}
+        >
+          <p>
+            {getElementProperty("x") +
+              " " +
+              getElementProperty("y") +
+              " " +
+              getElementProperty("height") +
+              " " +
+              getElementProperty("width") +
+              " " +
+              getElementProperty("top") +
+              " " +
+              getElementProperty("right") +
+              " " +
+              getElementProperty("bottom") +
+              " " +
+              getElementProperty("left")}
+          </p>
+          <p>{JSON.stringify(position)}</p>
           <p>{rect && JSON.stringify(rect, null, "  ")}</p>
           {children}
           <button
             onClick={() => {
-              if (!smartRect) {
+              if (!rect) {
                 return;
               }
 
-              onChildOpen(smartRect);
+              onChildOpen(rect);
             }}
           >
             Open Child
@@ -104,19 +171,19 @@ export const Panel: FC<PanelProps> = styled(
 
           <table>
             <tr>
-              <td>◀{smartRect?.leftSpace}</td>
-              <td>↑{smartRect?.top}</td>
-              <td>▲{smartRect?.topSpace}</td>
+              <td>◀{rect?.leftSpace}</td>
+              <td>↑{rect?.top}</td>
+              <td>▲{rect?.topSpace}</td>
             </tr>
             <tr>
-              <td>←{smartRect?.left}</td>
+              <td>←{rect?.left}</td>
               <td></td>
-              <td>{smartRect?.right}→</td>
+              <td>{rect?.right}→</td>
             </tr>
             <tr>
-              <td>▼{smartRect?.bottomSpace}</td>
-              <td>↓{smartRect?.bottom}</td>
-              <td>{smartRect?.rightSpace}▶</td>
+              <td>▼{rect?.bottomSpace}</td>
+              <td>↓{rect?.bottom}</td>
+              <td>{rect?.rightSpace}▶</td>
             </tr>
           </table>
         </div>

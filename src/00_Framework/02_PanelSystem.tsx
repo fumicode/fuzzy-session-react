@@ -20,6 +20,8 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
       undefined
     );
 
+    console.log("render panel system");
+
     if (rect) {
     }
     const handleChangeWindow = () => {
@@ -27,9 +29,13 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
       if (!doc) {
         throw new Error("panel not found");
       }
+      console.log("おまちかね！handle change window だよ！");
+
+      setLayerOrder(layerOrder);
+      setChildPosition(childPosition);
+      setParentPosition(parentPosition);
 
       setRect(doc.getBoundingClientRect());
-      console.log(rect);
     };
     useEffect(handleChangeWindow, [
       rect?.x,
@@ -64,6 +70,17 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
 
     const zIndexCalcurator = new ZIndexCalcurator(layerOrder);
 
+    useEffect(() => {
+      handleChangeWindow();
+      console.log({ childPosition, parentPosition });
+    }, [
+      childPosition.x,
+      childPosition.y,
+      parentPosition.x,
+      parentPosition.y,
+
+      layerOrder.join(","),
+    ]);
     return (
       <div className={className} ref={docRef}>
         <Layer zIndex={zIndexCalcurator.getZIndex("layer1empty")}>
@@ -77,14 +94,18 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
                 title="Child"
                 position={childPosition}
                 size={{ width: 500, height: 500 }}
+                zIndex={zIndexCalcurator.getZIndex("layer2child")}
                 parentSize={rect}
                 onPanelChange={(smartRect: SmartRect) => {
+                  /*
                   const directions = ["上", "右", "下", "左"];
                   const maxSpace = Math.max(...smartRect.spaces);
                   const maxIndex = smartRect.spaces.findIndex(
                     (item) => item === maxSpace
                   );
                   setSpacingDirection(directions[maxIndex]);
+                  */
+                  handleChangeWindow();
                 }}
                 onChildOpen={(smartRect: SmartRect) => {
                   const maxSpace = Math.max(...smartRect.spaces);
@@ -134,13 +155,17 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
                 position={parentPosition}
                 size={{ width: 500, height: 500 }}
                 parentSize={rect}
+                zIndex={zIndexCalcurator.getZIndex("layer2parent")}
                 onPanelChange={(smartRect: SmartRect) => {
+                  /*
                   const directions = ["上", "右", "下", "左"];
                   const maxSpace = Math.max(...smartRect.spaces);
                   const maxIndex = smartRect.spaces.findIndex(
                     (item) => item === maxSpace
                   );
                   setSpacingDirection(directions[maxIndex]);
+                  */
+                  handleChangeWindow();
                 }}
                 onChildOpen={(smartRect: SmartRect) => {
                   //const directions = ["上", "右", "下", "左"];
