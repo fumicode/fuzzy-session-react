@@ -1,4 +1,7 @@
-import { Size2 } from "../../01_Utils/00_Point";
+import { Point2, Size2 } from "../../01_Utils/00_Point";
+
+type Direction = "top" | "right" | "bottom" | "left";
+const directions: Direction[] = ["top", "right", "bottom", "left"];
 
 export default class SmartRect implements DOMRectReadOnly {
   constructor(readonly domRect: DOMRectReadOnly, readonly parentSize: Size2) {}
@@ -50,6 +53,50 @@ export default class SmartRect implements DOMRectReadOnly {
 
   get spaces(): [number, number, number, number] {
     return [this.topSpace, this.rightSpace, this.bottomSpace, this.leftSpace];
+  }
+
+  calcSpaceWideDirection(): Direction {
+    if (!(this.spaces.length > 0)) {
+      throw new Error(
+        "まだ親要素のサイズが決まっていないので、spaceWideDirectionを計算できません。!!ありえない状況"
+      );
+    }
+
+    const maxSpace = Math.max(...this.spaces);
+    const maxIndex = this.spaces.indexOf(maxSpace);
+    return directions[maxIndex];
+  }
+
+  calcPositionToOpen(direction: Direction): Point2 {
+    if (!(this.spaces.length > 0)) {
+      throw new Error(
+        "まだ親要素のサイズが決まっていないので、spaceWideDirectionを計算できません。!!ありえない状況"
+      );
+    }
+
+    if (direction === "top") {
+      return {
+        x: this.left,
+        y: this.top - this.height, //ここは自分の高さは重要ではない。相手の高さ。一旦便宜上自分の高さを使う。
+      };
+    } else if (direction === "right") {
+      return {
+        x: this.right,
+        y: this.top,
+      };
+    } else if (direction === "bottom") {
+      return {
+        x: this.left,
+        y: this.bottom,
+      };
+    } else if (direction === "left") {
+      return {
+        x: this.left - this.width, //ここは自分の幅は重要ではない。相手の幅。一旦便宜上自分の幅を使う。
+        y: this.top,
+      };
+    }
+
+    throw new Error("ありえない状況");
   }
 
   toJSON() {

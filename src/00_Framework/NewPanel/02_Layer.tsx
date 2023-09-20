@@ -45,6 +45,10 @@ export const Layer: FC<LayerProps> = styled(
 
   pointer-events: none;
 
+  transform: scale(${(props) => ((props.zIndex || 0) / 3) * 0.5 + 0.5});
+
+  transition: transform 0.1s ease-in-out;
+
   .e-window {
     display: contents;
     background: #eee;

@@ -4,6 +4,7 @@ import React from "react";
 import SmartRect from "./01_SmartRect";
 import { Point2, Size2 } from "../../01_Utils/00_Point";
 import useGetSmartRect from "./01_useGetSmartRect";
+import classNames from "classnames";
 
 interface PanelProps {
   //string: テキトーな型
@@ -22,9 +23,7 @@ interface PanelProps {
 
   onPanelChange(smartRect: SmartRect): void;
 
-  onChildOpen(smartRect: SmartRect): void;
-
-  counter: number;
+  onRelationOpen(smartRect: SmartRect): void;
 }
 
 export const Panel: FC<PanelProps> = styled(
@@ -41,9 +40,7 @@ export const Panel: FC<PanelProps> = styled(
     children,
 
     onPanelChange,
-    onChildOpen,
-
-    counter,
+    onRelationOpen,
   }: PanelProps) => {
     console.log("render");
 
@@ -51,6 +48,8 @@ export const Panel: FC<PanelProps> = styled(
       position,
       parentSize
     );
+
+    const spaceWidestDirection = renderedRect?.calcSpaceWideDirection();
 
     return (
       <article
@@ -65,21 +64,43 @@ export const Panel: FC<PanelProps> = styled(
         ref={panelRef}
       >
         <header className="e-header">
-          <h1 className="e-title">Panel 1: {name}</h1>
+          <h4 className="e-title">Panel 1: {name}</h4>
         </header>
         <div
           className="e-body"
           style={{ background: `hsla(0,0%,${40 + 40}%)` }}
         >
           {children}
-          <button onClick={() => {}}>Open Child</button>
+          <button
+            onClick={() => {
+              if (!renderedRect) {
+                return;
+              }
+
+              onRelationOpen(renderedRect);
+            }}
+          >
+            Open Child
+          </button>
 
           {renderedRect ? (
             <table>
               <tr>
-                <td>◀{Math.floor(renderedRect.leftSpace)}</td>
+                <td
+                  className={classNames({
+                    "m-widest": spaceWidestDirection === "left",
+                  })}
+                >
+                  ◀{Math.floor(renderedRect.leftSpace)}
+                </td>
                 <td>↑{Math.floor(renderedRect.top)}</td>
-                <td>▲{Math.floor(renderedRect.topSpace)}</td>
+                <td
+                  className={classNames({
+                    "m-widest": spaceWidestDirection === "top",
+                  })}
+                >
+                  ▲{Math.floor(renderedRect.topSpace)}
+                </td>
               </tr>
               <tr>
                 <td>←{Math.floor(renderedRect.left)}</td>
@@ -87,27 +108,39 @@ export const Panel: FC<PanelProps> = styled(
                 <td>{Math.floor(renderedRect.right)}→</td>
               </tr>
               <tr>
-                <td>▼{Math.floor(renderedRect.bottomSpace)}</td>
+                <td
+                  className={classNames({
+                    "m-widest": spaceWidestDirection === "bottom",
+                  })}
+                >
+                  ▼{Math.floor(renderedRect.bottomSpace)}
+                </td>
                 <td>↓{Math.floor(renderedRect.bottom)}</td>
-                <td>{Math.floor(renderedRect.rightSpace)}▶</td>
+                <td
+                  className={classNames({
+                    "m-widest": spaceWidestDirection === "right",
+                  })}
+                >
+                  {Math.floor(renderedRect.rightSpace)}▶
+                </td>
               </tr>
             </table>
           ) : (
             <p style={{ background: "red" }}>no rect yet</p>
           )}
         </div>
-
-        <footer className="e-footer">counter: {counter}</footer>
       </article>
     );
   }
 )`
   position: absolute;
+
   background: white;
 
   display: flex;
   flex-direction: column;
 
+  /*transition: top 0.9s, left 0.9s, width 0.9s, height 0.9s; アニメーションをオンにしちゃうと、場所がおかしくなる*/
   pointer-events: auto;
   > .e-header {
     //flex-basis: 0;
@@ -134,6 +167,12 @@ export const Panel: FC<PanelProps> = styled(
     transition: background 0.9s;
     p {
       margin: 0;
+    }
+
+    td {
+      &.m-widest {
+        color: red;
+      }
     }
   }
 `;
