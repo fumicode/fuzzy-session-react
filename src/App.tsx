@@ -1,6 +1,9 @@
 import Timeline from "./Components/20_Timeline";
 import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
-import SessionEntity, { SessionAction, SessionId } from "./Components/20_SessionEntity";
+import SessionEntity, {
+  SessionAction,
+  SessionId,
+} from "./Components/20_SessionEntity";
 import TimeRange from "./Components/10_TimeRange";
 import { FC, useState } from "react";
 
@@ -9,7 +12,7 @@ import update from "immutability-helper";
 import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
 import MoneyApp from "./MoneyApp/MoneyApp";
 import SharingApp from "./MoneyApp/SharingApp";
-import PanelSystem from "./00_Framework/02_PanelSystem";
+import PanelSystem from "./00_Framework/NewPanel/02_PanelSystem";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
@@ -68,7 +71,6 @@ const ashitaroSessions: SessionEntity[] = [
   ),
 ];
 
-
 interface Calendar {
   title: string;
   sessionMap: Timeline;
@@ -77,7 +79,7 @@ interface Calendar {
 const _calendars: Calendar[] = [
   {
     title: "院長",
-    sessionMap: new Timeline(inchoSessions)
+    sessionMap: new Timeline(inchoSessions),
   },
   {
     title: "タイ姉",
@@ -93,7 +95,11 @@ const App: FC = styled((props: { className: string }) => {
   const { className } = props;
   const [calendars, setCalendars] = useState<Calendar[]>(_calendars);
 
-  const goIntoFutureCalendar = (calIndex:number, sId: SessionId, sessionAction: SessionAction) => {
+  const goIntoFutureCalendar = (
+    calIndex: number,
+    sId: SessionId,
+    sessionAction: SessionAction
+  ) => {
     //要するに何をしたいかと言うと：
     //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
@@ -103,37 +109,30 @@ const App: FC = styled((props: { className: string }) => {
       throw new Error("そんなことはありえないはず");
     }
 
-    try{
+    try {
       const futureSession = sessionAction(session);
 
       //永続化
       const newCals = update(calendars, {
         [calIndex]: {
-          sessionMap: (list) =>
-            list.set(futureSession.id, futureSession),
+          sessionMap: (list) => list.set(futureSession.id, futureSession),
         },
       });
       setCalendars(newCals);
-    }
-    catch(e){
+    } catch (e) {
       console.log(e);
     }
-  }
+  };
 
-  const code:ThreeRows  = [
+  const code: ThreeRows = [
     [5, 8, 9, 5, 5, 9, 8],
     [0, 3, 6, 0, 0, 6, 3],
     [5, 3, 1, 5, 5, 1, 3],
   ];
 
+  return <PanelSystem main="hogehoge" />;
 
-  return (
-    <PanelSystem main="hogehoge" name="fugafuga" width={100}/>
-
-
-  );
-
-    /*
+  /*
     <div className={className}>
       <SharingApp/>
       <MoneyApp/>
@@ -163,7 +162,6 @@ const App: FC = styled((props: { className: string }) => {
       <GaiaCodeView main={new GaiaCode(code)}/>
     </div>
     */
-  
 })`
   .e-calendar-columns {
     display: flex;
@@ -175,5 +173,3 @@ const App: FC = styled((props: { className: string }) => {
 `;
 
 export default App;
-
-
