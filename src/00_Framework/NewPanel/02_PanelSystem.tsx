@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import ViewModel from "../00_ViewModel";
 import Panel from "./02_Panel";
@@ -15,33 +15,48 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
     const [position, setPosition] = useState<Point2>({ x: 100, y: 100 });
     const [counter, setCounter] = useState<number>(0);
 
-    return (
-      <div className={className}>
-        {/** 
-         * 
-        <Layer zIndex={1}>layer 1</Layer>
-        <Layer zIndex={2}>layer 2</Layer>
-        */}
-        <Layer zIndex={3}>
-          layer 3
-          <div className="e-window">
-            <Panel
-              title="Parent"
-              position={position}
-              size={{ width: 500, height: 500 }}
-              parentSize={{ width: 1000, height: 1000 }}
-              zIndex={0}
-              onPanelChange={(smartRect: SmartRect) => {}}
-              onChildOpen={(smartRect: SmartRect) => {
-                //smartRect.positions[maxIndex]
-              }}
-              counter={counter}
-            >
-              <p>一番あいてるのは、 </p>
-            </Panel>
-          </div>
-        </Layer>
+    const divRef = useRef<HTMLDivElement>(null);
 
+    const [parentSize, setParentSize] = useState<DOMRectReadOnly | null>(null);
+
+    const resizeWindow = () => {
+      if (!divRef.current) {
+        return;
+      }
+      setParentSize(divRef.current.getBoundingClientRect());
+    };
+
+    useEffect(() => {
+      window.addEventListener("resize", resizeWindow);
+      resizeWindow();
+      return () => {
+        window.removeEventListener("resize", resizeWindow);
+      };
+    }, []);
+
+    return (
+      <div className={className} ref={divRef}>
+        {parentSize && (
+          <Layer zIndex={3}>
+            layer 3
+            <div className="e-window">
+              <Panel
+                title="Parent"
+                position={position}
+                size={{ width: 500, height: 500 }}
+                parentSize={parentSize}
+                zIndex={0}
+                onPanelChange={(smartRect: SmartRect) => {}}
+                onChildOpen={(smartRect: SmartRect) => {
+                  //smartRect.positions[maxIndex]
+                }}
+                counter={counter}
+              >
+                <p>一番あいてるのは、 </p>
+              </Panel>
+            </div>
+          </Layer>
+        )}
         <div className="e-controlls">
           <button
             onClick={() => {

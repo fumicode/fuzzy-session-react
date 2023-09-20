@@ -77,19 +77,19 @@ export const Panel: FC<PanelProps> = styled(
           {renderedRect ? (
             <table>
               <tr>
-                <td>◀{renderedRect.leftSpace}</td>
-                <td>↑{renderedRect.top}</td>
-                <td>▲{renderedRect.topSpace}</td>
+                <td>◀{Math.floor(renderedRect.leftSpace)}</td>
+                <td>↑{Math.floor(renderedRect.top)}</td>
+                <td>▲{Math.floor(renderedRect.topSpace)}</td>
               </tr>
               <tr>
-                <td>←{renderedRect.left}</td>
+                <td>←{Math.floor(renderedRect.left)}</td>
                 <td></td>
-                <td>{renderedRect.right}→</td>
+                <td>{Math.floor(renderedRect.right)}→</td>
               </tr>
               <tr>
-                <td>▼{renderedRect.bottomSpace}</td>
-                <td>↓{renderedRect.bottom}</td>
-                <td>{renderedRect.rightSpace}▶</td>
+                <td>▼{Math.floor(renderedRect.bottomSpace)}</td>
+                <td>↓{Math.floor(renderedRect.bottom)}</td>
+                <td>{Math.floor(renderedRect.rightSpace)}▶</td>
               </tr>
             </table>
           ) : (

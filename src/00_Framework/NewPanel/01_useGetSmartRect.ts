@@ -25,7 +25,7 @@ const useGetSmartRect = (
     const rect = panelEl.getBoundingClientRect();
     const smartRect = new SmartRect(rect, parentSize);
     setRenderedRect(smartRect);
-  }, [position]);
+  }, [position, parentSize]);
 
   return {
     renderedRect,
