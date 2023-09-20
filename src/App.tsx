@@ -1,5 +1,4 @@
 import Timeline from "./Components/20_Timeline";
-import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
 import SessionEntity, {
   SessionAction,
   SessionId,
@@ -10,8 +9,6 @@ import { FC, useState } from "react";
 import styled from "styled-components";
 import update from "immutability-helper";
 import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
-import MoneyApp from "./MoneyApp/MoneyApp";
-import SharingApp from "./MoneyApp/SharingApp";
 import PanelSystem from "./00_Framework/NewPanel/02_PanelSystem";
 
 let inchoSessions: SessionEntity[] = [
@@ -92,7 +89,6 @@ const _calendars: Calendar[] = [
 ];
 
 const App: FC = styled((props: { className: string }) => {
-  const { className } = props;
   const [calendars, setCalendars] = useState<Calendar[]>(_calendars);
 
   const goIntoFutureCalendar = (

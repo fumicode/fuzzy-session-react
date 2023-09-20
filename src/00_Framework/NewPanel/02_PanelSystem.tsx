@@ -1,11 +1,9 @@
-import { FC, useEffect } from "react";
+import { FC } from "react";
 import styled from "styled-components";
 import ViewModel from "../00_ViewModel";
 import Panel from "./02_Panel";
 import Layer from "./02_Layer";
-import React from "react";
 import SmartRect from "./01_SmartRect";
-import ZIndexCalcurator from "../../01_Utils/01_ZIndexCalcurator";
 
 interface PanelSystemViewModel extends ViewModel<string> {
   //string: テキトーな型

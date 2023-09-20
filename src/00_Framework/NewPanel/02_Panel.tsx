@@ -1,8 +1,6 @@
-import { FC, RefObject, useCallback, useEffect } from "react";
+import { FC } from "react";
 import styled from "styled-components";
-import ViewModel from "../00_ViewModel";
 import React from "react";
-import { log } from "console";
 import SmartRect from "./01_SmartRect";
 import { Point2, Size2 } from "../00_Point";
 
