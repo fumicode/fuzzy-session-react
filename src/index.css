@@ -1,10 +1,12 @@
+@import-normalize;
+/*TODO: vscode の警告消したい*/
+
 * {
   box-sizing: border-box;
 }
 
-html{
+html {
   height: 100%;
-
 }
 
 body {
@@ -23,9 +25,7 @@ code {
     monospace;
 }
 
-
 #root {
   background: green;
   height: 100%;
-
 }

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, RefObject, useEffect } from "react";
 import styled from "styled-components";
 import React from "react";
 import SmartRect from "./01_SmartRect";
@@ -13,7 +13,7 @@ interface PanelProps {
 
   size: Size2;
 
-  parentSize?: Size2;
+  parentSize: Size2;
 
   zIndex?: number;
 
@@ -22,7 +22,39 @@ interface PanelProps {
   onPanelChange(smartRect: SmartRect): void;
 
   onChildOpen(smartRect: SmartRect): void;
+
+  counter: number;
 }
+
+const useGetSmartRect = (
+  position: Point2,
+  parentSize: Size2
+): { renderedRect: SmartRect | undefined; ref: RefObject<HTMLDivElement> } => {
+  const [renderedRect, setRenderedRect] = React.useState<SmartRect | undefined>(
+    undefined
+  );
+
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    console.log("useEffect");
+    console.log(ref.current);
+    const panelEl = ref.current;
+    if (panelEl === null) {
+      return;
+    }
+
+    console.log(panelEl.getBoundingClientRect());
+    const rect = panelEl.getBoundingClientRect();
+    const smartRect = new SmartRect(rect, parentSize);
+    setRenderedRect(smartRect);
+  }, [position]);
+
+  return {
+    renderedRect,
+    ref,
+  };
+};
 
 export const Panel: FC<PanelProps> = styled(
   ({
@@ -39,9 +71,28 @@ export const Panel: FC<PanelProps> = styled(
 
     onPanelChange,
     onChildOpen,
+
+    counter,
   }: PanelProps) => {
+    console.log("render");
+
+    const { renderedRect, ref: panelRef } = useGetSmartRect(
+      position,
+      parentSize
+    );
+
     return (
-      <article className={className} style={{ zIndex: z }}>
+      <article
+        className={className}
+        style={{
+          zIndex: z,
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          width: `${size.width}px`,
+          height: `${size.height}px`,
+        }}
+        ref={panelRef}
+      >
         <header className="e-header">
           <h1 className="e-title">Panel 1: {name}</h1>
         </header>
@@ -49,31 +100,33 @@ export const Panel: FC<PanelProps> = styled(
           className="e-body"
           style={{ background: `hsla(0,0%,${40 + 40}%)` }}
         >
-          <p>hello</p>
-          <p>props position: {JSON.stringify(position)}</p>
           {children}
           <button onClick={() => {}}>Open Child</button>
 
-          <table>
-            <tbody>
+          {renderedRect ? (
+            <table>
               <tr>
-                <td>◀</td>
-                <td>↑</td>
-                <td>▲</td>
+                <td>◀{renderedRect.leftSpace}</td>
+                <td>↑{renderedRect.top}</td>
+                <td>▲{renderedRect.topSpace}</td>
               </tr>
               <tr>
-                <td>←</td>
+                <td>←{renderedRect.left}</td>
                 <td></td>
-                <td>→</td>
+                <td>{renderedRect.right}→</td>
               </tr>
               <tr>
-                <td>▼</td>
-                <td>↓</td>
-                <td>▶</td>
+                <td>▼{renderedRect.bottomSpace}</td>
+                <td>↓{renderedRect.bottom}</td>
+                <td>{renderedRect.rightSpace}▶</td>
               </tr>
-            </tbody>
-          </table>
+            </table>
+          ) : (
+            <p style={{ background: "red" }}>no rect yet</p>
+          )}
         </div>
+
+        <footer className="e-footer">counter: {counter}</footer>
       </article>
     );
   }
@@ -81,16 +134,8 @@ export const Panel: FC<PanelProps> = styled(
   position: absolute;
   background: white;
 
-  left: ${(props) => props.position.x}px;
-  top: ${(props) => props.position.y}px;
-
-  width: ${(props) => props.size.width}px;
-  height: ${(props) => props.size.height}px;
-
   display: flex;
   flex-direction: column;
-
-  transition: left 0.3s, top 0.3s, width 0.3s, height 0.3s;
 
   pointer-events: auto;
   > .e-header {
