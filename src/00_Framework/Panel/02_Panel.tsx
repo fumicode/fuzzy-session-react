@@ -4,7 +4,7 @@ import ViewModel from "../00_ViewModel";
 import React from "react";
 import { log } from "console";
 import SmartRect from "./01_SmartRect";
-import { Point2, Size2 } from "../00_Point";
+import { Point2, Size2 } from "../../01_Utils/00_Point";
 
 // 引数のtargetProperty をDOMRectのもつPropertyに限定する
 type DOMRectProperty = keyof Omit<DOMRect, "toJSON">;

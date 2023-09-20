@@ -1,4 +1,4 @@
-import { Size2 } from "../00_Point";
+import { Size2 } from "../../01_Utils/00_Point";
 
 export default class SmartRect implements DOMRectReadOnly {
   constructor(readonly domRect: DOMRectReadOnly, readonly parentSize: Size2) {}

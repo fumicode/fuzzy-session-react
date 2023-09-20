@@ -4,7 +4,7 @@ import ViewModel from "../00_ViewModel";
 import Panel from "./02_Panel";
 import Layer from "./02_Layer";
 import SmartRect from "./01_SmartRect";
-import { Point2 } from "../00_Point";
+import { Point2 } from "../../01_Utils/00_Point";
 
 interface PanelSystemViewModel extends ViewModel<string> {
   //string: テキトーな型

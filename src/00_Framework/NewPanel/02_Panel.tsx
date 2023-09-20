@@ -2,7 +2,8 @@ import { FC, RefObject, useEffect } from "react";
 import styled from "styled-components";
 import React from "react";
 import SmartRect from "./01_SmartRect";
-import { Point2, Size2 } from "../00_Point";
+import { Point2, Size2 } from "../../01_Utils/00_Point";
+import useGetSmartRect from "./01_useGetSmartRect";
 
 interface PanelProps {
   //string: テキトーな型
@@ -25,36 +26,6 @@ interface PanelProps {
 
   counter: number;
 }
-
-const useGetSmartRect = (
-  position: Point2,
-  parentSize: Size2
-): { renderedRect: SmartRect | undefined; ref: RefObject<HTMLDivElement> } => {
-  const [renderedRect, setRenderedRect] = React.useState<SmartRect | undefined>(
-    undefined
-  );
-
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    console.log("useEffect");
-    console.log(ref.current);
-    const panelEl = ref.current;
-    if (panelEl === null) {
-      return;
-    }
-
-    console.log(panelEl.getBoundingClientRect());
-    const rect = panelEl.getBoundingClientRect();
-    const smartRect = new SmartRect(rect, parentSize);
-    setRenderedRect(smartRect);
-  }, [position]);
-
-  return {
-    renderedRect,
-    ref,
-  };
-};
 
 export const Panel: FC<PanelProps> = styled(
   ({
