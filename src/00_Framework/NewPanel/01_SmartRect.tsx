@@ -67,7 +67,9 @@ export default class SmartRect implements DOMRectReadOnly {
     return directions[maxIndex];
   }
 
-  calcPositionToOpen(direction: Direction): Point2 {
+  calcPositionToOpen(openingRect: SmartRect): Point2 {
+    //一番あいている方向に、相手の大きさを考慮して配置
+    const direction: Direction = this.calcSpaceWideDirection();
     if (!(this.spaces.length > 0)) {
       throw new Error(
         "まだ親要素のサイズが決まっていないので、spaceWideDirectionを計算できません。!!ありえない状況"
@@ -77,21 +79,21 @@ export default class SmartRect implements DOMRectReadOnly {
     if (direction === "top") {
       return {
         x: this.left,
-        y: this.top - this.height, //ここは自分の高さは重要ではない。相手の高さ。一旦便宜上自分の高さを使う。
+        y: this.top - openingRect.height * 1.2,
       };
     } else if (direction === "right") {
       return {
-        x: this.right,
+        x: this.right + openingRect.width * 0.2,
         y: this.top,
       };
     } else if (direction === "bottom") {
       return {
         x: this.left,
-        y: this.bottom,
+        y: this.bottom + openingRect.height * 0.2,
       };
     } else if (direction === "left") {
       return {
-        x: this.left - this.width, //ここは自分の幅は重要ではない。相手の幅。一旦便宜上自分の幅を使う。
+        x: this.left - openingRect.width * 1.2, //ここは自分の幅は重要ではない。相手の幅。一旦便宜上自分の幅を使う。
         y: this.top,
       };
     }

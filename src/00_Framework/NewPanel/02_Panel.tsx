@@ -18,10 +18,11 @@ interface PanelProps {
   parentSize: Size2;
 
   zIndex?: number;
+  colorHue?: number;
 
   children?: React.ReactNode;
 
-  onPanelChange(smartRect: SmartRect): void;
+  onMove(smartRect: SmartRect): void;
 
   onRelationOpen(smartRect: SmartRect): void;
 }
@@ -36,17 +37,19 @@ export const Panel: FC<PanelProps> = styled(
     parentSize,
 
     zIndex: z,
+    colorHue,
 
     children,
 
-    onPanelChange,
+    onMove,
     onRelationOpen,
   }: PanelProps) => {
     console.log("render");
 
     const { renderedRect, ref: panelRef } = useGetSmartRect(
       position,
-      parentSize
+      parentSize,
+      onMove
     );
 
     const spaceWidestDirection = renderedRect?.calcSpaceWideDirection();
@@ -55,7 +58,6 @@ export const Panel: FC<PanelProps> = styled(
       <article
         className={className}
         style={{
-          zIndex: z,
           left: `${position.x}px`,
           top: `${position.y}px`,
           width: `${size.width}px`,
@@ -64,11 +66,11 @@ export const Panel: FC<PanelProps> = styled(
         ref={panelRef}
       >
         <header className="e-header">
-          <h4 className="e-title">Panel 1: {name}</h4>
+          <h2 className="e-title">{name}</h2>
         </header>
         <div
           className="e-body"
-          style={{ background: `hsla(0,0%,${40 + 40}%)` }}
+          style={{ background: `hsl(${colorHue}, 50%, 50%)` }}
         >
           {children}
           <button
@@ -80,7 +82,7 @@ export const Panel: FC<PanelProps> = styled(
               onRelationOpen(renderedRect);
             }}
           >
-            Open Child
+            兄弟は？
           </button>
 
           {renderedRect ? (
@@ -126,6 +128,7 @@ export const Panel: FC<PanelProps> = styled(
               </tr>
             </table>
           ) : (
+            //チラツクけどいったんおいておく
             <p style={{ background: "red" }}>no rect yet</p>
           )}
         </div>

@@ -25,10 +25,13 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
       x: 100,
       y: 100,
     });
+    const [parentRect, setParentRect] = useState<SmartRect | null>(null);
+
     const [childPosition, setChildPosition] = useState<Point2>({
       x: 300,
       y: 300,
     });
+    const [childRect, setChildRect] = useState<SmartRect | null>(null);
 
     const divRef = useRef<HTMLDivElement>(null);
 
@@ -55,22 +58,30 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
       <div className={className} ref={divRef}>
         {parentSize && (
           <>
-            <Layer zIndex={zIndexCalcurator.getZIndex("layer1empty")}>
+            <Layer
+              zIndex={zIndexCalcurator.getZIndex("layer1empty")}
+              colorHue={0}
+            >
               layer 1
             </Layer>
-            <Layer zIndex={zIndexCalcurator.getZIndex("layer2child")}>
+            <Layer
+              zIndex={zIndexCalcurator.getZIndex("layer2child")}
+              colorHue={60}
+            >
               layer 2
               <div className="e-window">
                 <Panel
-                  title="Child"
+                  title="弟:サスケ@音♪"
                   position={childPosition}
-                  size={{ width: 200, height: 200 }}
+                  size={{ width: 180, height: 180 }}
                   parentSize={parentSize}
                   zIndex={0}
-                  onPanelChange={(smartRect: SmartRect) => {}}
+                  colorHue={60}
+                  onMove={(smartRect: SmartRect) => {
+                    setChildRect(smartRect);
+                  }}
                   onRelationOpen={(thisRect: SmartRect) => {
-                    const direction = thisRect.calcSpaceWideDirection();
-                    setParentPosition(thisRect.calcPositionToOpen(direction));
+                    setParentPosition(thisRect.calcPositionToOpen(parentRect));
                     setLayerOrder([
                       "layer1empty",
                       "layer2child",
@@ -80,19 +91,24 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
                 ></Panel>
               </div>
             </Layer>
-            <Layer zIndex={zIndexCalcurator.getZIndex("layer3parent")}>
+            <Layer
+              zIndex={zIndexCalcurator.getZIndex("layer3parent")}
+              colorHue={120}
+            >
               layer 3
               <div className="e-window">
                 <Panel
-                  title="Parent"
+                  title="兄:イタチ@暁☆"
                   position={parentPosition}
-                  size={{ width: 200, height: 200 }}
+                  size={{ width: 200, height: 500 }}
                   parentSize={parentSize}
                   zIndex={0}
-                  onPanelChange={(smartRect: SmartRect) => {}}
+                  colorHue={120}
+                  onMove={(smartRect: SmartRect) => {
+                    setParentRect(smartRect);
+                  }}
                   onRelationOpen={(thisRect: SmartRect) => {
-                    const direction = thisRect.calcSpaceWideDirection();
-                    setChildPosition(thisRect.calcPositionToOpen(direction));
+                    setChildPosition(thisRect.calcPositionToOpen(childRect));
 
                     setLayerOrder([
                       "layer1empty",
@@ -126,14 +142,6 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
           >
             ↓
           </button>
-
-          <button
-            onClick={() => {
-              setCounter(counter + 1);
-            }}
-          >
-            count up
-          </button>
         </div>
       </div>
     );
@@ -144,7 +152,9 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
   background: white;
   position: relative;
 
+  overflow: hidden;
   > .e-controlls {
+    display: none;
     position: absolute;
     top: 0;
     left: 0;
