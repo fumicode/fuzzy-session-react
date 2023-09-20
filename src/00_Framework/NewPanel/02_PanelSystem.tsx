@@ -25,23 +25,29 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
       x: 100,
       y: 100,
     });
-    const [parentRect, setParentRect] = useState<SmartRect | null>(null);
+    const [parentSize, setParentSize] = useState<Size2>({
+      width: 200,
+      height: 500,
+    });
 
     const [childPosition, setChildPosition] = useState<Point2>({
       x: 300,
       y: 300,
     });
-    const [childRect, setChildRect] = useState<SmartRect | null>(null);
+    const [childSize, setChildSize] = useState<Size2>({
+      width: 180,
+      height: 180,
+    });
 
     const divRef = useRef<HTMLDivElement>(null);
 
-    const [parentSize, setParentSize] = useState<Size2 | null>(null);
+    const [wrapperSize, setWrapperSize] = useState<Size2 | null>(null);
 
     const resizeWindow = () => {
       if (!divRef.current) {
         return;
       }
-      setParentSize(divRef.current.getBoundingClientRect());
+      setWrapperSize(divRef.current.getBoundingClientRect());
     };
 
     useEffect(() => {
@@ -56,7 +62,7 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
 
     return (
       <div className={className} ref={divRef}>
-        {parentSize && (
+        {wrapperSize && (
           <>
             <Layer
               zIndex={zIndexCalcurator.getZIndex("layer1empty")}
@@ -73,15 +79,13 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
                 <Panel
                   title="弟:サスケ@音♪"
                   position={childPosition}
-                  size={{ width: 180, height: 180 }}
-                  parentSize={parentSize}
+                  size={childSize}
+                  parentSize={wrapperSize}
                   zIndex={0}
                   colorHue={60}
-                  onMove={(smartRect: SmartRect) => {
-                    setChildRect(smartRect);
-                  }}
+                  onMove={(smartRect: SmartRect) => {}}
                   onRelationOpen={(thisRect: SmartRect) => {
-                    setParentPosition(thisRect.calcPositionToOpen(parentRect));
+                    setParentPosition(thisRect.calcPositionToOpen(parentSize));
                     setLayerOrder([
                       "layer1empty",
                       "layer2child",
@@ -100,15 +104,13 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
                 <Panel
                   title="兄:イタチ@暁☆"
                   position={parentPosition}
-                  size={{ width: 200, height: 500 }}
-                  parentSize={parentSize}
+                  size={parentSize}
+                  parentSize={wrapperSize}
                   zIndex={0}
                   colorHue={120}
-                  onMove={(smartRect: SmartRect) => {
-                    setParentRect(smartRect);
-                  }}
+                  onMove={(smartRect: SmartRect) => {}}
                   onRelationOpen={(thisRect: SmartRect) => {
-                    setChildPosition(thisRect.calcPositionToOpen(childRect));
+                    setChildPosition(thisRect.calcPositionToOpen(childSize));
 
                     setLayerOrder([
                       "layer1empty",
