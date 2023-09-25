@@ -32,20 +32,6 @@ interface PanelProps {
 }
 
 const duration = 300;
-
-const defaultStyle = {
-  transition: `all ${duration}ms ease-in-out`,
-  opacity: 0,
-};
-
-const transitionStyles: Record<TransitionStatus, React.CSSProperties> = {
-  entering: { opacity: 1 },
-  entered: { opacity: 1 },
-  exiting: { opacity: 0.5 },
-  exited: { opacity: 0.5 },
-  unmounted: { opacity: 0.5 },
-};
-
 export const Panel: FC<PanelProps> = styled(
   ({
     className,
@@ -72,12 +58,25 @@ export const Panel: FC<PanelProps> = styled(
     const renderedRect = useGetSmartRect(
       position,
       parentSize,
-      onMove,
       panelRef,
-      transitionState
+      transitionState,
+      onMove
     );
 
     const spaceWidestDirection = renderedRect?.calcSpaceWideDirection();
+
+    const defaultStyle = {
+      transition: `all ${duration}ms ease-in-out`,
+      opacity: 0,
+    };
+
+    const transitionStyles: Record<TransitionStatus, React.CSSProperties> = {
+      entering: { opacity: 1 },
+      entered: { opacity: 1 },
+      exiting: { opacity: 0.5 },
+      exited: { opacity: 0.5 },
+      unmounted: { opacity: 0.5 },
+    };
 
     return (
       <article
@@ -170,7 +169,6 @@ export const Panel: FC<PanelProps> = styled(
   display: flex;
   flex-direction: column;
 
-  /*transition: top 0.9s, left 0.9s, width 0.9s, height 0.9s; アニメーションをオンにしちゃうと、場所がおかしくなる*/
   pointer-events: auto;
   > .e-header {
     //flex-basis: 0;
@@ -212,7 +210,6 @@ export const ProxyPanel: FC<PanelPropsWithoutRef> = (
   props: PanelPropsWithoutRef
 ) => {
   const panelRef = useRef(null);
-  const inProp = true;
   const isActive = props.isActive;
   return (
     <Transition nodeRef={panelRef} in={isActive} timeout={duration}>

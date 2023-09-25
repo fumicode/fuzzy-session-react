@@ -11,8 +11,33 @@ interface PanelSystemViewModel extends ViewModel<string> {
   //string: テキトーな型
 }
 
+type RelationType = "friend" | "brother" | "trusting";
+
+class CharactorRelation {
+  constructor(readonly target: Charactor, readonly relation: RelationType) {}
+}
+class Charactor {
+  constructor(
+    readonly name: string,
+    public relatedCharactors: CharactorRelation[] //一時的にmutableにしておく
+  ) {}
+}
+
+const itachi = new Charactor("イタチ", []);
+const sasuke = new Charactor("サスケ", []);
+const naruto = new Charactor("ナルト", []);
+
+itachi.relatedCharactors.push(new CharactorRelation(sasuke, "brother"));
+sasuke.relatedCharactors.push(new CharactorRelation(itachi, "brother"));
+itachi.relatedCharactors.push(new CharactorRelation(naruto, "trusting"));
+naruto.relatedCharactors.push(new CharactorRelation(sasuke, "friend"));
+sasuke.relatedCharactors.push(new CharactorRelation(naruto, "friend"));
+
+const charactorsData = [itachi, sasuke, naruto];
+
 export const PanelSystem: FC<PanelSystemViewModel> = styled(
   ({ className }: PanelSystemViewModel) => {
+    const [charactors, setCharactors] = useState<Charactor[]>(charactorsData);
     const [layerOrder, setLayerOrder] = useState<string[]>([
       "layer1empty",
       "layer2child",

@@ -4,11 +4,11 @@ import SmartRect from "./01_SmartRect";
 
 //TODO: 抽象化？早すぎたかしら？？ もうすこし出てからでいいかも
 const useGetSmartRect = (
-  position: Point2,
-  parentSize: Size2,
-  onMove: (smartRect: SmartRect) => void = () => {},
-  ref: RefObject<HTMLDivElement>,
-  transitionState: string
+  position: Point2, //位置
+  parentSize: Size2, //親のサイズ
+  ref: RefObject<HTMLDivElement>, //要素のref
+  transitionState: string, //変更を検知するために使う
+  onMove: (smartRect: SmartRect) => void = () => {}
 ): SmartRect | undefined => {
   const [renderedRect, setRenderedRect] = useState<SmartRect | undefined>(
     undefined
