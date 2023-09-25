@@ -1,10 +1,11 @@
-import { FC, RefObject, useEffect } from "react";
+import { FC, RefObject, useEffect, useRef } from "react";
 import styled from "styled-components";
 import React from "react";
 import SmartRect from "./01_SmartRect";
 import { Point2, Size2 } from "../../01_Utils/00_Point";
 import useGetSmartRect from "./01_useGetSmartRect";
 import classNames from "classnames";
+import { Transition, TransitionStatus } from "react-transition-group";
 
 interface PanelProps {
   //string: テキトーな型
@@ -19,13 +20,31 @@ interface PanelProps {
 
   zIndex?: number;
   colorHue?: number;
+  isActive: boolean;
 
   children?: React.ReactNode;
 
-  onMove(smartRect: SmartRect): void;
+  forwardRef: RefObject<HTMLDivElement>;
+  transitionState: TransitionStatus;
 
+  onMove(smartRect: SmartRect): void;
   onRelationOpen(smartRect: SmartRect): void;
 }
+
+const duration = 300;
+
+const defaultStyle = {
+  transition: `opacity ${duration}ms ease-in-out`,
+  opacity: 0,
+};
+
+const transitionStyles: Record<TransitionStatus, React.CSSProperties> = {
+  entering: { opacity: 1 },
+  entered: { opacity: 1 },
+  exiting: { opacity: 0.5 },
+  exited: { opacity: 0.5 },
+  unmounted: { opacity: 0.5 },
+};
 
 export const Panel: FC<PanelProps> = styled(
   ({
@@ -41,15 +60,20 @@ export const Panel: FC<PanelProps> = styled(
 
     children,
 
+    forwardRef,
+    transitionState,
+
     onMove,
     onRelationOpen,
   }: PanelProps) => {
     console.log("render");
 
-    const { renderedRect, ref: panelRef } = useGetSmartRect(
+    const panelRef = forwardRef;
+    const renderedRect = useGetSmartRect(
       position,
       parentSize,
-      onMove
+      onMove,
+      panelRef
     );
 
     const spaceWidestDirection = renderedRect?.calcSpaceWideDirection();
@@ -62,6 +86,8 @@ export const Panel: FC<PanelProps> = styled(
           top: `${position.y}px`,
           width: `${size.width}px`,
           height: `${size.height}px`,
+          ...defaultStyle,
+          ...transitionStyles[transitionState],
         }}
         ref={panelRef}
       >
@@ -180,4 +206,20 @@ export const Panel: FC<PanelProps> = styled(
   }
 `;
 
-export default Panel;
+type PanelPropsWithoutRef = Omit<PanelProps, "forwardRef" | "transitionState">;
+export const ProxyPanel: FC<PanelPropsWithoutRef> = (
+  props: PanelPropsWithoutRef
+) => {
+  const panelRef = useRef(null);
+  const inProp = true;
+  const isActive = props.isActive;
+  return (
+    <Transition nodeRef={panelRef} in={isActive} timeout={duration}>
+      {(state) => (
+        <Panel {...props} forwardRef={panelRef} transitionState={state} />
+      )}
+    </Transition>
+  );
+};
+
+export default ProxyPanel;

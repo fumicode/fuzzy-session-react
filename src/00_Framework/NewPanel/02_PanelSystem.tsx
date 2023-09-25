@@ -83,6 +83,7 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
                   parentSize={wrapperSize}
                   zIndex={0}
                   colorHue={60}
+                  isActive={layerOrder[2] === "layer2child"}
                   onMove={(smartRect: SmartRect) => {}}
                   onRelationOpen={(thisRect: SmartRect) => {
                     setParentPosition(thisRect.calcPositionToOpen(parentSize));
@@ -108,6 +109,7 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
                   parentSize={wrapperSize}
                   zIndex={0}
                   colorHue={120}
+                  isActive={layerOrder[2] === "layer3parent"}
                   onMove={(smartRect: SmartRect) => {}}
                   onRelationOpen={(thisRect: SmartRect) => {
                     setChildPosition(thisRect.calcPositionToOpen(childSize));

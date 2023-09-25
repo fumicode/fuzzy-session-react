@@ -6,13 +6,12 @@ import SmartRect from "./01_SmartRect";
 const useGetSmartRect = (
   position: Point2,
   parentSize: Size2,
-  onMove: (smartRect: SmartRect) => void = () => {}
-): { renderedRect: SmartRect | undefined; ref: RefObject<HTMLDivElement> } => {
+  onMove: (smartRect: SmartRect) => void = () => {},
+  ref: RefObject<HTMLDivElement>
+): SmartRect | undefined => {
   const [renderedRect, setRenderedRect] = useState<SmartRect | undefined>(
     undefined
   );
-
-  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     console.log("useGetSmartRect>useEffect");
@@ -29,10 +28,7 @@ const useGetSmartRect = (
     onMove(smartRect);
   }, [position, parentSize]);
 
-  return {
-    renderedRect,
-    ref,
-  };
+  return renderedRect;
 };
 
 export default useGetSmartRect;
