@@ -6,11 +6,16 @@ import { Point2, Size2 } from "../../01_Utils/00_Point";
 import useGetSmartRect from "./01_useGetSmartRect";
 import classNames from "classnames";
 import { Transition, TransitionStatus } from "react-transition-group";
+import { CharactorId, CharactorRelation } from "./20_Charactor";
 
 interface PanelProps {
   //string: テキトーな型
   className?: string;
+
+  charactorId: CharactorId;
+
   title: string;
+  charactorRelations: CharactorRelation[];
 
   position: Point2;
 
@@ -28,14 +33,16 @@ interface PanelProps {
   transitionState: TransitionStatus;
 
   onMove(smartRect: SmartRect): void;
-  onRelationOpen(smartRect: SmartRect): void;
+  onRelationOpen(smartRect: SmartRect, id: string): void;
 }
 
 const duration = 300;
 export const Panel: FC<PanelProps> = styled(
   ({
     className,
+    charactorId,
     title: name,
+    charactorRelations,
 
     position,
     size,
@@ -92,24 +99,31 @@ export const Panel: FC<PanelProps> = styled(
         ref={panelRef}
       >
         <header className="e-header">
-          <h2 className="e-title">{name}</h2>
+          <h2 className="e-title">
+            #{charactorId} {name}
+          </h2>
         </header>
         <div
           className="e-body"
           style={{ background: `hsl(${colorHue}, 50%, 50%)` }}
         >
           {children}
-          <button
-            onClick={() => {
-              if (!renderedRect) {
-                return;
-              }
 
-              onRelationOpen(renderedRect);
-            }}
-          >
-            兄弟は？
-          </button>
+          {charactorRelations.map((relation) => {
+            return (
+              <button
+                onClick={() => {
+                  if (!renderedRect) {
+                    return;
+                  }
+
+                  onRelationOpen(renderedRect, relation.target.id);
+                }}
+              >
+                {relation.relation}:{relation.target.name}
+              </button>
+            );
+          })}
 
           {renderedRect ? (
             <table>

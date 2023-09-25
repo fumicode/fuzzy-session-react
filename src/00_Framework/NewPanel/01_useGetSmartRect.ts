@@ -27,7 +27,7 @@ const useGetSmartRect = (
     const smartRect = new SmartRect(rect, parentSize);
     setRenderedRect(smartRect);
     onMove(smartRect);
-  }, [position, parentSize, transitionState]);
+  }, [position.x, position.y, parentSize, transitionState]);
 
   return renderedRect;
 };
