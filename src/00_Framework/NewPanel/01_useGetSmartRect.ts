@@ -7,7 +7,8 @@ const useGetSmartRect = (
   position: Point2,
   parentSize: Size2,
   onMove: (smartRect: SmartRect) => void = () => {},
-  ref: RefObject<HTMLDivElement>
+  ref: RefObject<HTMLDivElement>,
+  transitionState: string
 ): SmartRect | undefined => {
   const [renderedRect, setRenderedRect] = useState<SmartRect | undefined>(
     undefined
@@ -26,7 +27,7 @@ const useGetSmartRect = (
     const smartRect = new SmartRect(rect, parentSize);
     setRenderedRect(smartRect);
     onMove(smartRect);
-  }, [position, parentSize]);
+  }, [position, parentSize, transitionState]);
 
   return renderedRect;
 };

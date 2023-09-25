@@ -34,7 +34,7 @@ interface PanelProps {
 const duration = 300;
 
 const defaultStyle = {
-  transition: `opacity ${duration}ms ease-in-out`,
+  transition: `all ${duration}ms ease-in-out`,
   opacity: 0,
 };
 
@@ -73,7 +73,8 @@ export const Panel: FC<PanelProps> = styled(
       position,
       parentSize,
       onMove,
-      panelRef
+      panelRef,
+      transitionState
     );
 
     const spaceWidestDirection = renderedRect?.calcSpaceWideDirection();
