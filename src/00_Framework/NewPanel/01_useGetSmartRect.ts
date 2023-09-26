@@ -15,14 +15,11 @@ const useGetSmartRect = (
   );
 
   useEffect(() => {
-    console.log("useGetSmartRect>useEffect");
-    console.log(ref.current);
     const panelEl = ref.current;
     if (panelEl === null) {
       return;
     }
 
-    console.log(panelEl.getBoundingClientRect());
     const rect = panelEl.getBoundingClientRect();
     const smartRect = new SmartRect(rect, parentSize);
     setRenderedRect(smartRect);

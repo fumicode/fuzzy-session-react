@@ -1,4 +1,4 @@
-import { FC, RefObject, useEffect, useRef } from "react";
+import { FC, RefObject, forwardRef, useEffect, useRef } from "react";
 import styled from "styled-components";
 import React from "react";
 import SmartRect from "./01_SmartRect";
@@ -29,152 +29,158 @@ interface PanelProps {
 
   children?: React.ReactNode;
 
-  forwardRef: RefObject<HTMLDivElement>;
   transitionState: TransitionStatus;
 
   onMove(smartRect: SmartRect): void;
   onRelationOpen(smartRect: SmartRect, id: string): void;
 }
 
-const duration = 300;
-export const Panel: FC<PanelProps> = styled(
-  ({
-    className,
-    charactorId,
-    title: name,
-    charactorRelations,
+const duration = 1000;
+export const Panel = styled(
+  forwardRef<HTMLDivElement, PanelProps>(
+    (
+      {
+        className,
+        charactorId,
+        title: name,
+        charactorRelations,
 
-    position,
-    size,
-    parentSize,
+        position,
+        size,
+        parentSize,
 
-    zIndex: z,
-    colorHue,
+        zIndex: z,
+        colorHue,
 
-    children,
+        children,
 
-    forwardRef,
-    transitionState,
+        transitionState,
 
-    onMove,
-    onRelationOpen,
-  }: PanelProps) => {
-    console.log("render");
+        onMove,
+        onRelationOpen,
+      }: PanelProps,
+      panelRef
+    ) => {
+      const renderedRect = useGetSmartRect(
+        position,
+        parentSize,
+        panelRef as RefObject<HTMLDivElement>,
+        transitionState,
+        onMove
+      );
 
-    const panelRef = forwardRef;
-    const renderedRect = useGetSmartRect(
-      position,
-      parentSize,
-      panelRef,
-      transitionState,
-      onMove
-    );
+      const spaceWidestDirection = renderedRect?.calcSpaceWideDirection();
 
-    const spaceWidestDirection = renderedRect?.calcSpaceWideDirection();
+      const defaultStyle = {
+        transition: `left ${duration}ms ease-in-out,
+          top ${duration}ms ease-in-out, 
+          width ${duration}ms ease-in-out, 
+          height ${duration}ms ease-in-out, 
+          opacity ${duration}ms ease-in-out`,
+        opacity: 0,
+      };
 
-    const defaultStyle = {
-      transition: `all ${duration}ms ease-in-out`,
-      opacity: 0,
-    };
+      const transitionStyles: Record<TransitionStatus, React.CSSProperties> = {
+        entering: { opacity: 1 },
+        entered: { opacity: 1 },
+        exiting: { opacity: 0.5 },
+        exited: { opacity: 0.5 },
+        unmounted: { opacity: 0.5 },
+      };
 
-    const transitionStyles: Record<TransitionStatus, React.CSSProperties> = {
-      entering: { opacity: 1 },
-      entered: { opacity: 1 },
-      exiting: { opacity: 0.5 },
-      exited: { opacity: 0.5 },
-      unmounted: { opacity: 0.5 },
-    };
-
-    return (
-      <article
-        className={className}
-        style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          width: `${size.width}px`,
-          height: `${size.height}px`,
-          ...defaultStyle,
-          ...transitionStyles[transitionState],
-        }}
-        ref={panelRef}
-      >
-        <header className="e-header">
-          <h2 className="e-title">
-            #{charactorId} {name}
-          </h2>
-        </header>
-        <div
-          className="e-body"
-          style={{ background: `hsl(${colorHue}, 50%, 50%)` }}
+      return (
+        <article
+          className={className}
+          style={{
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            width: `${size.width}px`,
+            height: `${size.height}px`,
+            ...defaultStyle,
+            ...transitionStyles[transitionState],
+          }}
+          ref={panelRef}
         >
-          {children}
+          <header className="e-header">
+            <h2 className="e-title">
+              #{charactorId} {name}
+            </h2>
+          </header>
+          <div
+            className="e-body"
+            style={{ background: `hsl(${colorHue}, 50%, 50%)` }}
+          >
+            {children}
 
-          {charactorRelations.map((relation) => {
-            return (
-              <button
-                onClick={() => {
-                  if (!renderedRect) {
-                    return;
-                  }
+            {charactorRelations.map((relation) => {
+              return (
+                <button
+                  onClick={() => {
+                    if (!renderedRect) {
+                      return;
+                    }
 
-                  onRelationOpen(renderedRect, relation.target.id);
-                }}
-              >
-                {relation.relation}:{relation.target.name}
-              </button>
-            );
-          })}
+                    onRelationOpen(renderedRect, relation.target.id);
+                  }}
+                >
+                  {relation.relation}:{relation.target.name}
+                </button>
+              );
+            })}
 
-          {renderedRect ? (
-            <table>
-              <tr>
-                <td
-                  className={classNames({
-                    "m-widest": spaceWidestDirection === "left",
-                  })}
-                >
-                  ◀{Math.floor(renderedRect.leftSpace)}
-                </td>
-                <td>↑{Math.floor(renderedRect.top)}</td>
-                <td
-                  className={classNames({
-                    "m-widest": spaceWidestDirection === "top",
-                  })}
-                >
-                  ▲{Math.floor(renderedRect.topSpace)}
-                </td>
-              </tr>
-              <tr>
-                <td>←{Math.floor(renderedRect.left)}</td>
-                <td></td>
-                <td>{Math.floor(renderedRect.right)}→</td>
-              </tr>
-              <tr>
-                <td
-                  className={classNames({
-                    "m-widest": spaceWidestDirection === "bottom",
-                  })}
-                >
-                  ▼{Math.floor(renderedRect.bottomSpace)}
-                </td>
-                <td>↓{Math.floor(renderedRect.bottom)}</td>
-                <td
-                  className={classNames({
-                    "m-widest": spaceWidestDirection === "right",
-                  })}
-                >
-                  {Math.floor(renderedRect.rightSpace)}▶
-                </td>
-              </tr>
-            </table>
-          ) : (
-            //チラツクけどいったんおいておく
-            <p style={{ background: "red" }}>no rect yet</p>
-          )}
-        </div>
-      </article>
-    );
-  }
+            {renderedRect ? (
+              <table>
+                <tbody>
+                  <tr>
+                    <td
+                      className={classNames({
+                        "m-widest": spaceWidestDirection === "left",
+                      })}
+                    >
+                      ◀{Math.floor(renderedRect.leftSpace)}
+                    </td>
+                    <td>↑{Math.floor(renderedRect.top)}</td>
+                    <td
+                      className={classNames({
+                        "m-widest": spaceWidestDirection === "top",
+                      })}
+                    >
+                      ▲{Math.floor(renderedRect.topSpace)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>←{Math.floor(renderedRect.left)}</td>
+                    <td></td>
+                    <td>{Math.floor(renderedRect.right)}→</td>
+                  </tr>
+                  <tr>
+                    <td
+                      className={classNames({
+                        "m-widest": spaceWidestDirection === "bottom",
+                      })}
+                    >
+                      ▼{Math.floor(renderedRect.bottomSpace)}
+                    </td>
+                    <td>↓{Math.floor(renderedRect.bottom)}</td>
+                    <td
+                      className={classNames({
+                        "m-widest": spaceWidestDirection === "right",
+                      })}
+                    >
+                      {Math.floor(renderedRect.rightSpace)}▶
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            ) : (
+              //チラツクけどいったんおいておく
+              <p style={{ background: "red" }}>no rect yet</p>
+            )}
+          </div>
+        </article>
+      );
+    }
+  )
 )`
   position: absolute;
 
@@ -223,13 +229,12 @@ type PanelPropsWithoutRef = Omit<PanelProps, "forwardRef" | "transitionState">;
 export const ProxyPanel: FC<PanelPropsWithoutRef> = (
   props: PanelPropsWithoutRef
 ) => {
-  const panelRef = useRef(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const isActive = props.isActive;
+
   return (
     <Transition nodeRef={panelRef} in={isActive} timeout={duration}>
-      {(state) => (
-        <Panel {...props} forwardRef={panelRef} transitionState={state} />
-      )}
+      {(state) => <Panel {...props} ref={panelRef} transitionState={state} />}
     </Transition>
   );
 };

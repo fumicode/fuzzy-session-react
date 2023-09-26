@@ -77,7 +77,6 @@ export default class SmartRect implements DOMRectReadOnly {
     );
 
     const direction = directions[maxIndex];
-    console.log({ maxSpace, maxIndex, direction });
 
     return direction;
   }

@@ -79,81 +79,79 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
 
     return (
       <div className={className} ref={divRef}>
-        {wrapperSize && (
-          <>
-            {layerOrder.map((layerId, index) => {
-              const charaId = layerId;
-              if (!charaId) {
-                return;
-              }
-              const charactor = charactors.get(charaId);
-              if (charactor === undefined) {
-                throw new Error(`charactor is undefined. charaId: ${charaId}`);
-              }
+        {wrapperSize &&
+          [...charactors.keys()].map((layerId, index) => {
+            const charaId = layerId;
+            if (!charaId) {
+              return;
+            }
+            const charactor = charactors.get(charaId);
+            if (charactor === undefined) {
+              throw new Error(`charactor is undefined. charaId: ${charaId}`);
+            }
 
-              return (
-                <Layer
-                  zIndex={zIndexCalcurator.getZIndex(layerId)}
-                  colorHue={index * 60}
-                  key={layerId}
-                >
-                  Layer {layerId}
-                  <div className="e-window">
-                    <Panel
-                      charactorId={charactor.id}
-                      title={charactor.name}
-                      charactorRelations={charactor.relatedCharactors}
-                      position={charactor.position}
-                      size={charactor.size}
-                      parentSize={wrapperSize}
-                      zIndex={0}
-                      colorHue={60}
-                      isActive={layerOrder[2] === "layer2child"}
-                      onMove={(smartRect: SmartRect) => {}}
-                      onRelationOpen={(
-                        thisRect: SmartRect,
-                        relatedId: string
-                      ) => {
-                        //検索
-                        const relatedChara = charactors.get(relatedId);
+            const colorHue = (index * 120) / charactors.size;
+            return (
+              <Layer
+                zIndex={zIndexCalcurator.getZIndex(layerId)}
+                colorHue={colorHue}
+                key={layerId}
+              >
+                Layer {layerId}
+                <div className="e-window">
+                  <Panel
+                    charactorId={charactor.id}
+                    title={charactor.name}
+                    charactorRelations={charactor.relatedCharactors}
+                    position={charactor.position}
+                    size={charactor.size}
+                    parentSize={wrapperSize}
+                    zIndex={0}
+                    colorHue={colorHue}
+                    isActive={layerOrder[2] === charactor.id}
+                    onMove={(smartRect: SmartRect) => {}}
+                    onRelationOpen={(
+                      thisRect: SmartRect,
+                      relatedId: string
+                    ) => {
+                      //検索
+                      const relatedChara = charactors.get(relatedId);
 
-                        if (relatedChara === undefined) {
-                          throw new Error(
-                            `charactor is undefined. id: ${relatedId}`
-                          );
+                      if (relatedChara === undefined) {
+                        throw new Error(
+                          `charactor is undefined. id: ${relatedId}`
+                        );
+                      }
+
+                      try {
+                        //変更
+                        const newPos = thisRect.calcPositionToOpen(
+                          relatedChara.size
+                        );
+                        const newChara = relatedChara.moveTo(newPos);
+                        const newCharas = update(charactors, {
+                          $add: [[relatedChara.id, newChara]],
+                        });
+
+                        //保存
+                        setCharactors(newCharas);
+                        const index = layerOrder.indexOf(relatedChara.id);
+                        const spliced = layerOrder.slice();
+                        spliced.splice(index, 1);
+                        setLayerOrder([...spliced, relatedChara.id]);
+                      } catch (e) {
+                        if (e instanceof Error) {
+                          alert(e.message);
+                        } else {
+                          alert(e);
                         }
-
-                        try {
-                          //変更
-                          const newPos = thisRect.calcPositionToOpen(
-                            relatedChara.size
-                          );
-                          const newChara = relatedChara.moveTo(newPos);
-                          const newCharas = update(charactors, {
-                            $add: [[relatedChara.id, newChara]],
-                          });
-
-                          //保存
-                          setCharactors(newCharas);
-                          const index = layerOrder.indexOf(relatedChara.id);
-                          const spliced = layerOrder.slice();
-                          spliced.splice(index, 1);
-                          setLayerOrder([...spliced, relatedChara.id]);
-                        } catch (e) {
-                          if (e instanceof Error) {
-                            alert(e.message);
-                          } else {
-                            alert(e);
-                          }
-                        }
-                      }}
-                    ></Panel>
-                  </div>
-                </Layer>
-              );
-            })}
-          </>
-        )}
+                      }
+                    }}
+                  ></Panel>
+                </div>
+              </Layer>
+            );
+          })}
       </div>
     );
   }

@@ -20,8 +20,6 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
       undefined
     );
 
-    console.log("render panel system");
-
     if (rect) {
     }
     const handleChangeWindow = () => {
@@ -29,7 +27,6 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
       if (!doc) {
         throw new Error("panel not found");
       }
-      console.log("おまちかね！handle change window だよ！");
 
       setLayerOrder(layerOrder);
       setChildPosition(childPosition);
@@ -72,7 +69,6 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
 
     useEffect(() => {
       handleChangeWindow();
-      console.log({ childPosition, parentPosition });
     }, [
       childPosition.x,
       childPosition.y,

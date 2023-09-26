@@ -2,7 +2,6 @@ import { FC, RefObject, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import ViewModel from "../00_ViewModel";
 import React from "react";
-import { log } from "console";
 import SmartRect from "./01_SmartRect";
 import { Point2, Size2 } from "../../01_Utils/00_Point";
 
@@ -75,20 +74,13 @@ export const Panel: FC<PanelProps> = styled(
     const [rect, setRect] = React.useState<SmartRect | undefined>(undefined);
 
     const [zIndex, setZIndex] = React.useState<number>(z || 0);
-    console.log(`render panel "${name}"`);
-
-    console.log({ position });
 
     useEffect(() => {
-      console.log("useEffect panel ref calc");
-
       if (phase === 1) {
         return;
       }
       const panel = panelRef.current;
       if (!panel) {
-        console.log("panel not found");
-
         return;
       }
 
@@ -101,8 +93,6 @@ export const Panel: FC<PanelProps> = styled(
       }
 
       /////
-
-      console.log("parentSize", parentSize);
 
       const r = new SmartRect(panel.getBoundingClientRect(), parentSize);
 
@@ -127,7 +117,6 @@ export const Panel: FC<PanelProps> = styled(
       : false;
 
     useEffect(() => {
-      console.log("useEffect reset phase");
       setPhase(isMoved ? 0 : 1);
     }, [phase]);
 
