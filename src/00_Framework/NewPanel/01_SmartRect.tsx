@@ -1,4 +1,8 @@
+import { FC } from "react";
 import { Point2, Size2 } from "../../01_Utils/00_Point";
+import ViewModel from "../00_ViewModel";
+import styled from "styled-components";
+import classNames from "classnames";
 
 type Direction = "top" | "right" | "bottom" | "left";
 const directions: Direction[] = ["top", "right", "bottom", "left"];
@@ -140,3 +144,70 @@ export default class SmartRect implements DOMRectReadOnly {
     };
   }
 }
+
+export const SmartRectView: FC<ViewModel<SmartRect>> = styled(
+  ({ className, main: rect }: ViewModel<SmartRect>) => {
+    return (
+      <div className={className}>
+        <table>
+          <tbody>
+            <tr>
+              <td
+                className={classNames({
+                  "m-widest": rect.calcSpaceWideDirection() === "left",
+                })}
+              >
+                ◀{Math.floor(rect.leftSpace)}
+              </td>
+              <td>↑{Math.floor(rect.top)}</td>
+              <td
+                className={classNames({
+                  "m-widest": rect.calcSpaceWideDirection() === "top",
+                })}
+              >
+                ▲{Math.floor(rect.topSpace)}
+              </td>
+            </tr>
+            <tr>
+              <td>←{Math.floor(rect.left)}</td>
+              <td></td>
+              <td>{Math.floor(rect.right)}→</td>
+            </tr>
+            <tr>
+              <td
+                className={classNames({
+                  "m-widest": rect.calcSpaceWideDirection() === "bottom",
+                })}
+              >
+                ▼{Math.floor(rect.bottomSpace)}
+              </td>
+              <td>↓{Math.floor(rect.bottom)}</td>
+              <td
+                className={classNames({
+                  "m-widest": rect.calcSpaceWideDirection() === "right",
+                })}
+              >
+                {Math.floor(rect.rightSpace)}▶
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+)`
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 10000;
+  background: white;
+  border: 1px solid black;
+  padding: 3px;
+  font-size: 9px;
+
+  td {
+    &.m-widest {
+      font-weight: bold;
+    }
+  }
+`;
