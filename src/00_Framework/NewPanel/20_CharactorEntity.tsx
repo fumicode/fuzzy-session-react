@@ -14,23 +14,8 @@ export default class CharactorEntity {
   constructor(
     readonly id: CharactorId,
     readonly name: string,
-    public relatedCharactors: CharactorRelation[], //一時的にmutableにしておく
-
-    //ここから下はviewに対する情報
-    readonly position: Point2,
-    readonly size: Size2
+    public relatedCharactors: CharactorRelation[] //一時的にmutableにしておく
   ) {}
-
-  moveTo(newPosition: Point2): CharactorEntity {
-    return new CharactorEntity(
-      this.id,
-      this.name,
-      this.relatedCharactors,
-
-      newPosition,
-      this.size
-    );
-  }
 }
 
 interface CharactorViewModel extends ViewModel<CharactorEntity> {
@@ -49,7 +34,7 @@ export const CharactorView = styled(
     return (
       <article className={className}>
         <header className="e-header">
-          <p>Charactor #{charactor.id}</p>
+          <p className="e-type-id">Charactor #{charactor.id}</p>
           <h2 className="e-title">{charactor.name}</h2>
         </header>
         <div
@@ -75,14 +60,24 @@ export const CharactorView = styled(
 )`
   display: flex;
   flex-direction: column;
+
   > .e-header {
+    padding: 5px;
     //flex-basis: 0;
     flex-grow: 0;
     flex-shrink: 0;
 
+    background: white;
     cursor: move;
     //選択させない
     user-select: none;
+
+    > .e-type-id {
+      margin: 0;
+      padding: 0;
+      line-height: 1;
+      font-size: 0.8em;
+    }
 
     > .e-title {
       margin: 0;
@@ -95,6 +90,8 @@ export const CharactorView = styled(
     //flex-basis: 0;
     flex-grow: 1;
     flex-shrink: 1;
+
+    padding: 5px;
 
     overflow: scroll;
     transition: background 0.9s;

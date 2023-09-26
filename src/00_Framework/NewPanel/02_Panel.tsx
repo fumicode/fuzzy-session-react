@@ -6,6 +6,10 @@ import { Point2, Size2 } from "../../01_Utils/00_Point";
 import useGetSmartRect from "./01_useGetSmartRect";
 import { Transition, TransitionStatus } from "react-transition-group";
 
+class CharactorBoxViewModel {
+  constructor() {}
+}
+
 interface PanelProps {
   //string: テキトーな型
   className?: string;
@@ -17,7 +21,6 @@ interface PanelProps {
   parentSize: Size2;
 
   zIndex?: number;
-  colorHue: number;
   isActive: boolean;
 
   children: (renderedRect: SmartRect) => React.ReactNode;
@@ -83,7 +86,9 @@ export const Panel = styled(
           {renderedRect && children(renderedRect)}
 
           {renderedRect && (
-            <SmartRectView main={renderedRect} className="e-smartRect" />
+            <div className="e-rect-info">
+              <SmartRectView main={renderedRect} className="e-smartRect" />
+            </div>
           )}
         </div>
       );
@@ -91,11 +96,18 @@ export const Panel = styled(
   )
 )`
   position: absolute;
-
-  background: white;
+  background: hsla(0, 0%, 0%, 0.1);
+  box-shadow: 0 0 10px 3px hsla(0, 0%, 0%, 0.5);
 
   pointer-events: auto;
-  > .e-article {
+
+  > .e-rect-info {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.5;
   }
 `;
 

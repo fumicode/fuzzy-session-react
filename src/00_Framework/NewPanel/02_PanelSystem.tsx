@@ -16,24 +16,46 @@ interface PanelSystemViewModel extends ViewModel<string> {
   //string: テキトーな型
 }
 
-const itachi = new CharactorEntity(
-  "0",
-  "イタチ",
-  [],
+class PanelBoxViewModel<T> {
+  constructor(
+    readonly id: string,
+    readonly main: T,
+    readonly position: Point2,
+    readonly size: Size2
+  ) {}
+
+  moveTo(newPosition: Point2): this {
+    return new PanelBoxViewModel<T>(
+      this.id,
+      this.main,
+      newPosition,
+      this.size
+    ) as this;
+  }
+}
+
+const itachi = new CharactorEntity("0", "イタチ", []);
+
+const itachiBVM = new PanelBoxViewModel<CharactorEntity>(
+  itachi.id,
+  itachi,
   { x: 100, y: 100 },
   { width: 200, height: 300 }
 );
-const sasuke = new CharactorEntity(
-  "1",
-  "サスケ",
-  [],
+
+const sasuke = new CharactorEntity("1", "サスケ", []);
+
+const sasukeBVM = new PanelBoxViewModel<CharactorEntity>(
+  sasuke.id,
+  sasuke,
   { x: 300, y: 300 },
   { width: 180, height: 180 }
 );
-const naruto = new CharactorEntity(
-  "2",
-  "ナルト",
-  [],
+
+const naruto = new CharactorEntity("2", "ナルト", []);
+const narutoBVM = new PanelBoxViewModel<CharactorEntity>(
+  naruto.id,
+  naruto,
   { x: 500, y: 500 },
   { width: 180, height: 180 }
 );
@@ -45,11 +67,13 @@ naruto.relatedCharactors.push(new CharactorRelation(sasuke, "friend"));
 sasuke.relatedCharactors.push(new CharactorRelation(naruto, "friend"));
 
 export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
-  const [charactors, setCharactors] = useState<Map<string, CharactorEntity>>(
+  const [charactors, setCharactors] = useState<
+    Map<string, PanelBoxViewModel<CharactorEntity>>
+  >(
     new Map([
-      ["0", itachi],
-      ["1", sasuke],
-      ["2", naruto],
+      ["0", itachiBVM],
+      ["1", sasukeBVM],
+      ["2", narutoBVM],
     ])
   );
   const [layerOrder, setLayerOrder] = useState<string[]>(
@@ -118,8 +142,8 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
           if (!charaId) {
             return;
           }
-          const charactor = charactors.get(charaId);
-          if (charactor === undefined) {
+          const charactorBVM = charactors.get(charaId);
+          if (charactorBVM === undefined) {
             throw new Error(`charactor is undefined. charaId: ${charaId}`);
           }
 
@@ -133,17 +157,16 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
               Layer {layerId}
               <div className="e-window">
                 <Panel
-                  position={charactor.position}
-                  size={charactor.size}
+                  position={charactorBVM.position}
+                  size={charactorBVM.size}
                   parentSize={wrapperSize}
                   zIndex={0}
-                  colorHue={colorHue}
-                  isActive={layerOrder[2] === charactor.id}
+                  isActive={layerOrder[2] === charactorBVM.id}
                   onMove={(smartRect: SmartRect) => {}}
                 >
                   {(renderedRect) => (
                     <CharactorView
-                      main={charactor}
+                      main={charactorBVM.main}
                       colorHue={colorHue}
                       onRelationOpen={(rel) => {
                         if (!renderedRect) {
