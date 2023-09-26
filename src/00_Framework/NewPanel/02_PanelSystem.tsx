@@ -77,6 +77,37 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
       };
     }, []);
 
+    const handleRelationOpen = (thisRect: SmartRect, relatedId: string) => {
+      //検索
+      const relatedChara = charactors.get(relatedId);
+
+      if (relatedChara === undefined) {
+        throw new Error(`charactor is undefined. id: ${relatedId}`);
+      }
+
+      try {
+        //変更
+        const newPos = thisRect.calcPositionToOpen(relatedChara.size);
+        const newChara = relatedChara.moveTo(newPos);
+        const newCharas = update(charactors, {
+          $add: [[relatedChara.id, newChara]],
+        });
+
+        //保存
+        setCharactors(newCharas);
+        const index = layerOrder.indexOf(relatedChara.id);
+        const spliced = layerOrder.slice();
+        spliced.splice(index, 1);
+        setLayerOrder([...spliced, relatedChara.id]);
+      } catch (e) {
+        if (e instanceof Error) {
+          alert(e.message);
+        } else {
+          alert(e);
+        }
+      }
+    };
+
     return (
       <div className={className} ref={divRef}>
         {wrapperSize &&
@@ -110,43 +141,7 @@ export const PanelSystem: FC<PanelSystemViewModel> = styled(
                     colorHue={colorHue}
                     isActive={layerOrder[2] === charactor.id}
                     onMove={(smartRect: SmartRect) => {}}
-                    onRelationOpen={(
-                      thisRect: SmartRect,
-                      relatedId: string
-                    ) => {
-                      //検索
-                      const relatedChara = charactors.get(relatedId);
-
-                      if (relatedChara === undefined) {
-                        throw new Error(
-                          `charactor is undefined. id: ${relatedId}`
-                        );
-                      }
-
-                      try {
-                        //変更
-                        const newPos = thisRect.calcPositionToOpen(
-                          relatedChara.size
-                        );
-                        const newChara = relatedChara.moveTo(newPos);
-                        const newCharas = update(charactors, {
-                          $add: [[relatedChara.id, newChara]],
-                        });
-
-                        //保存
-                        setCharactors(newCharas);
-                        const index = layerOrder.indexOf(relatedChara.id);
-                        const spliced = layerOrder.slice();
-                        spliced.splice(index, 1);
-                        setLayerOrder([...spliced, relatedChara.id]);
-                      } catch (e) {
-                        if (e instanceof Error) {
-                          alert(e.message);
-                        } else {
-                          alert(e);
-                        }
-                      }
-                    }}
+                    onRelationOpen={handleRelationOpen}
                   ></Panel>
                 </div>
               </Layer>

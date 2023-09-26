@@ -122,6 +122,7 @@ export const Panel = styled(
 
                     onRelationOpen(renderedRect, relation.target.id);
                   }}
+                  key={relation.target.id}
                 >
                   {relation.relation}:{relation.target.name}
                 </button>
