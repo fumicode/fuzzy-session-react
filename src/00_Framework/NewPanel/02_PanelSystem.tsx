@@ -66,18 +66,22 @@ itachi.relatedCharactors.push(new CharactorRelation(naruto, "trusting"));
 naruto.relatedCharactors.push(new CharactorRelation(sasuke, "friend"));
 sasuke.relatedCharactors.push(new CharactorRelation(naruto, "friend"));
 
+interface GlobalStore {
+  charactors: CharactorEntity[];
+  charactorBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
+}
+
 export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
-  const [charactors, setCharactors] = useState<
-    Map<string, PanelBoxViewModel<CharactorEntity>>
-  >(
-    new Map([
+  const [globalStore, setGlobalStore] = useState<GlobalStore>({
+    charactors: [itachi, sasuke, naruto],
+    charactorBVMs: new Map([
       ["0", itachiBVM],
       ["1", sasukeBVM],
       ["2", narutoBVM],
-    ])
-  );
+    ]),
+  });
   const [layerOrder, setLayerOrder] = useState<string[]>(
-    [...charactors].map(([_, charactor]) => `${charactor.id}`)
+    [...globalStore.charactorBVMs].map(([_, charactor]) => `${charactor.id}`)
   );
 
   const zIndexCalcurator = new ZIndexCalcurator(layerOrder);
@@ -105,26 +109,30 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
 
   const handleRelationOpen = (thisRect: SmartRect, relatedId: string) => {
     //検索
-    const relatedChara = charactors.get(relatedId);
+    const relatedCharaBVM = globalStore.charactorBVMs.get(relatedId);
 
-    if (relatedChara === undefined) {
+    if (!relatedCharaBVM) {
       throw new Error(`charactor is undefined. id: ${relatedId}`);
     }
 
     try {
       //変更
-      const newPos = thisRect.calcPositionToOpen(relatedChara.size);
-      const newChara = relatedChara.moveTo(newPos);
-      const newCharas = update(charactors, {
-        $add: [[relatedChara.id, newChara]],
-      });
+      const newPos = thisRect.calcPositionToOpen(relatedCharaBVM.size);
+      const newChara = relatedCharaBVM.moveTo(newPos);
 
       //保存
-      setCharactors(newCharas);
-      const index = layerOrder.indexOf(relatedChara.id);
+      const newGlobalStore = update(globalStore, {
+        charactorBVMs: {
+          $add: [[relatedCharaBVM.id, newChara]],
+        },
+      });
+
+      setGlobalStore(newGlobalStore);
+
+      const index = layerOrder.indexOf(relatedCharaBVM.id);
       const spliced = layerOrder.slice();
       spliced.splice(index, 1);
-      setLayerOrder([...spliced, relatedChara.id]);
+      setLayerOrder([...spliced, relatedCharaBVM.id]);
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
@@ -137,17 +145,17 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
   return (
     <div className={className} ref={divRef}>
       {wrapperSize &&
-        [...charactors.keys()].map((layerId, index) => {
+        [...globalStore.charactorBVMs.keys()].map((layerId, index) => {
           const charaId = layerId;
           if (!charaId) {
             return;
           }
-          const charactorBVM = charactors.get(charaId);
+          const charactorBVM = globalStore.charactorBVMs.get(charaId);
           if (charactorBVM === undefined) {
             throw new Error(`charactor is undefined. charaId: ${charaId}`);
           }
 
-          const colorHue = (index * 120) / charactors.size;
+          const colorHue = (index * 120) / globalStore.charactorBVMs.size;
           return (
             <Layer
               zIndex={zIndexCalcurator.getZIndex(layerId)}
@@ -173,7 +181,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
                           return;
                         }
 
-                        handleRelationOpen(renderedRect, rel.target.id);
+                        handleRelationOpen(renderedRect, rel.targetId);
                       }}
                     ></CharactorView>
                   )}

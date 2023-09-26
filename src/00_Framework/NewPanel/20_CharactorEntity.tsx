@@ -3,12 +3,6 @@ import { Point2, Size2 } from "../../01_Utils/00_Point";
 import ViewModel from "../00_ViewModel";
 export type RelationType = "friend" | "brother" | "trusting";
 
-export class CharactorRelation {
-  constructor(
-    readonly target: CharactorEntity,
-    readonly relation: RelationType
-  ) {}
-}
 export type CharactorId = string;
 export default class CharactorEntity {
   constructor(
@@ -18,9 +12,25 @@ export default class CharactorEntity {
   ) {}
 }
 
+export class CharactorRelation {
+  private _targetCharactorId: CharactorId;
+  private _targetCharactorName: string;
+
+  constructor(target: CharactorEntity, readonly relation: RelationType) {
+    this._targetCharactorId = target.id;
+    this._targetCharactorName = target.name + "(cache)";
+  }
+
+  get targetId(): CharactorId {
+    return this._targetCharactorId;
+  }
+  get targetName(): string {
+    return this._targetCharactorName;
+  }
+}
+
 interface CharactorViewModel extends ViewModel<CharactorEntity> {
   colorHue: number;
-
   onRelationOpen(cr: CharactorRelation): void;
 }
 
@@ -47,9 +57,9 @@ export const CharactorView = styled(
                 onClick={() => {
                   onRelationOpen(relation);
                 }}
-                key={relation.target.id}
+                key={relation.targetId}
               >
-                {relation.relation}:{relation.target.name}
+                {relation.relation}:{relation.targetName}
               </button>
             );
           })}

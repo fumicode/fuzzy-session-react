@@ -6,10 +6,6 @@ import { Point2, Size2 } from "../../01_Utils/00_Point";
 import useGetSmartRect from "./01_useGetSmartRect";
 import { Transition, TransitionStatus } from "react-transition-group";
 
-class CharactorBoxViewModel {
-  constructor() {}
-}
-
 interface PanelProps {
   //string: テキトーな型
   className?: string;
