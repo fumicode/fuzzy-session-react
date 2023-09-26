@@ -43,7 +43,7 @@ export const Layer: FC<LayerProps> = styled(
 
   pointer-events: none;
 
-  transform: scale(${(props) => ((props.zIndex || 0) / 3) * 0.2 + 0.8});
+  transform: scale(${(props) => ((props.zIndex || 0) / 3) * 0.1 + 0.9});
 
   transition: transform 0.1s ease-in-out;
 

@@ -11,6 +11,8 @@ import CharactorEntity, {
   CharactorView,
 } from "./20_CharactorEntity";
 import update from "immutability-helper";
+import { set } from "core-js/core/dict";
+import { Action } from "../00_Action";
 
 interface PanelSystemViewModel extends ViewModel<string> {
   //string: テキトーな型
@@ -34,57 +36,90 @@ class PanelBoxViewModel<T> {
   }
 }
 
+//CharactorEntity
 const itachi = new CharactorEntity("0", "イタチ", []);
+const sasuke = new CharactorEntity("1", "サスケ", []);
+const naruto = new CharactorEntity("2", "ナルト", []);
+
+//CharactorRelationをつなげる
+itachi.relatedCharactors.push(new CharactorRelation(sasuke, "弟"));
+itachi.relatedCharactors.push(new CharactorRelation(naruto, "弟をよろしく"));
+
+sasuke.relatedCharactors.push(new CharactorRelation(itachi, "兄"));
+sasuke.relatedCharactors.push(new CharactorRelation(naruto, "友達"));
+
+naruto.relatedCharactors.push(new CharactorRelation(sasuke, "友達"));
 
 const itachiBVM = new PanelBoxViewModel<CharactorEntity>(
   itachi.id,
   itachi,
   { x: 100, y: 100 },
-  { width: 200, height: 300 }
+  { width: 200, height: 200 }
 );
-
-const sasuke = new CharactorEntity("1", "サスケ", []);
 
 const sasukeBVM = new PanelBoxViewModel<CharactorEntity>(
   sasuke.id,
   sasuke,
+  { x: 200, y: 200 },
+  { width: 180, height: 180 }
+);
+
+const narutoBVM = new PanelBoxViewModel<CharactorEntity>(
+  naruto.id,
+  naruto,
   { x: 300, y: 300 },
   { width: 180, height: 180 }
 );
 
-const naruto = new CharactorEntity("2", "ナルト", []);
-const narutoBVM = new PanelBoxViewModel<CharactorEntity>(
-  naruto.id,
-  naruto,
-  { x: 500, y: 500 },
-  { width: 180, height: 180 }
-);
-
-itachi.relatedCharactors.push(new CharactorRelation(sasuke, "brother"));
-sasuke.relatedCharactors.push(new CharactorRelation(itachi, "brother"));
-itachi.relatedCharactors.push(new CharactorRelation(naruto, "trusting"));
-naruto.relatedCharactors.push(new CharactorRelation(sasuke, "friend"));
-sasuke.relatedCharactors.push(new CharactorRelation(naruto, "friend"));
-
 interface GlobalStore {
-  charactors: CharactorEntity[];
-  charactorBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
+  charactors: Map<string, CharactorEntity>;
+  charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
 }
 
-export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
+const useGlobalStore = function () {
   const [globalStore, setGlobalStore] = useState<GlobalStore>({
-    charactors: [itachi, sasuke, naruto],
-    charactorBVMs: new Map([
+    charactors: new Map([
+      [itachi.id, itachi],
+      [sasuke.id, sasuke],
+      [naruto.id, naruto],
+    ]),
+    charactorPBVMs: new Map([
       ["0", itachiBVM],
       ["1", sasukeBVM],
       ["2", narutoBVM],
     ]),
   });
-  const [layerOrder, setLayerOrder] = useState<string[]>(
-    [...globalStore.charactorBVMs].map(([_, charactor]) => `${charactor.id}`)
+  return {
+    charactorPBVMsRepository: {
+      findAll: () => globalStore.charactorPBVMs.values(),
+      // setCharactors: (charactors: CharactorEntity[]) => {
+      //   const newGlobalStore = update(globalStore, {
+      //     charactors: { $set: charactors },
+      //   });
+      //   setGlobalStore(newGlobalStore);
+      // },
+      getSize(): number {
+        return globalStore.charactorPBVMs.size;
+      },
+      findById: (id: string) => globalStore.charactorPBVMs.get(id),
+      save: (charactorPBVM: PanelBoxViewModel<CharactorEntity>) => {
+        const newGlobalStore = update(globalStore, {
+          charactorPBVMs: { $add: [[charactorPBVM.id, charactorPBVM]] },
+        });
+        setGlobalStore(newGlobalStore);
+      },
+    },
+  };
+};
+
+export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
+  const { charactorPBVMsRepository } = useGlobalStore();
+
+  const [charaOrder, setCharaOrder] = useState<string[]>(
+    [...charactorPBVMsRepository.findAll()].map((chara) => chara.id)
   );
 
-  const zIndexCalcurator = new ZIndexCalcurator(layerOrder);
+  const charaZ = new ZIndexCalcurator(charaOrder);
 
   const divRef = useRef<HTMLDivElement>(null);
 
@@ -107,9 +142,12 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
     };
   }, []);
 
-  const handleRelationOpen = (thisRect: SmartRect, relatedId: string) => {
+  const handleCharactorBVMChange = (
+    relatedId: string,
+    action: Action<PanelBoxViewModel<CharactorEntity>>
+  ) => {
     //検索
-    const relatedCharaBVM = globalStore.charactorBVMs.get(relatedId);
+    const relatedCharaBVM = charactorPBVMsRepository.findById(relatedId);
 
     if (!relatedCharaBVM) {
       throw new Error(`charactor is undefined. id: ${relatedId}`);
@@ -117,22 +155,16 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
 
     try {
       //変更
-      const newPos = thisRect.calcPositionToOpen(relatedCharaBVM.size);
-      const newChara = relatedCharaBVM.moveTo(newPos);
+      const newChara = action(relatedCharaBVM);
 
       //保存
-      const newGlobalStore = update(globalStore, {
-        charactorBVMs: {
-          $add: [[relatedCharaBVM.id, newChara]],
-        },
-      });
+      charactorPBVMsRepository.save(newChara);
 
-      setGlobalStore(newGlobalStore);
-
-      const index = layerOrder.indexOf(relatedCharaBVM.id);
-      const spliced = layerOrder.slice();
+      //レイヤーに関する操作やってる
+      const index = charaOrder.indexOf(relatedCharaBVM.id);
+      const spliced = charaOrder.slice();
       spliced.splice(index, 1);
-      setLayerOrder([...spliced, relatedCharaBVM.id]);
+      setCharaOrder([...spliced, relatedCharaBVM.id]);
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
@@ -144,52 +176,59 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
 
   return (
     <div className={className} ref={divRef}>
-      {wrapperSize &&
-        [...globalStore.charactorBVMs.keys()].map((layerId, index) => {
-          const charaId = layerId;
-          if (!charaId) {
-            return;
-          }
-          const charactorBVM = globalStore.charactorBVMs.get(charaId);
-          if (charactorBVM === undefined) {
-            throw new Error(`charactor is undefined. charaId: ${charaId}`);
-          }
+      <Layer zIndex={0} colorHue={0}>
+        Layer 0 Charactors
+        {wrapperSize &&
+          [...charactorPBVMsRepository.findAll()].map((layer, index) => {
+            const layerId = layer.id;
+            const charaId = layerId;
+            if (!charaId) {
+              return;
+            }
+            const charactorBVM = charactorPBVMsRepository.findById(charaId);
+            if (!charactorBVM) {
+              throw new Error(`charactor is undefined. charaId: ${charaId}`);
+            }
 
-          const colorHue = (index * 120) / globalStore.charactorBVMs.size;
-          return (
-            <Layer
-              zIndex={zIndexCalcurator.getZIndex(layerId)}
-              colorHue={colorHue}
-              key={layerId}
-            >
-              Layer {layerId}
-              <div className="e-window">
-                <Panel
-                  position={charactorBVM.position}
-                  size={charactorBVM.size}
-                  parentSize={wrapperSize}
-                  zIndex={0}
-                  isActive={layerOrder[2] === charactorBVM.id}
-                  onMove={(smartRect: SmartRect) => {}}
-                >
-                  {(renderedRect) => (
-                    <CharactorView
-                      main={charactorBVM.main}
-                      colorHue={colorHue}
-                      onRelationOpen={(rel) => {
-                        if (!renderedRect) {
-                          return;
-                        }
+            const colorHue = (index * 120) / charactorPBVMsRepository.getSize();
+            return (
+              <Panel
+                position={charactorBVM.position}
+                size={charactorBVM.size}
+                parentSize={wrapperSize}
+                zIndex={charaZ.getZIndex(charaId)}
+                isActive={charaOrder[charaOrder.length - 1] === charactorBVM.id}
+                onMove={(smartRect: SmartRect) => {}}
+                key={charactorBVM.id}
+              >
+                {(renderedRect) => (
+                  <CharactorView
+                    main={charactorBVM.main}
+                    colorHue={colorHue}
+                    onRelationOpen={(rel) => {
+                      if (!renderedRect) {
+                        return;
+                      }
+                      const moveCharactorBVMAction = (
+                        charaBVM: PanelBoxViewModel<CharactorEntity>
+                      ): PanelBoxViewModel<CharactorEntity> => {
+                        const newPos = renderedRect.calcPositionToOpen(
+                          charaBVM.size
+                        );
+                        return charaBVM.moveTo(newPos);
+                      };
 
-                        handleRelationOpen(renderedRect, rel.targetId);
-                      }}
-                    ></CharactorView>
-                  )}
-                </Panel>
-              </div>
-            </Layer>
-          );
-        })}
+                      handleCharactorBVMChange(
+                        rel.targetId,
+                        moveCharactorBVMAction
+                      );
+                    }}
+                  ></CharactorView>
+                )}
+              </Panel>
+            );
+          })}
+      </Layer>
     </div>
   );
 })`

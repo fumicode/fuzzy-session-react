@@ -37,6 +37,7 @@ export const Panel = styled(
         parentSize,
         children,
         transitionState,
+        zIndex,
         onMove,
       }: PanelProps,
       panelRef
@@ -74,6 +75,7 @@ export const Panel = styled(
             top: `${position.y}px`,
             width: `${size.width}px`,
             height: `${size.height}px`,
+            zIndex: zIndex,
             ...defaultStyle,
             ...transitionStyles[transitionState],
           }}
