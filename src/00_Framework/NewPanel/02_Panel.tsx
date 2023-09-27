@@ -24,6 +24,8 @@ interface PanelProps {
   transitionState: TransitionStatus;
 
   onMove(smartRect: SmartRect): void;
+
+  debugMode?: boolean;
 }
 
 const duration = 1000;
@@ -39,9 +41,11 @@ export const Panel = styled(
         transitionState,
         zIndex,
         onMove,
+        debugMode,
       }: PanelProps,
       panelRef
     ) => {
+      debugMode = debugMode || false;
       const renderedRect = useGetSmartRect(
         position,
         parentSize,
@@ -83,7 +87,7 @@ export const Panel = styled(
         >
           {renderedRect && children(renderedRect)}
 
-          {renderedRect && (
+          {debugMode && renderedRect && (
             <div className="e-rect-info">
               <SmartRectView main={renderedRect} className="e-smartRect" />
             </div>

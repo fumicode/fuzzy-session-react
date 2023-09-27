@@ -6,12 +6,51 @@ interface LayerProps {
   //string: テキトーな型
   className?: string;
   zIndex?: number;
+  zIndexMax?: number;
+  name: string;
   colorHue: number;
+  opacity?: number;
+  zIndex2Scale?: ZIndex2ScaleFunction;
   children?: React.ReactNode;
 }
 
+type ZIndex2ScaleFunction = (zIndex: number, maxZIndex: number) => number;
+
+export const inversePropotionFunction =
+  (xOffset: number = 8) =>
+  (x: number, max: number) =>
+    -1 / (x + xOffset) + 1;
+
+export const weakInversePropotion: ZIndex2ScaleFunction =
+  inversePropotionFunction(8);
+export const constantFunction: ZIndex2ScaleFunction = (x: number) => 1;
+
+/*
+export const reverseInversePropotion: ZIndex2ScaleFunction = (
+  z: number,
+  max: number
+) => {
+  //まだうまく動いてない
+  const x = max - z;
+  return Math.pow(-x, 3);
+};*/
+
+export const reversePropotion: ZIndex2ScaleFunction = (
+  z: number,
+  max: number
+) => {
+  return (z / max) * 0.2 + 0.8;
+};
+
 export const Layer: FC<LayerProps> = styled(
-  ({ className, zIndex, children }: LayerProps) => {
+  ({
+    className,
+    name,
+    zIndex,
+    zIndexMax = 10,
+    zIndex2Scale = reversePropotion, //reverseInversePropotion,
+    children,
+  }: LayerProps) => {
     //本当はまだいらないかもしれない
     const layerRef = React.useRef<HTMLDivElement>(null);
     const [rect, setRect] = React.useState<DOMRectReadOnly | undefined>(
@@ -27,9 +66,22 @@ export const Layer: FC<LayerProps> = styled(
     }, []); //TODOあとで最適化
 
     return (
-      <div className={className} ref={layerRef} style={{ zIndex }}>
+      <section
+        className={className}
+        ref={layerRef}
+        style={{
+          zIndex,
+
+          transform: `scale(${zIndex2Scale(zIndex || 0, zIndexMax)})`,
+        }}
+      >
+        <header className="e-layer-name">
+          <h1 className="e-name">
+            <span className="e-text">{name}</span>
+          </h1>
+        </header>
         {children}
-      </div>
+      </section>
     );
   }
 )`
@@ -43,16 +95,29 @@ export const Layer: FC<LayerProps> = styled(
 
   pointer-events: none;
 
-  transform: scale(${(props) => ((props.zIndex || 0) / 3) * 0.1 + 0.9});
+  transition: transform 1s ease-in-out;
+  transform-origin: 30% 40%;
 
-  transition: transform 0.1s ease-in-out;
+  background: hsla(
+    ${({ colorHue }) => colorHue},
+    50%,
+    50%,
+    ${({ opacity }) => (opacity != undefined ? opacity : 0.1)}
+  );
 
-  .e-window {
-    display: contents;
-    background: #eee;
+  .e-layer-name {
+    background: hsla(0, 0%, 100%, 0.5);
+
+    > .e-name {
+      margin: 0;
+      padding: 0;
+      font-size: 0.8rem;
+      font-weight: normal;
+      > .e-text {
+        background: white;
+      }
+    }
   }
-
-  background: hsla(${(props) => props.colorHue}, 50%, 50%, 0.5);
 `;
 
 export default Layer;
