@@ -5,6 +5,7 @@ import SmartRect, { SmartRectView } from "./01_SmartRect";
 import { Point2, Size2 } from "../../01_Utils/00_Point";
 import useGetSmartRect from "./01_useGetSmartRect";
 import { Transition, TransitionStatus } from "react-transition-group";
+import { on } from "events";
 
 interface PanelProps {
   //string: テキトーな型
@@ -14,16 +15,18 @@ interface PanelProps {
 
   size: Size2;
 
-  parentSize: Size2;
+  parentSize: Size2; //ない場合には描画されない
 
   zIndex?: number;
   isActive: boolean;
+  bgColor?: string;
 
   children: (renderedRect: SmartRect) => React.ReactNode;
 
   transitionState: TransitionStatus;
 
   onMove(smartRect: SmartRect): void;
+  onPanelClick?(): void;
 
   debugMode?: boolean;
 }
@@ -41,11 +44,13 @@ export const Panel = styled(
         transitionState,
         zIndex,
         onMove,
+        onPanelClick,
         debugMode,
       }: PanelProps,
       panelRef
     ) => {
       debugMode = debugMode || false;
+
       const renderedRect = useGetSmartRect(
         position,
         parentSize,
@@ -66,9 +71,9 @@ export const Panel = styled(
       const transitionStyles: Record<TransitionStatus, React.CSSProperties> = {
         entering: { opacity: 1 },
         entered: { opacity: 1 },
-        exiting: { opacity: 0.5 },
-        exited: { opacity: 0.5 },
-        unmounted: { opacity: 0.5 },
+        exiting: { opacity: 0.9 },
+        exited: { opacity: 0.9 },
+        unmounted: { opacity: 0.9 },
       };
 
       return (
@@ -84,6 +89,9 @@ export const Panel = styled(
             ...transitionStyles[transitionState],
           }}
           ref={panelRef}
+          onClick={() => {
+            onPanelClick && onPanelClick();
+          }}
         >
           {renderedRect && children(renderedRect)}
 
@@ -98,7 +106,7 @@ export const Panel = styled(
   )
 )`
   position: absolute;
-  background: hsla(0, 0%, 0%, 0.1);
+  background: ${({ bgColor }) => bgColor || "hsla(0, 0%, 0%, 0.1)"};
   box-shadow: 0 0 10px 3px hsla(0, 0%, 0%, 0.5);
 
   pointer-events: auto;

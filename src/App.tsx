@@ -10,6 +10,9 @@ import styled from "styled-components";
 import update from "immutability-helper";
 import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
 import PanelSystem from "./00_Framework/Panel/02_PanelSystem";
+import SharingApp from "./MoneyApp/SharingApp";
+import MoneyApp from "./MoneyApp/MoneyApp";
+import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
@@ -89,6 +92,17 @@ const _calendars: Calendar[] = [
 ];
 
 const App: FC = styled((props: { className: string }) => {
+  const {
+    className,
+    // position,
+    // size,
+    // parentSize,
+    // children,
+    // transitionState,
+    // zIndex,
+    // onMove,
+    // debugMode,
+  } = props;
   const [calendars, setCalendars] = useState<Calendar[]>(_calendars);
 
   const goIntoFutureCalendar = (
@@ -127,37 +141,34 @@ const App: FC = styled((props: { className: string }) => {
   ];
 
   return <PanelSystem main="hogehoge" />;
-
-  /*
+  /**
     <div className={className}>
-      <SharingApp/>
-      <MoneyApp/>
+      <SharingApp />
+      <MoneyApp />
 
       <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
       <div className="e-calendar-columns">
         {calendars.map((cal, calIndex) => {
-          const goIntoFutureSession =  (
-            sId:SessionId, 
-            action:SessionAction
-          ) => goIntoFutureCalendar(calIndex, sId, action);
+          const goIntoFutureSession = (sId: SessionId, action: SessionAction) =>
+            goIntoFutureCalendar(calIndex, sId, action);
           return (
             <div className="e-column" key={calIndex}>
               <h2>{cal.title}</h2>
               <DailyTimelineWithConflictsView
                 main={cal.sessionMap}
                 showsTime={calIndex === 0}
-                onTheSessionChange = { goIntoFutureSession }
+                onTheSessionChange={goIntoFutureSession}
               />
             </div>
-          )
+          );
         })}
       </div>
 
-
+       * 
       <h1>ガイアコード！</h1>
       <GaiaCodeView main={new GaiaCode(code)}/>
     </div>
-    */
+       */
 })`
   .e-calendar-columns {
     display: flex;

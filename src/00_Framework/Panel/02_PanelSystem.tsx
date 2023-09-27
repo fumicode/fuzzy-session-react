@@ -15,6 +15,7 @@ import update from "immutability-helper";
 import { set } from "core-js/core/dict";
 import { Action } from "../00_Action";
 import { Id } from "../00_Entity";
+import MoneyApp from "../../MoneyApp/MoneyApp";
 
 interface PanelSystemViewModel extends ViewModel<string> {
   //string: テキトーな型
@@ -92,6 +93,7 @@ const useGlobalStore = function () {
       [narutoBVM.id.toString(), narutoBVM],
     ]),
   });
+
   return {
     charactorPBVMsRepository: {
       findAll: () => globalStore.charactorPBVMs.values(),
@@ -112,6 +114,7 @@ const useGlobalStore = function () {
 };
 
 export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
+  //Appの処理
   const { charactorPBVMsRepository } = useGlobalStore();
 
   const [charaOrder, setCharaOrder] = useState<string[]>(
@@ -119,6 +122,9 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
   );
 
   const charaZ = new ZIndexCalcurator(charaOrder);
+
+  ////////////////////////////////
+  //PanelSystemの処理
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -173,22 +179,78 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
     }
   };
 
+  const AppNames = ["Charactors", "PointFlow", "PointSharing", "FuzzySession"];
+
+  const [appZ, setAppZ] = useState(new ZIndexCalcurator(AppNames));
+
+  const AppName = "FuzzySession";
+
   return (
     <div className={className} ref={wrapperRef}>
       <Layer
-        zIndex={0}
+        zIndex={appZ.getZIndex(AppName)}
         colorHue={0}
-        name="技名"
+        name={AppName}
         zIndex2Scale={reversePropotion}
-        zIndexMax={1}
-      ></Layer>
+        zIndexMax={appZ.size}
+        onLayerHeaderClick={() => {
+          setAppZ(appZ.moveToTop(AppName));
+        }}
+      >
+        {wrapperSize && (
+          <Panel
+            position={{ x: 200, y: 200 }}
+            size={{ width: 700, height: 700 }}
+            zIndex={0}
+            isActive={true}
+            parentSize={wrapperSize}
+            onMove={() => {}}
+            onPanelClick={() => {
+              setAppZ(appZ.moveToTop(AppName));
+            }}
+          >
+            {(renderedRect) => <h1>{AppName}</h1>}
+          </Panel>
+        )}
+      </Layer>
 
       <Layer
-        zIndex={1}
-        colorHue={60}
-        name="Layer 0 Charactors"
+        zIndex={appZ.getZIndex("PointFlow")}
+        colorHue={0}
+        name="PointFlow"
         zIndex2Scale={reversePropotion}
-        zIndexMax={1}
+        zIndexMax={appZ.size}
+        onLayerHeaderClick={() => {
+          setAppZ(appZ.moveToTop("PointFlow"));
+        }}
+      >
+        {wrapperSize && (
+          <Panel
+            position={{ x: 100, y: 100 }}
+            size={{ width: 500, height: 400 }}
+            zIndex={0}
+            isActive={true}
+            bgColor="white"
+            parentSize={wrapperSize}
+            onMove={() => {}}
+            onPanelClick={() => {
+              setAppZ(appZ.moveToTop("PointFlow"));
+            }}
+          >
+            {(renderedRect) => <MoneyApp />}
+          </Panel>
+        )}
+      </Layer>
+
+      <Layer
+        zIndex={appZ.getZIndex("Charactors")}
+        colorHue={60}
+        name="Charactors"
+        zIndex2Scale={reversePropotion}
+        zIndexMax={appZ.size}
+        onLayerHeaderClick={() => {
+          setAppZ(appZ.moveToTop("Charactors"));
+        }}
       >
         {wrapperSize &&
           [...charactorPBVMsRepository.findAll()].map((charaPBVM, index) => {
@@ -210,6 +272,9 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
                 name={`Charactor #${charaId} ${charaPBVM.main.name}`}
                 zIndexMax={charactorPBVMsRepository.getSize() - 1}
                 key={charaId.toString()}
+                onLayerHeaderClick={() => {
+                  setAppZ(appZ.moveToTop("Charactors"));
+                }}
               >
                 <Panel
                   position={charactorBVM.position}
@@ -222,6 +287,9 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
                   }
                   onMove={(smartRect: SmartRect) => {}}
                   key={charactorBVM.id.toString()}
+                  onPanelClick={() => {
+                    //レイヤーを一番上に持ってくる
+                  }}
                 >
                   {(renderedRect) => (
                     <CharactorView

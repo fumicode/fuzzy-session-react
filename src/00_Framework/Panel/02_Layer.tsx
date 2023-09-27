@@ -12,6 +12,8 @@ interface LayerProps {
   opacity?: number;
   zIndex2Scale?: ZIndex2ScaleFunction;
   children?: React.ReactNode;
+
+  onLayerHeaderClick?(name: string): void;
 }
 
 type ZIndex2ScaleFunction = (zIndex: number, maxZIndex: number) => number;
@@ -50,6 +52,7 @@ export const Layer: FC<LayerProps> = styled(
     zIndexMax = 10,
     zIndex2Scale = reversePropotion, //reverseInversePropotion,
     children,
+    onLayerHeaderClick,
   }: LayerProps) => {
     //本当はまだいらないかもしれない
     const layerRef = React.useRef<HTMLDivElement>(null);
@@ -75,7 +78,12 @@ export const Layer: FC<LayerProps> = styled(
           transform: `scale(${zIndex2Scale(zIndex || 0, zIndexMax)})`,
         }}
       >
-        <header className="e-layer-name">
+        <header
+          className="e-layer-name"
+          onClick={(e) => {
+            onLayerHeaderClick && onLayerHeaderClick(name);
+          }}
+        >
           <h1 className="e-name">
             <span className="e-text">{name}</span>
           </h1>
@@ -106,7 +114,9 @@ export const Layer: FC<LayerProps> = styled(
   );
 
   .e-layer-name {
+    pointer-events: auto;
     background: hsla(0, 0%, 100%, 0.5);
+    cursor: pointer;
 
     > .e-name {
       margin: 0;
