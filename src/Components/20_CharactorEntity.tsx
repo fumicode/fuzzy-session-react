@@ -73,7 +73,8 @@ export const CharactorView = styled(
           {charactor.relatedCharactors.map((relation) => {
             return (
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation(); //これがないと親のonClickが呼ばれてしまう
                   onRelationOpen(relation);
                 }}
                 key={relation.targetId.toString()}

@@ -16,6 +16,7 @@ import { set } from "core-js/core/dict";
 import { Action } from "../00_Action";
 import { Id } from "../00_Entity";
 import MoneyApp from "../../MoneyApp/MoneyApp";
+import SharingApp from "../../MoneyApp/SharingApp";
 
 interface PanelSystemViewModel extends ViewModel<string> {
   //string: テキトーな型
@@ -117,11 +118,13 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
   //Appの処理
   const { charactorPBVMsRepository } = useGlobalStore();
 
-  const [charaOrder, setCharaOrder] = useState<string[]>(
-    [...charactorPBVMsRepository.findAll()].map((chara) => chara.id.toString())
+  const [charaZ, setCharaZ] = useState<ZIndexCalcurator>(
+    new ZIndexCalcurator(
+      [...charactorPBVMsRepository.findAll()].map((chara) =>
+        chara.id.toString()
+      )
+    )
   );
-
-  const charaZ = new ZIndexCalcurator(charaOrder);
 
   ////////////////////////////////
   //PanelSystemの処理
@@ -165,11 +168,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
       //保存
       charactorPBVMsRepository.save(newChara);
 
-      //レイヤーに関する操作やってる
-      const index = charaOrder.indexOf(relatedCharaBVM.id.toString());
-      const spliced = charaOrder.slice();
-      spliced.splice(index, 1);
-      setCharaOrder([...spliced, relatedCharaBVM.id.toString()]);
+      setCharaZ(charaZ.moveToTop(relatedId.toString()));
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
@@ -210,6 +209,34 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
             }}
           >
             {(renderedRect) => <h1>{AppName}</h1>}
+          </Panel>
+        )}
+      </Layer>
+
+      <Layer
+        zIndex={appZ.getZIndex("PointSharing")}
+        colorHue={0}
+        name={"PointSharing"}
+        zIndex2Scale={reversePropotion}
+        zIndexMax={appZ.size}
+        onLayerHeaderClick={() => {
+          setAppZ(appZ.moveToTop("PointSharing"));
+        }}
+      >
+        {wrapperSize && (
+          <Panel
+            position={{ x: 100, y: 500 }}
+            size={{ width: 700, height: 700 }}
+            zIndex={0}
+            isActive={true}
+            parentSize={wrapperSize}
+            onMove={() => {}}
+            bgColor="white"
+            onPanelClick={() => {
+              setAppZ(appZ.moveToTop("PointSharing"));
+            }}
+          >
+            {(renderedRect) => <SharingApp />}
           </Panel>
         )}
       </Layer>
@@ -281,14 +308,12 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
                   size={charactorBVM.size}
                   parentSize={wrapperSize}
                   zIndex={charaZ.getZIndex(charaId.toString())}
-                  isActive={
-                    charaOrder[charaOrder.length - 1] ===
-                    charactorBVM.id.toString()
-                  }
+                  isActive={charaZ.isTop(charactorBVM.id.toString())}
                   onMove={(smartRect: SmartRect) => {}}
                   key={charactorBVM.id.toString()}
                   onPanelClick={() => {
-                    //レイヤーを一番上に持ってくる
+                    setCharaZ(charaZ.moveToTop(charactorBVM.id.toString()));
+                    setAppZ(appZ.moveToTop("Charactors"));
                   }}
                 >
                   {(renderedRect) => (
@@ -299,6 +324,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
                         if (!renderedRect) {
                           return;
                         }
+
                         const moveCharactorBVMAction = (
                           charaBVM: PanelBoxViewModel<CharactorEntity>
                         ): PanelBoxViewModel<CharactorEntity> => {

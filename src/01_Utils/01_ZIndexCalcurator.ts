@@ -2,12 +2,12 @@ export default class ZIndexCalcurator {
   constructor(
     //文字列じゃなくて、抽象化したい。 equalsでもできるようにしたい。
     readonly ids: string[],
-    readonly topId: string | undefined = undefined //readonly bottomId: string | undefined //あとで:
+    readonly pinnedId: string | undefined = undefined //readonly bottomId: string | undefined //あとで:
   ) {
     //後ほど上が普通
   }
 
-  setTop(id: string | undefined) {
+  setPin(id: string | undefined) {
     if (id === undefined) {
       return new ZIndexCalcurator(this.ids, undefined);
     }
@@ -31,7 +31,7 @@ export default class ZIndexCalcurator {
     const ids = this.ids.filter((i) => i !== id);
     ids.push(id);
 
-    return new ZIndexCalcurator(ids, this.topId);
+    return new ZIndexCalcurator(ids, this.pinnedId);
   }
 
   includes(id: string) {
@@ -39,18 +39,22 @@ export default class ZIndexCalcurator {
   }
 
   getZIndex(id: string) {
-    if (id === this.topId) {
+    if (id === this.pinnedId) {
       return this.maxTopZIndex;
     }
 
     return this.ids.indexOf(id);
   }
 
+  isTop(id: string) {
+    return this.ids[this.ids.length - 1] === id;
+  }
+
   get maxNormalZIndex() {
     return this.ids.length;
   }
   get maxTopZIndex() {
-    return this.ids.length + (typeof this.topId === "string" ? 1 : 0);
+    return this.ids.length + (typeof this.pinnedId === "string" ? 1 : 0);
   }
 
   get size() {
