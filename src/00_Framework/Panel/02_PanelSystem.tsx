@@ -9,7 +9,7 @@ import ZIndexCalcurator from "../../01_Utils/01_ZIndexCalcurator";
 import CharactorEntity, {
   CharactorRelation,
   CharactorView,
-} from "./20_CharactorEntity";
+} from "../../Components/20_CharactorEntity";
 import update from "immutability-helper";
 import { set } from "core-js/core/dict";
 import { Action } from "../00_Action";

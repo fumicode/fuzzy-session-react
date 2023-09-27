@@ -9,7 +9,7 @@ import { FC, useState } from "react";
 import styled from "styled-components";
 import update from "immutability-helper";
 import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
-import PanelSystem from "./00_Framework/NewPanel/02_PanelSystem";
+import PanelSystem from "./00_Framework/Panel/02_PanelSystem";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),

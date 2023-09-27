@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import { Point2, Size2 } from "../../01_Utils/00_Point";
-import ViewModel from "../00_ViewModel";
+import { Point2, Size2 } from "../01_Utils/00_Point";
+import ViewModel from "../00_Framework/00_ViewModel";
 export type RelationType = string;
 
 export type CharactorId = string;
