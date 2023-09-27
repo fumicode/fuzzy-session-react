@@ -7,12 +7,14 @@ import SmartRect from "./01_SmartRect";
 import { Point2, Size2 } from "../../01_Utils/00_Point";
 import ZIndexCalcurator from "../../01_Utils/01_ZIndexCalcurator";
 import CharactorEntity, {
+  CharactorId,
   CharactorRelation,
   CharactorView,
 } from "../../Components/20_CharactorEntity";
 import update from "immutability-helper";
 import { set } from "core-js/core/dict";
 import { Action } from "../00_Action";
+import { Id } from "../00_Entity";
 
 interface PanelSystemViewModel extends ViewModel<string> {
   //string: テキトーな型
@@ -20,7 +22,7 @@ interface PanelSystemViewModel extends ViewModel<string> {
 
 class PanelBoxViewModel<T> {
   constructor(
-    readonly id: string,
+    readonly id: Id,
     readonly main: T,
     readonly position: Point2,
     readonly size: Size2
@@ -37,9 +39,9 @@ class PanelBoxViewModel<T> {
 }
 
 //CharactorEntity
-const itachi = new CharactorEntity("0", "イタチ", []);
-const sasuke = new CharactorEntity("1", "サスケ", []);
-const naruto = new CharactorEntity("2", "ナルト", []);
+const itachi = new CharactorEntity(new CharactorId("0"), "イタチ", []);
+const sasuke = new CharactorEntity(new CharactorId("1"), "サスケ", []);
+const naruto = new CharactorEntity(new CharactorId("2"), "ナルト", []);
 
 //CharactorRelationをつなげる
 itachi.relatedCharactors.push(new CharactorRelation(sasuke, "弟"));
@@ -78,15 +80,16 @@ interface GlobalStore {
 
 const useGlobalStore = function () {
   const [globalStore, setGlobalStore] = useState<GlobalStore>({
+    //localStorage とか cookie とかに保存したい
     charactors: new Map([
-      [itachi.id, itachi],
-      [sasuke.id, sasuke],
-      [naruto.id, naruto],
+      [itachi.id.toString(), itachi],
+      [sasuke.id.toString(), sasuke],
+      [naruto.id.toString(), naruto],
     ]),
     charactorPBVMs: new Map([
-      ["0", itachiBVM],
-      ["1", sasukeBVM],
-      ["2", narutoBVM],
+      [itachiBVM.id.toString(), itachiBVM],
+      [sasukeBVM.id.toString(), sasukeBVM],
+      [narutoBVM.id.toString(), narutoBVM],
     ]),
   });
   return {
@@ -95,10 +98,12 @@ const useGlobalStore = function () {
       getSize(): number {
         return globalStore.charactorPBVMs.size;
       },
-      findById: (id: string) => globalStore.charactorPBVMs.get(id),
+      findById: (id: Id) => globalStore.charactorPBVMs.get(id.toString()),
       save: (charactorPBVM: PanelBoxViewModel<CharactorEntity>) => {
         const newGlobalStore = update(globalStore, {
-          charactorPBVMs: { $add: [[charactorPBVM.id, charactorPBVM]] },
+          charactorPBVMs: {
+            $add: [[charactorPBVM.id.toString(), charactorPBVM]],
+          },
         });
         setGlobalStore(newGlobalStore);
       },
@@ -110,7 +115,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
   const { charactorPBVMsRepository } = useGlobalStore();
 
   const [charaOrder, setCharaOrder] = useState<string[]>(
-    [...charactorPBVMsRepository.findAll()].map((chara) => chara.id)
+    [...charactorPBVMsRepository.findAll()].map((chara) => chara.id.toString())
   );
 
   const charaZ = new ZIndexCalcurator(charaOrder);
@@ -137,7 +142,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
   }, []);
 
   const handleCharactorBVMChange = (
-    relatedId: string,
+    relatedId: CharactorId,
     action: Action<PanelBoxViewModel<CharactorEntity>>
   ) => {
     //検索
@@ -155,10 +160,10 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
       charactorPBVMsRepository.save(newChara);
 
       //レイヤーに関する操作やってる
-      const index = charaOrder.indexOf(relatedCharaBVM.id);
+      const index = charaOrder.indexOf(relatedCharaBVM.id.toString());
       const spliced = charaOrder.slice();
       spliced.splice(index, 1);
-      setCharaOrder([...spliced, relatedCharaBVM.id]);
+      setCharaOrder([...spliced, relatedCharaBVM.id.toString()]);
     } catch (e) {
       if (e instanceof Error) {
         alert(e.message);
@@ -199,23 +204,24 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
             const colorHue = (index * 120) / charactorPBVMsRepository.getSize();
             return (
               <Layer
-                zIndex={charaZ.getZIndex(charaId)}
+                zIndex={charaZ.getZIndex(charaId.toString())}
                 colorHue={colorHue}
                 opacity={0.2}
                 name={`Charactor #${charaId} ${charaPBVM.main.name}`}
                 zIndexMax={charactorPBVMsRepository.getSize() - 1}
-                key={charaId}
+                key={charaId.toString()}
               >
                 <Panel
                   position={charactorBVM.position}
                   size={charactorBVM.size}
                   parentSize={wrapperSize}
-                  zIndex={charaZ.getZIndex(charaId)}
+                  zIndex={charaZ.getZIndex(charaId.toString())}
                   isActive={
-                    charaOrder[charaOrder.length - 1] === charactorBVM.id
+                    charaOrder[charaOrder.length - 1] ===
+                    charactorBVM.id.toString()
                   }
                   onMove={(smartRect: SmartRect) => {}}
-                  key={charactorBVM.id}
+                  key={charactorBVM.id.toString()}
                 >
                   {(renderedRect) => (
                     <CharactorView
