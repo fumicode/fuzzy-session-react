@@ -9,9 +9,6 @@ import { FC, useState } from "react";
 import styled from "styled-components";
 import update from "immutability-helper";
 import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
-import PanelSystem from "./00_Framework/Panel/02_PanelSystem";
-import SharingApp from "./MoneyApp/SharingApp";
-import MoneyApp from "./MoneyApp/MoneyApp";
 import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
 
 let inchoSessions: SessionEntity[] = [
@@ -91,7 +88,7 @@ const _calendars: Calendar[] = [
   },
 ];
 
-const App: FC = styled((props: { className: string }) => {
+const FuzzySession: FC = styled((props: { className: string }) => {
   const {
     className,
     // position,
@@ -140,12 +137,8 @@ const App: FC = styled((props: { className: string }) => {
     [5, 3, 1, 5, 5, 1, 3],
   ];
 
-  return <PanelSystem main="hogehoge" />;
-  /**
+  return (
     <div className={className}>
-      <SharingApp />
-      <MoneyApp />
-
       <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
       <div className="e-calendar-columns">
         {calendars.map((cal, calIndex) => {
@@ -163,12 +156,8 @@ const App: FC = styled((props: { className: string }) => {
           );
         })}
       </div>
-
-       * 
-      <h1>ガイアコード！</h1>
-      <GaiaCodeView main={new GaiaCode(code)}/>
     </div>
-       */
+  );
 })`
   .e-calendar-columns {
     display: flex;
@@ -179,4 +168,4 @@ const App: FC = styled((props: { className: string }) => {
   }
 `;
 
-export default App;
+export default FuzzySession;

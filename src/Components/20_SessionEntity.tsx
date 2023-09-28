@@ -9,32 +9,26 @@ import { TimeDiff } from "./10_FuzzyTime";
 
 import classNames from "classnames";
 import { Action, peekIntoFuture } from "../00_Framework/00_Action";
+import Entity, { StringId } from "../00_Framework/00_Entity";
 
-export class SessionId {
-  private readonly _value: string;
-
+export class SessionId extends StringId {
   static fromString(str: string): SessionId {
     return new SessionId(str);
   }
+
   constructor(value: string | undefined = undefined) {
-    if (value === undefined) {
-      //TODO: なぜかcrypto.randomUUIDが使えないので、簡易的なやりかた
-      value = crypto.randomBytes(20).toString("hex");
-    }
-    this._value = value;
-  }
-  toString(mode: string | undefined = undefined): string {
-    if (mode === "short") {
-      return this._value.substring(0, 8);
-    }
-    return this._value;
+    super(value);
   }
   equals(otherId: SessionId): boolean {
-    return this._value === otherId._value;
+    if (!(otherId instanceof SessionId)) {
+      throw new Error("同じ型のIDでないとくらべられません");
+    }
+
+    return super.equals(otherId);
   }
 }
 
-export default class SessionEntity {
+export default class SessionEntity implements Entity {
   readonly id: SessionId;
   constructor(
     id: SessionId | undefined,
@@ -45,6 +39,7 @@ export default class SessionEntity {
     if (!id) {
       id = new SessionId();
     }
+
     this.id = id;
   }
   overlaps(otherSession: SessionEntity): TimeRange | undefined {
@@ -134,8 +129,6 @@ export const SessionView: FC<SessionViewModel> = styled(
   }: SessionViewModel) => {
     const timeRange = session.timeRange;
     const hoursNum = timeRange.durationHour;
-
-
 
     return (
       <section
