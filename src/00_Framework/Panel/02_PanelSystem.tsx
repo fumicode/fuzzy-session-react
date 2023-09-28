@@ -2,7 +2,13 @@ import { FC, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import ViewModel from "../00_ViewModel";
 import Panel from "./02_Panel";
-import Layer, { reversePropotion } from "./02_Layer";
+import Layer, {
+  ZScalerFunction,
+  constantFunction,
+  inversePropotionFunction,
+  reversePropotion,
+  weakInversePropotion,
+} from "./02_Layer";
 import SmartRect from "./01_SmartRect";
 import { Point2, Size2 } from "../../01_Utils/00_Point";
 import ZIndexCalcurator from "../../01_Utils/01_ZIndexCalcurator";
@@ -17,6 +23,7 @@ import { Action } from "../00_Action";
 import { Id } from "../00_Entity";
 import MoneyApp from "../../MoneyApp/MoneyApp";
 import SharingApp from "../../MoneyApp/SharingApp";
+import FuzzySession from "../../40_FuzzySession";
 
 interface PanelSystemViewModel extends ViewModel<string> {
   //string: テキトーな型
@@ -39,6 +46,9 @@ class PanelBoxViewModel<T> {
     ) as this;
   }
 }
+
+//const zIndexScaler = inversePropotionFunction(2);
+const appZScaler: ZScalerFunction = weakInversePropotion;
 
 //CharactorEntity
 const itachi = new CharactorEntity(new CharactorId("0"), "イタチ", []);
@@ -178,7 +188,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
     }
   };
 
-  const AppNames = ["Charactors", "PointFlow", "PointSharing", "FuzzySession"];
+  const AppNames = ["PointFlow", "PointSharing", "FuzzySession", "Charactors"];
 
   const [appZ, setAppZ] = useState(new ZIndexCalcurator(AppNames));
 
@@ -190,7 +200,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
         zIndex={appZ.getZIndex(AppName)}
         colorHue={0}
         name={AppName}
-        zIndex2Scale={reversePropotion}
+        zScaler={appZScaler}
         zIndexMax={appZ.size}
         onLayerHeaderClick={() => {
           setAppZ(appZ.moveToTop(AppName));
@@ -198,17 +208,18 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
       >
         {wrapperSize && (
           <Panel
-            position={{ x: 200, y: 200 }}
+            position={{ x: 800, y: 200 }}
             size={{ width: 700, height: 700 }}
             zIndex={0}
             isActive={true}
             parentSize={wrapperSize}
             onMove={() => {}}
+            bgColor="white"
             onPanelClick={() => {
               setAppZ(appZ.moveToTop(AppName));
             }}
           >
-            {(renderedRect) => <h1>{AppName}</h1>}
+            {(renderedRect) => <FuzzySession />}
           </Panel>
         )}
       </Layer>
@@ -217,7 +228,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
         zIndex={appZ.getZIndex("PointSharing")}
         colorHue={0}
         name={"PointSharing"}
-        zIndex2Scale={reversePropotion}
+        zScaler={appZScaler}
         zIndexMax={appZ.size}
         onLayerHeaderClick={() => {
           setAppZ(appZ.moveToTop("PointSharing"));
@@ -245,7 +256,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
         zIndex={appZ.getZIndex("PointFlow")}
         colorHue={0}
         name="PointFlow"
-        zIndex2Scale={reversePropotion}
+        zScaler={appZScaler}
         zIndexMax={appZ.size}
         onLayerHeaderClick={() => {
           setAppZ(appZ.moveToTop("PointFlow"));
@@ -253,7 +264,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
       >
         {wrapperSize && (
           <Panel
-            position={{ x: 100, y: 100 }}
+            position={{ x: 300, y: 100 }}
             size={{ width: 500, height: 400 }}
             zIndex={0}
             isActive={true}
@@ -273,7 +284,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
         zIndex={appZ.getZIndex("Charactors")}
         colorHue={60}
         name="Charactors"
-        zIndex2Scale={reversePropotion}
+        zScaler={appZScaler}
         zIndexMax={appZ.size}
         onLayerHeaderClick={() => {
           setAppZ(appZ.moveToTop("Charactors"));
@@ -299,6 +310,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
                 name={`Charactor #${charaId} ${charaPBVM.main.name}`}
                 zIndexMax={charactorPBVMsRepository.getSize() - 1}
                 key={charaId.toString()}
+                zScaler={constantFunction}
                 onLayerHeaderClick={() => {
                   setAppZ(appZ.moveToTop("Charactors"));
                 }}

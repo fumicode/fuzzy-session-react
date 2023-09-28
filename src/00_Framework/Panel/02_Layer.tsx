@@ -10,22 +10,22 @@ interface LayerProps {
   name: string;
   colorHue: number;
   opacity?: number;
-  zIndex2Scale?: ZIndex2ScaleFunction;
+  zScaler?: ZScalerFunction;
   children?: React.ReactNode;
 
   onLayerHeaderClick?(name: string): void;
 }
 
-type ZIndex2ScaleFunction = (zIndex: number, maxZIndex: number) => number;
+export type ZScalerFunction = (zIndex: number, maxZIndex: number) => number;
 
 export const inversePropotionFunction =
   (xOffset: number = 8) =>
   (x: number, max: number) =>
     -1 / (x + xOffset) + 1;
 
-export const weakInversePropotion: ZIndex2ScaleFunction =
+export const weakInversePropotion: ZScalerFunction =
   inversePropotionFunction(8);
-export const constantFunction: ZIndex2ScaleFunction = (x: number) => 1;
+export const constantFunction: ZScalerFunction = (x: number) => 1;
 
 /*
 export const reverseInversePropotion: ZIndex2ScaleFunction = (
@@ -37,10 +37,7 @@ export const reverseInversePropotion: ZIndex2ScaleFunction = (
   return Math.pow(-x, 3);
 };*/
 
-export const reversePropotion: ZIndex2ScaleFunction = (
-  z: number,
-  max: number
-) => {
+export const reversePropotion: ZScalerFunction = (z: number, max: number) => {
   return (z / max) * 0.2 + 0.8;
 };
 
@@ -50,7 +47,7 @@ export const Layer: FC<LayerProps> = styled(
     name,
     zIndex,
     zIndexMax = 10,
-    zIndex2Scale = reversePropotion, //reverseInversePropotion,
+    zScaler: zIndex2Scale = reversePropotion, //reverseInversePropotion,
     children,
     onLayerHeaderClick,
   }: LayerProps) => {
@@ -103,8 +100,8 @@ export const Layer: FC<LayerProps> = styled(
 
   pointer-events: none;
 
-  transition: transform 1s ease-in-out;
-  transform-origin: 30% 40%;
+  transition: transform 0.3s ease-in-out;
+  transform-origin: 10% 30%;
 
   background: hsla(
     ${({ colorHue }) => colorHue},

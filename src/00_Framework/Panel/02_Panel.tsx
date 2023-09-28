@@ -110,6 +110,7 @@ export const Panel = styled(
   box-shadow: 0 0 10px 3px hsla(0, 0%, 0%, 0.5);
 
   pointer-events: auto;
+  overflow: auto;
 
   > .e-rect-info {
     position: absolute;
