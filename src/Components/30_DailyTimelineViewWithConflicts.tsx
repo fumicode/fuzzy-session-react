@@ -90,7 +90,7 @@ class DailyTimelineWithConflictsViewModel implements ViewModel<Timeline> {
   }
 }
 
-const createTimeRangeChangingAction = (hourDiff:number): SessionAction => {
+const createTimeRangeChangingAction = (hourDiff: number): SessionAction => {
   const timeRangeChangingAction: SessionAction = (session) => {
     const diffObj = new TimeDiff(hourDiff);
     const addingSession = session.changeTimeRange(diffObj);
@@ -99,14 +99,14 @@ const createTimeRangeChangingAction = (hourDiff:number): SessionAction => {
   };
 
   return timeRangeChangingAction;
-}
+};
 
 const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   className,
   main: { sessions, conflicts },
   showsTime,
 
-  onTheSessionChange
+  onTheSessionChange,
 }: DailyTimelineWithConflictsViewModel) => {
   //states
   const [hoveredSessionId, setHoveredSessionId] = useState<
@@ -228,9 +228,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
           const onSessionChange = (action: SessionAction) =>
             onTheSessionChange(session.id, action);
 
-          const zIndex = zIndexCalcurator.getZIndex(
-            sesBVM.sessionId.toString()
-          );
+          const zIndex = zIndexCalcurator.get(sesBVM.sessionId.toString());
 
           const layerScaleRatio = scaleNumber(
             x,
@@ -254,9 +252,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                   "px",
                 left: x + "px",
                 zIndex,
-                transform: isGrabbed
-                  ? `scale(1)`
-                  : `scale(${layerScaleRatio})`,
+                transform: isGrabbed ? `scale(1)` : `scale(${layerScaleRatio})`,
                 boxShadow: isGrabbed
                   ? "0 0 10px 5px hsla(47,100%,49%,0.57)"
                   : x > 0

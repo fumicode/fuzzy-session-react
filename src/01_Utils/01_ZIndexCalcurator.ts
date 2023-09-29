@@ -38,7 +38,7 @@ export default class ZIndexCalcurator {
     return this.ids.includes(id);
   }
 
-  getZIndex(id: string) {
+  get(id: string) {
     if (id === this.pinnedId) {
       return this.maxTopZIndex;
     }
