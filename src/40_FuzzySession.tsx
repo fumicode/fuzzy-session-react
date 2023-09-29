@@ -96,8 +96,6 @@ const _calendars: Calendar[] = [
 ];
 
 interface FuzzySessionViewModel extends ViewModel<{}> {
-  wrapperSize: Size2;
-
   onPanelClick(): void;
 }
 
@@ -105,7 +103,6 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
   (props: FuzzySessionViewModel) => {
     const {
       className,
-      wrapperSize,
       // position,
       // size,
       // parentSize,
@@ -191,7 +188,6 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
               size={{ width: 200, height: 200 }}
               zIndex={0}
               isActive={true}
-              parentSize={wrapperSize}
               onMove={() => {}}
               bgColor="white"
               onPanelClick={() => {
@@ -230,7 +226,6 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
             size={{ width: 900, height: 700 }}
             zIndex={0}
             isActive={true}
-            parentSize={wrapperSize}
             onMove={() => {}}
             bgColor="white"
             onPanelClick={() => {
@@ -269,7 +264,6 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                             setSelectedPosition(positionToOpen);
                             setViewZ(viewZ.moveToTop("詳細"));
                           }}
-                          wrapperSize={wrapperSize}
                         />
                       </div>
                     );

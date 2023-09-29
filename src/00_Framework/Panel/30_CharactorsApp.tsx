@@ -111,12 +111,11 @@ interface CharactorsAppViewModel extends ViewModel<{}> {
   //className,
   //main,
 
-  wrapperSize: Size2;
   onAppClick(): void;
 }
 
 export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
-  ({ wrapperSize, onAppClick }: CharactorsAppViewModel) => {
+  ({ onAppClick }: CharactorsAppViewModel) => {
     //Appの処理
     const { charactorPBVMsRepository } = useGlobalStore();
 
@@ -182,7 +181,6 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
               <Panel
                 position={charactorBVM.position}
                 size={charactorBVM.size}
-                parentSize={wrapperSize}
                 zIndex={charaZ.get(charaId.toString())}
                 isActive={charaZ.isTop(charactorBVM.id.toString())}
                 onMove={(smartRect: SmartRect) => {}}

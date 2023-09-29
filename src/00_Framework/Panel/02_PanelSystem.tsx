@@ -9,6 +9,7 @@ import MoneyApp from "../../MoneyApp/MoneyApp";
 import SharingApp from "../../MoneyApp/SharingApp";
 import FuzzySession from "../../40_FuzzySession";
 import CharactorsApp from "./30_CharactorsApp";
+import WrapperSizeContext from "./01_WrapperSizeContext";
 
 export interface PanelSystemViewModel extends ViewModel<string> {
   //string: テキトーな型
@@ -50,103 +51,95 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
 
   return (
     <div className={className} ref={wrapperRef}>
-      <Layer
-        zIndex={appZ.get(AppName)}
-        colorHue={0}
-        name={AppName}
-        zScaler={appZScaler}
-        zIndexMax={appZ.max}
-        onLayerHeaderClick={() => {
-          setAppZ(appZ.moveToTop(AppName));
-        }}
-      >
-        {wrapperSize && (
-          <FuzzySession
-            main={{}}
-            wrapperSize={wrapperSize}
-            onPanelClick={() => {
+      {wrapperSize && (
+        <WrapperSizeContext.Provider value={wrapperSize}>
+          <Layer
+            zIndex={appZ.get(AppName)}
+            colorHue={0}
+            name={AppName}
+            zScaler={appZScaler}
+            zIndexMax={appZ.max}
+            onLayerHeaderClick={() => {
               setAppZ(appZ.moveToTop(AppName));
             }}
-          />
-        )}
-      </Layer>
+          >
+            <FuzzySession
+              main={{}}
+              onPanelClick={() => {
+                setAppZ(appZ.moveToTop(AppName));
+              }}
+            />
+          </Layer>
 
-      <Layer
-        zIndex={appZ.get("PointSharing")}
-        colorHue={0}
-        name={"PointSharing"}
-        zScaler={appZScaler}
-        zIndexMax={appZ.max}
-        onLayerHeaderClick={() => {
-          setAppZ(appZ.moveToTop("PointSharing"));
-        }}
-      >
-        {wrapperSize && (
-          <Panel
-            position={{ x: 100, y: 500 }}
-            size={{ width: 700, height: 500 }}
-            zIndex={0}
-            isActive={true}
-            parentSize={wrapperSize}
-            onMove={() => {}}
-            bgColor="white"
-            onPanelClick={() => {
+          <Layer
+            zIndex={appZ.get("PointSharing")}
+            colorHue={0}
+            name={"PointSharing"}
+            zScaler={appZScaler}
+            zIndexMax={appZ.max}
+            onLayerHeaderClick={() => {
               setAppZ(appZ.moveToTop("PointSharing"));
             }}
           >
-            {(renderedRect) => <SharingApp />}
-          </Panel>
-        )}
-      </Layer>
+            <Panel
+              position={{ x: 100, y: 500 }}
+              size={{ width: 700, height: 500 }}
+              zIndex={0}
+              isActive={true}
+              onMove={() => {}}
+              bgColor="white"
+              onPanelClick={() => {
+                setAppZ(appZ.moveToTop("PointSharing"));
+              }}
+            >
+              {(renderedRect) => <SharingApp />}
+            </Panel>
+          </Layer>
 
-      <Layer
-        zIndex={appZ.get("PointFlow")}
-        colorHue={0}
-        name="PointFlow"
-        zScaler={appZScaler}
-        zIndexMax={appZ.max}
-        onLayerHeaderClick={() => {
-          setAppZ(appZ.moveToTop("PointFlow"));
-        }}
-      >
-        {wrapperSize && (
-          <Panel
-            position={{ x: 300, y: 100 }}
-            size={{ width: 500, height: 400 }}
-            zIndex={0}
-            isActive={true}
-            bgColor="white"
-            parentSize={wrapperSize}
-            onMove={() => {}}
-            onPanelClick={() => {
+          <Layer
+            zIndex={appZ.get("PointFlow")}
+            colorHue={0}
+            name="PointFlow"
+            zScaler={appZScaler}
+            zIndexMax={appZ.max}
+            onLayerHeaderClick={() => {
               setAppZ(appZ.moveToTop("PointFlow"));
             }}
           >
-            {(renderedRect) => <MoneyApp />}
-          </Panel>
-        )}
-      </Layer>
+            <Panel
+              position={{ x: 300, y: 100 }}
+              size={{ width: 500, height: 400 }}
+              zIndex={0}
+              isActive={true}
+              bgColor="white"
+              onMove={() => {}}
+              onPanelClick={() => {
+                setAppZ(appZ.moveToTop("PointFlow"));
+              }}
+            >
+              {(renderedRect) => <MoneyApp />}
+            </Panel>
+          </Layer>
 
-      <Layer
-        zIndex={appZ.get("Charactors")}
-        colorHue={60}
-        name="Charactors"
-        zScaler={appZScaler}
-        zIndexMax={appZ.max}
-        onLayerHeaderClick={() => {
-          setAppZ(appZ.moveToTop("Charactors"));
-        }}
-      >
-        {wrapperSize && (
-          <CharactorsApp
-            main={{}}
-            wrapperSize={wrapperSize}
-            onAppClick={() => {
+          <Layer
+            zIndex={appZ.get("Charactors")}
+            colorHue={60}
+            name="Charactors"
+            zScaler={appZScaler}
+            zIndexMax={appZ.max}
+            onLayerHeaderClick={() => {
               setAppZ(appZ.moveToTop("Charactors"));
             }}
-          />
-        )}
-      </Layer>
+          >
+            <CharactorsApp
+              main={{}}
+              onAppClick={() => {
+                setAppZ(appZ.moveToTop("Charactors"));
+              }}
+            />
+          </Layer>
+        </WrapperSizeContext.Provider>
+      )}
     </div>
   );
 })`

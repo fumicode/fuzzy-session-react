@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useContext, useState } from "react";
 import styled from "styled-components";
 
 import "core-js/features/array";
@@ -17,6 +17,7 @@ import { TimeDiff } from "./10_FuzzyTime";
 import { on } from "events";
 import SmartRect from "../00_Framework/Panel/01_SmartRect";
 import { Size2 } from "../01_Utils/00_Point";
+import WrapperSizeContext from "../00_Framework/Panel/01_WrapperSizeContext";
 
 class SessionBoxViewModel implements ViewModel<SessionEntitly> {
   public readonly sessionId: SessionId;
@@ -85,9 +86,6 @@ interface DailyTimelineWithConflictsViewModel extends ViewModel<Timeline> {
   onTheSessionChange: (sessionId: SessionId, action: SessionAction) => void;
 
   onSessionFocus?: (sessionId: SessionId, originalRect: SmartRect) => void;
-
-  //あとでcontextで受け取るようにする
-  wrapperSize: Size2;
 }
 
 const createTimeRangeChangingAction = (hourDiff: number): SessionAction => {
@@ -108,8 +106,6 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
 
   onTheSessionChange,
   onSessionFocus,
-
-  wrapperSize,
 }: DailyTimelineWithConflictsViewModel) => {
   showsTime = showsTime || true;
   //states
@@ -180,6 +176,8 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     setDragTargetAndStartY(undefined);
     setHourDiff(0);
   };
+
+  const wrapperSize = useContext(WrapperSizeContext);
 
   return (
     <div

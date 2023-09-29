@@ -1,4 +1,11 @@
-import { FC, RefObject, forwardRef, useEffect, useRef } from "react";
+import {
+  FC,
+  RefObject,
+  forwardRef,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import styled from "styled-components";
 import React from "react";
 import SmartRect, { SmartRectView } from "./01_SmartRect";
@@ -6,6 +13,7 @@ import { Point2, Size2 } from "../../01_Utils/00_Point";
 import useGetSmartRect from "./01_useGetSmartRect";
 import { Transition, TransitionStatus } from "react-transition-group";
 import { on } from "events";
+import WrapperSizeContext from "./01_WrapperSizeContext";
 
 interface PanelProps {
   //string: テキトーな型
@@ -14,8 +22,6 @@ interface PanelProps {
   position: Point2;
 
   size: Size2;
-
-  parentSize: Size2; //ない場合には描画されない
 
   zIndex?: number;
   isActive: boolean;
@@ -39,7 +45,6 @@ export const Panel = styled(
         className,
         position,
         size,
-        parentSize,
         children,
         transitionState,
         zIndex,
@@ -51,9 +56,11 @@ export const Panel = styled(
     ) => {
       debugMode = debugMode || false;
 
+      const wrapperSize = useContext(WrapperSizeContext);
+
       const renderedRect = useGetSmartRect(
         position,
-        parentSize,
+        wrapperSize,
         panelRef as RefObject<HTMLDivElement>,
         transitionState,
         onMove
