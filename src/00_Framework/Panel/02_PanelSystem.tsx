@@ -47,9 +47,6 @@ class PanelBoxViewModel<T> {
   }
 }
 
-//const zIndexScaler = inversePropotionFunction(2);
-const appZScaler: ZScalerFunction = inversePropotionFunction(2);
-
 //CharactorEntity
 const itachi = new CharactorEntity(new CharactorId("0"), "イタチ", []);
 const sasuke = new CharactorEntity(new CharactorId("1"), "サスケ", []);
@@ -194,6 +191,9 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
 
   const AppName = "FuzzySession";
 
+  //const zIndexScaler = inversePropotionFunction(2);
+  const appZScaler: ZScalerFunction = reversePropotion;
+
   return (
     <div className={className} ref={wrapperRef}>
       <Layer
@@ -201,7 +201,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
         colorHue={0}
         name={AppName}
         zScaler={appZScaler}
-        zIndexMax={appZ.size}
+        zIndexMax={appZ.max}
         onLayerHeaderClick={() => {
           setAppZ(appZ.moveToTop(AppName));
         }}
@@ -222,7 +222,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
         colorHue={0}
         name={"PointSharing"}
         zScaler={appZScaler}
-        zIndexMax={appZ.size}
+        zIndexMax={appZ.max}
         onLayerHeaderClick={() => {
           setAppZ(appZ.moveToTop("PointSharing"));
         }}
@@ -250,7 +250,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
         colorHue={0}
         name="PointFlow"
         zScaler={appZScaler}
-        zIndexMax={appZ.size}
+        zIndexMax={appZ.max}
         onLayerHeaderClick={() => {
           setAppZ(appZ.moveToTop("PointFlow"));
         }}
@@ -278,7 +278,7 @@ export const PanelSystem = styled(({ className }: PanelSystemViewModel) => {
         colorHue={60}
         name="Charactors"
         zScaler={appZScaler}
-        zIndexMax={appZ.size}
+        zIndexMax={appZ.max}
         onLayerHeaderClick={() => {
           setAppZ(appZ.moveToTop("Charactors"));
         }}

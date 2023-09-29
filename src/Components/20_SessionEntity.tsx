@@ -99,6 +99,8 @@ export interface SessionViewModel extends ViewModel<SessionEntity> {
   onEndTimeChange: (sessionAction: SessionAction) => void;
   onDragStart: (startY: number) => void;
 
+  onDoubleClick?: (e: React.MouseEvent) => void;
+
   isHovered: boolean;
 }
 
@@ -124,6 +126,7 @@ export const SessionView: FC<SessionViewModel> = styled(
     onStartTimeChange,
     onEndTimeChange,
     onDragStart,
+    onDoubleClick,
 
     isHovered,
   }: SessionViewModel) => {
@@ -134,6 +137,9 @@ export const SessionView: FC<SessionViewModel> = styled(
       <section
         className={c + " " + (isHovered && "m-hover")}
         style={{ height: `${hoursNum * hourPx}px` }}
+        onDoubleClick={(e) => {
+          onDoubleClick && onDoubleClick(e);
+        }}
       >
         {/* <div style={{fontSize:'13px'}}> 
         #{session.id.toString('short')} </div> */}

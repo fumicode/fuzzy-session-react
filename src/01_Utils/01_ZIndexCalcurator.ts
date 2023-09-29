@@ -60,4 +60,7 @@ export default class ZIndexCalcurator {
   get size() {
     return this.ids.length;
   }
+  get max() {
+    return this.size - 1;
+  }
 }

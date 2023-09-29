@@ -25,6 +25,7 @@ export const inversePropotionFunction =
 
 export const weakInversePropotion: ZScalerFunction =
   inversePropotionFunction(8);
+
 export const constantFunction: ZScalerFunction = (x: number) => 1;
 
 /*
@@ -47,7 +48,7 @@ export const Layer: FC<LayerProps> = styled(
     name,
     zIndex,
     zIndexMax = 10,
-    zScaler: zIndex2Scale = reversePropotion, //reverseInversePropotion,
+    zScaler: zScaler = reversePropotion, //reverseInversePropotion,
     children,
     onLayerHeaderClick,
   }: LayerProps) => {
@@ -72,7 +73,7 @@ export const Layer: FC<LayerProps> = styled(
         style={{
           zIndex,
 
-          transform: `scale(${zIndex2Scale(zIndex || 0, zIndexMax)})`,
+          transform: `scale(${zScaler(zIndex || 0, zIndexMax)})`,
         }}
       >
         <header
@@ -101,7 +102,7 @@ export const Layer: FC<LayerProps> = styled(
   pointer-events: none;
 
   transition: transform 0.3s ease-in-out;
-  transform-origin: 10% 30%;
+  transform-origin: center center;
 
   background: hsla(
     ${({ colorHue }) => colorHue},

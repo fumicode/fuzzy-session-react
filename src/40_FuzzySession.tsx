@@ -12,7 +12,7 @@ import update from "immutability-helper";
 import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
 import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
 import ViewModel from "./00_Framework/00_ViewModel";
-import { Size2 } from "./01_Utils/00_Point";
+import { Point2, Size2 } from "./01_Utils/00_Point";
 import Panel from "./00_Framework/Panel/02_Panel";
 import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
 import Layer, { inversePropotionFunction } from "./00_Framework/Panel/02_Layer";
@@ -163,46 +163,57 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       new ZIndexCalcurator(["詳細", "一覧"])
     );
 
+    const [selectedSession, setSelectedSession] = useState<
+      SessionEntity | undefined
+    >(undefined);
+
+    const [selectedPosition, setSelectedPosition] = useState<Point2>({
+      x: 0,
+      y: 0,
+    });
+
     return (
       <>
-        <Layer
-          zIndex={viewZ.get("詳細")}
-          colorHue={0}
-          name={"詳細"}
-          zScaler={inversePropotionFunction(8)}
-          zIndexMax={1}
-          onLayerHeaderClick={() => {
-            setViewZ(viewZ.moveToTop("詳細"));
-            onPanelClick();
-          }}
-        >
-          <Panel
-            position={{ x: 800, y: 0 }}
-            size={{ width: 200, height: 200 }}
-            zIndex={0}
-            isActive={true}
-            parentSize={wrapperSize}
-            onMove={() => {}}
-            bgColor="white"
-            onPanelClick={() => {
+        {selectedSession && (
+          <Layer
+            zIndex={viewZ.get("詳細")}
+            colorHue={0}
+            name={"詳細"}
+            zScaler={inversePropotionFunction(8)}
+            zIndexMax={1}
+            onLayerHeaderClick={() => {
               setViewZ(viewZ.moveToTop("詳細"));
               onPanelClick();
             }}
           >
-            {(renderedRect) => (
-              <div>
-                <SessionView
-                  main={firstSession}
-                  hourPx={200}
-                  onStartTimeChange={() => {}}
-                  onEndTimeChange={() => {}}
-                  onDragStart={() => {}}
-                  isHovered={true}
-                />
-              </div>
-            )}
-          </Panel>
-        </Layer>
+            <Panel
+              position={selectedPosition}
+              size={{ width: 200, height: 200 }}
+              zIndex={0}
+              isActive={true}
+              parentSize={wrapperSize}
+              onMove={() => {}}
+              bgColor="white"
+              onPanelClick={() => {
+                setViewZ(viewZ.moveToTop("詳細"));
+                onPanelClick();
+              }}
+            >
+              {(renderedRect) => (
+                <div>
+                  <SessionView
+                    main={selectedSession}
+                    hourPx={20}
+                    onStartTimeChange={() => {}}
+                    onEndTimeChange={() => {}}
+                    onDragStart={() => {}}
+                    isHovered={true}
+                  />
+                </div>
+              )}
+            </Panel>
+          </Layer>
+        )}
         <Layer
           zIndex={viewZ.get("一覧")}
           colorHue={0}
@@ -243,6 +254,22 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                           main={cal.sessionMap}
                           showsTime={calIndex === 0}
                           onTheSessionChange={goIntoFutureSession}
+                          onSessionFocus={(sId, originalRect) => {
+                            const session = cal.sessionMap.get(sId);
+                            if (session === undefined) {
+                              return;
+                            }
+
+                            const positionToOpen =
+                              originalRect.calcPositionToOpen({
+                                width: 200,
+                                height: 200,
+                              });
+                            setSelectedSession(session);
+                            setSelectedPosition(positionToOpen);
+                            setViewZ(viewZ.moveToTop("詳細"));
+                          }}
+                          wrapperSize={wrapperSize}
                         />
                       </div>
                     );

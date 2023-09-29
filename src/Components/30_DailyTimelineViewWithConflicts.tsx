@@ -14,6 +14,9 @@ import { TimeRangeView } from "./10_TimeRange";
 import Conflict from "./20_Conflict";
 import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
 import { TimeDiff } from "./10_FuzzyTime";
+import { on } from "events";
+import SmartRect from "../00_Framework/Panel/01_SmartRect";
+import { Size2 } from "../01_Utils/00_Point";
 
 class SessionBoxViewModel implements ViewModel<SessionEntitly> {
   public readonly sessionId: SessionId;
@@ -73,21 +76,18 @@ function scaleNumber(
 }
 
 //TODO: classなのはいいのだろうか？
-class DailyTimelineWithConflictsViewModel implements ViewModel<Timeline> {
+interface DailyTimelineWithConflictsViewModel extends ViewModel<Timeline> {
   className?: string | undefined;
 
-  constructor(
-    public readonly main: Timeline,
-    public readonly showsTime: boolean = true,
+  readonly main: Timeline;
+  readonly showsTime?: boolean | undefined;
 
-    public onTheSessionChange: (
-      sessionId: SessionId,
-      action: SessionAction
-    ) => void
-  ) {
-    //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
-    //const metaConflicts = this.main.conflicts;
-  }
+  onTheSessionChange: (sessionId: SessionId, action: SessionAction) => void;
+
+  onSessionFocus?: (sessionId: SessionId, originalRect: SmartRect) => void;
+
+  //あとでcontextで受け取るようにする
+  wrapperSize: Size2;
 }
 
 const createTimeRangeChangingAction = (hourDiff: number): SessionAction => {
@@ -107,7 +107,11 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   showsTime,
 
   onTheSessionChange,
+  onSessionFocus,
+
+  wrapperSize,
 }: DailyTimelineWithConflictsViewModel) => {
+  showsTime = showsTime || true;
   //states
   const [hoveredSessionId, setHoveredSessionId] = useState<
     SessionId | undefined
@@ -294,6 +298,20 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                 onEndTimeChange={onSessionChange}
                 onDragStart={(startY: number) => {
                   setDragTargetAndStartY({ session, startY });
+                }}
+                onDoubleClick={(e) => {
+                  const rect =
+                    e.target instanceof HTMLElement &&
+                    e.target.getBoundingClientRect();
+                  if (!rect) {
+                    throw new Error(
+                      "rectが取得できなかった。要素がダブルクリックできてるのに要素がないってどゆこと！？"
+                    );
+                  }
+
+                  const originalRect = new SmartRect(rect, wrapperSize);
+
+                  onSessionFocus && onSessionFocus(session.id, originalRect);
                 }}
                 isHovered={isGrabbed}
               />
