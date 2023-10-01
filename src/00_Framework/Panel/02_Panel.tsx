@@ -38,7 +38,7 @@ interface PanelProps {
 }
 
 const duration = 1000;
-export const Panel = styled(
+export const PanelCore = styled(
   forwardRef<HTMLDivElement, PanelProps>(
     (
       {
@@ -138,7 +138,9 @@ export const ProxyPanel: FC<PanelPropsWithoutRef> = (
 
   return (
     <Transition nodeRef={panelRef} in={isActive} timeout={duration}>
-      {(state) => <Panel {...props} ref={panelRef} transitionState={state} />}
+      {(state) => (
+        <PanelCore {...props} ref={panelRef} transitionState={state} />
+      )}
     </Transition>
   );
 };

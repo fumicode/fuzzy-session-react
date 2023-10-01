@@ -2,7 +2,7 @@ import { FC, useEffect } from "react";
 import styled from "styled-components";
 import React from "react";
 
-interface LayerProps {
+export interface LayerProps {
   //string: テキトーな型
   className?: string;
   zIndex?: number;
