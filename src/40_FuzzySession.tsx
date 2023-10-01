@@ -1,16 +1,16 @@
-import Timeline from "./Components/20_Timeline";
+import Timeline from "./FuzzySessionPackage/20_Timeline";
 import SessionEntity, {
   SessionAction,
   SessionId,
   SessionView,
-} from "./Components/20_SessionEntity";
-import TimeRange from "./Components/10_TimeRange";
+} from "./FuzzySessionPackage/20_SessionEntity";
+import TimeRange from "./FuzzySessionPackage/10_TimeRange";
 import { FC, useState } from "react";
 
 import styled from "styled-components";
 import update from "immutability-helper";
-import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
-import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
+import { ThreeRows } from "./GaiaCodePackage/20_GaiaCode";
+import { DailyTimelineWithConflictsView } from "./FuzzySessionPackage/30_DailyTimelineViewWithConflicts";
 import ViewModel from "./00_Framework/00_ViewModel";
 import { Point2, Size2 } from "./01_Utils/00_Point";
 import Panel from "./00_Framework/Panel/02_Panel";

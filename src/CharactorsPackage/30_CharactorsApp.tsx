@@ -1,19 +1,19 @@
 import { FC, useState } from "react";
 import styled from "styled-components";
-import ViewModel from "../00_ViewModel";
-import Panel from "./02_Panel";
-import Layer, { constantFunction } from "./02_Layer";
-import SmartRect from "./01_SmartRect";
-import { Point2, Size2 } from "../../01_Utils/00_Point";
-import ZIndexCalcurator from "../../01_Utils/01_ZIndexCalcurator";
+import ViewModel from "../00_Framework/00_ViewModel";
+import Panel from "../00_Framework/Panel/02_Panel";
+import Layer, { constantFunction } from "../00_Framework/Panel/02_Layer";
+import SmartRect from "../00_Framework/Panel/01_SmartRect";
+import { Point2, Size2 } from "../01_Utils/00_Point";
+import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
 import CharactorEntity, {
   CharactorId,
   CharactorRelation,
   CharactorView,
-} from "../../Components/20_CharactorEntity";
+} from "./20_CharactorEntity";
 import update from "immutability-helper";
-import { Action } from "../00_Action";
-import { Id } from "../00_Entity";
+import { Action } from "../00_Framework/00_Action";
+import { Id } from "../00_Framework/00_Entity";
 
 export class PanelBoxViewModel<T> {
   constructor(

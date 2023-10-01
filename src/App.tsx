@@ -9,9 +9,9 @@ import Layer, {
 import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
 import FuzzySession from "./40_FuzzySession";
 import Panel from "./00_Framework/Panel/02_Panel";
-import SharingApp from "./MoneyApp/SharingApp";
-import MoneyApp from "./MoneyApp/MoneyApp";
-import CharactorsApp from "./00_Framework/Panel/30_CharactorsApp";
+import SharingApp from "./MoneyAppPackage/SharingApp";
+import MoneyApp from "./MoneyAppPackage/MoneyApp";
+import CharactorsApp from "./CharactorsPackage/30_CharactorsApp";
 
 const App: FC = styled((props: { className: string }) => {
   const AppNames = ["PointFlow", "PointSharing", "FuzzySession", "Charactors"];
@@ -24,7 +24,7 @@ const App: FC = styled((props: { className: string }) => {
   const appZScaler: ZScalerFunction = reversePropotion;
 
   return (
-    <PanelSystem main={undefined}>
+    <PanelSystem>
       <Layer
         zIndex={appZ.get(AppName)}
         colorHue={0}

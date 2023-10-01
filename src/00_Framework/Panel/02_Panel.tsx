@@ -1,18 +1,10 @@
-import {
-  FC,
-  RefObject,
-  forwardRef,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+import { FC, RefObject, forwardRef, useContext, useRef } from "react";
 import styled from "styled-components";
 import React from "react";
 import SmartRect, { SmartRectView } from "./01_SmartRect";
 import { Point2, Size2 } from "../../01_Utils/00_Point";
 import useGetSmartRect from "./01_useGetSmartRect";
 import { Transition, TransitionStatus } from "react-transition-group";
-import { on } from "events";
 import WrapperSizeContext from "./01_WrapperSizeContext";
 
 interface PanelProps {

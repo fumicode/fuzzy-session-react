@@ -1,16 +1,16 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import ViewModel from "../00_ViewModel";
 import { Size2 } from "../../01_Utils/00_Point";
 import WrapperSizeContext from "./01_WrapperSizeContext";
 
-export interface PanelSystemViewModel extends ViewModel<undefined> {
+export interface PanelSystemProps {
   //string: テキトーな型
-  children: ReactNode[];
+  className?: string;
+  children: ReactNode[]; //Layerに限るってしたいんだが、やりかたわからない。
 }
 
 export const PanelSystem = styled(
-  ({ className, children }: PanelSystemViewModel) => {
+  ({ className, children }: PanelSystemProps) => {
     ////////////////////////////////
     //PanelSystemの処理
 
