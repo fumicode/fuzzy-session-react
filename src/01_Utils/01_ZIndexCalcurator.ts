@@ -50,16 +50,19 @@ export default class ZIndexCalcurator {
     return this.ids[this.ids.length - 1] === id;
   }
 
+  //deprecated
   get maxNormalZIndex() {
-    return this.ids.length;
+    return this.ids.length - 1;
   }
+
   get maxTopZIndex() {
-    return this.ids.length + (typeof this.pinnedId === "string" ? 1 : 0);
+    return this.maxNormalZIndex + (typeof this.pinnedId === "string" ? 1 : 0);
   }
 
   get size() {
     return this.ids.length;
   }
+
   get max() {
     return this.size - 1;
   }
