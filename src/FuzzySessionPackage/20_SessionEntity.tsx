@@ -19,13 +19,6 @@ export class SessionId extends StringId {
   constructor(value: string | undefined = undefined) {
     super(value);
   }
-  equals(otherId: SessionId): boolean {
-    if (!(otherId instanceof SessionId)) {
-      throw new Error("同じ型のIDでないとくらべられません");
-    }
-
-    return super.equals(otherId);
-  }
 }
 
 export default class SessionEntity implements Entity {

@@ -25,8 +25,8 @@ export class StringId implements Id {
     }
     return this._value;
   }
-  equals(otherId: StringId): boolean {
-    if (!(otherId instanceof StringId)) {
+  equals(otherId: this): boolean {
+    if (!(otherId instanceof this.constructor)) {
       throw new Error("同じ型のIDでないとくらべられません");
     }
     return this._value === otherId._value;

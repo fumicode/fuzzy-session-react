@@ -15,6 +15,7 @@ import CharactorsApp from "./CharactorsPackage/30_CharactorsApp";
 
 const App: FC = styled((props: { className: string }) => {
   const AppNames = ["PointFlow", "PointSharing", "FuzzySession", "Charactors"];
+  const { className } = props;
 
   const [appZ, setAppZ] = useState(new ZIndexCalcurator(AppNames));
 
@@ -24,7 +25,8 @@ const App: FC = styled((props: { className: string }) => {
   const appZScaler: ZScalerFunction = reversePropotion;
 
   return (
-    <PanelSystem>
+    <PanelSystem className={className}>
+      <h1 className="e-os-title">DouOS</h1>
       <Layer
         zIndex={appZ.get(AppName)}
         colorHue={0}
@@ -115,6 +117,13 @@ const App: FC = styled((props: { className: string }) => {
     </PanelSystem>
   );
 })`
+  .e-os-title {
+    position: absolute;
+
+    right: 0;
+    bottom: 0;
+    color: skyblue;
+  }
   .e-calendar-columns {
     display: flex;
     flex-direction: row;
