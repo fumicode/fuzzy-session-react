@@ -5,8 +5,6 @@ import styled from "styled-components";
 import { Action } from "../00_Framework/00_Action";
 import Money from "../MoneyAppPackage/Money";
 
-export type MoneyAction = Action<Money>;
-
 export interface MoneyAmountRateViewModel extends ViewModel<Money> {}
 
 export const MoneyAmountRateView: FC<MoneyAmountRateViewModel> = styled(
