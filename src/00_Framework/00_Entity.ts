@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
 export interface Id {
-  equals(other: Id): boolean;
+  equals(other: this): boolean;
 }
 
 export default interface Entity {
@@ -26,8 +26,13 @@ export class StringId implements Id {
     return this._value;
   }
   equals(otherId: this): boolean {
-    if (!(otherId instanceof this.constructor)) {
-      throw new Error("同じ型のIDでないとくらべられません");
+    if (
+      !(
+        otherId instanceof this.constructor &&
+        this instanceof otherId.constructor
+      )
+    ) {
+      return false;
     }
     return this._value === otherId._value;
   }
