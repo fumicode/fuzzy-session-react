@@ -1,7 +1,4 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
 import { StringId } from "./00_Entity";
-import { extend } from "immutability-helper";
 
 class AnotherId extends StringId {}
 class TheOtherId extends StringId {}
