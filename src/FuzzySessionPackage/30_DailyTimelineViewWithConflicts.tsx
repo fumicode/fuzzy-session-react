@@ -3,21 +3,17 @@ import styled from "styled-components";
 
 import "core-js/features/array";
 
-import SessionEntitly, {
-  SessionAction,
-  SessionId,
-  SessionView,
-} from "./20_SessionEntity";
+import SessionEntitly, { SessionAction, SessionId } from "./20_SessionEntity";
 import ViewModel from "../00_Framework/00_ViewModel";
 import Timeline from "./20_Timeline";
 import { TimeRangeView } from "./10_TimeRange";
 import Conflict from "./20_Conflict";
 import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
 import { TimeDiff } from "./10_FuzzyTime";
-import { on } from "events";
 import SmartRect from "../00_Framework/Panel/01_SmartRect";
-import { Size2 } from "../01_Utils/00_Point";
 import WrapperSizeContext from "../00_Framework/Panel/01_WrapperSizeContext";
+import { SessionView } from "./20_SessionView";
+import scaleNumber from "../01_Utils/00_scaleNumber";
 
 class SessionBoxViewModel implements ViewModel<SessionEntitly> {
   public readonly sessionId: SessionId;
@@ -45,35 +41,6 @@ class ConflictViewModel implements ViewModel<Conflict> {
       { start: 50, end: 0 }
     );
   }
-}
-
-interface NumberRange {
-  start: number;
-  end: number;
-}
-
-function scaleNumber(
-  input: number,
-  from: NumberRange = { start: 0, end: 1 },
-  to: NumberRange = { start: 0, end: 1 }
-): number {
-  const x = input;
-
-  const x1 = from.start,
-    y1 = to.start,
-    x2 = from.end,
-    y2 = to.end;
-
-  if (x > x2) {
-    //とてもひどいなら真っ赤
-    return y2;
-  } else if (x < x1) {
-    //ちょっとかさなってるだけなら真っ黄
-    return y1;
-  }
-
-  const a = (y2 - y1) / (x2 - x1); //傾き
-  return a * (x - x1) + y1;
 }
 
 //TODO: classなのはいいのだろうか？

@@ -2,7 +2,6 @@ import Timeline from "./FuzzySessionPackage/20_Timeline";
 import SessionEntity, {
   SessionAction,
   SessionId,
-  SessionView,
 } from "./FuzzySessionPackage/20_SessionEntity";
 import TimeRange from "./FuzzySessionPackage/10_TimeRange";
 import { FC, useState } from "react";
@@ -16,6 +15,7 @@ import Panel from "./00_Framework/Panel/02_Panel";
 import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
 import Layer, { inversePropotionFunction } from "./00_Framework/Panel/02_Layer";
 import styled from "styled-components";
+import { SessionView } from "./FuzzySessionPackage/20_SessionView";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
