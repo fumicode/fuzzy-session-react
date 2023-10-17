@@ -7,7 +7,6 @@ import SessionEntity, {
 import TimeRange from "./FuzzySessionPackage/10_TimeRange";
 import { FC, useState } from "react";
 
-import styled from "styled-components";
 import update from "immutability-helper";
 import { ThreeRows } from "./GaiaCodePackage/20_GaiaCode";
 import { DailyTimelineWithConflictsView } from "./FuzzySessionPackage/30_DailyTimelineViewWithConflicts";
@@ -16,7 +15,7 @@ import { Point2, Size2 } from "./01_Utils/00_Point";
 import Panel from "./00_Framework/Panel/02_Panel";
 import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
 import Layer, { inversePropotionFunction } from "./00_Framework/Panel/02_Layer";
-import { set } from "core-js/core/dict";
+import styled from "styled-components";
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
@@ -153,7 +152,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
 
     const firstSession = calendars[0].sessionMap.get(inchoSessions[0].id);
     if (firstSession === undefined) {
-      return;
+      throw new Error("カレンダーからsessionが取得できませんでした。");
     }
 
     const [viewZ, setViewZ] = useState<ZIndexCalcurator>(
