@@ -60,6 +60,7 @@ const App: FC = styled((props: { className: string }) => {
           isActive={true}
           onMove={() => {}}
           bgColor="white"
+          overflow="visible"
           onPanelClick={() => {
             setAppZ(appZ.moveToTop("PointSharing"));
           }}
@@ -88,6 +89,7 @@ const App: FC = styled((props: { className: string }) => {
           onPanelClick={() => {
             setAppZ(appZ.moveToTop("PointFlow"));
           }}
+          overflow="visible"
         >
           {(renderedRect) => <MoneyApp />}
         </Panel>

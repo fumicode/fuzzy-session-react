@@ -18,6 +18,7 @@ interface PanelProps {
   zIndex?: number;
   isActive: boolean;
   bgColor?: string;
+  overflow?: string;
 
   children: (renderedRect: SmartRect) => React.ReactNode;
 
@@ -109,7 +110,7 @@ export const PanelCore = styled(
   box-shadow: 0 0 10px 3px hsla(0, 0%, 0%, 0.5);
 
   pointer-events: auto;
-  overflow: auto;
+  overflow:${({ overflow }) => overflow || "auto"}} ;
 
   > .e-rect-info {
     position: absolute;
