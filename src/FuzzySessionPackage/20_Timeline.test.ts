@@ -1,6 +1,6 @@
 import Conflict from "./20_Conflict";
 import SessionEntity from "./20_SessionEntity";
-import Timeline from "./20_Timeline";
+import Timeline, { TimelineSession } from "./20_Timeline";
 import { User } from "./20_UserEntity";
 import { TimeRange } from "./FuzzyTimePackage";
 
@@ -57,6 +57,13 @@ describe("Timeline", () => {
     expect(timeline).toBeInstanceOf(Timeline);
   });
 
+  it("セッションは集約ルートであるためそのまま保存されない。TimelineSessionとなる", () => {
+    const timeline = new Timeline(inchoSessions);
+
+    const timelineSession = timeline.get(inchoSessions[0].id);
+    expect(timelineSession).toBeInstanceOf(TimelineSession);
+  });
+
   it("そのIDのSessionが含まれているかどうかを確認できる", () => {
     const timeline = new Timeline(inchoSessions);
     const hasSession = timeline.has(inchoSessions[0].id);
@@ -74,7 +81,9 @@ describe("Timeline", () => {
 
     const newTimeline = timeline.set(newSession.id, newSession);
 
-    expect(newTimeline.get(newSession.id)).toBe(newSession);
+    expect(newTimeline.get(newSession.id)).toEqual(
+      new TimelineSession(newSession)
+    );
   });
 
   it("セッションの数を取得できる", () => {
@@ -86,7 +95,7 @@ describe("Timeline", () => {
   it("すべてのセッションを取得できる", () => {
     const timeline = new Timeline(inchoSessions);
 
-    expect(timeline.sessions).toEqual(inchoSessions);
+    expect(timeline.sessions).toHaveLength(inchoSessions.length);
   });
 
   it("時間でならんだセッションを取得できる", () => {
@@ -94,12 +103,12 @@ describe("Timeline", () => {
     const orderedSessions = timeline.orderedSessionsByTimeRange;
 
     expect(orderedSessions).toEqual([
-      inchoSessions[0],
-      inchoSessions[1],
-      inchoSessions[2],
-      inchoSessions[3],
-      inchoSessions[4],
-      inchoSessions[5],
+      new TimelineSession(inchoSessions[0]),
+      new TimelineSession(inchoSessions[1]),
+      new TimelineSession(inchoSessions[2]),
+      new TimelineSession(inchoSessions[3]),
+      new TimelineSession(inchoSessions[4]),
+      new TimelineSession(inchoSessions[5]),
     ]);
   });
 

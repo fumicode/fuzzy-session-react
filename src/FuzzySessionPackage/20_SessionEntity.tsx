@@ -62,7 +62,7 @@ export default class SessionEntity implements Entity {
     }
   }
 
-  overlaps(otherSession: SessionEntity): TimeRange | undefined {
+  overlaps(otherSession: this): TimeRange | undefined {
     return this.timeRange.overlaps(otherSession.timeRange);
   }
 

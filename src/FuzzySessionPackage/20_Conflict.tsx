@@ -1,12 +1,20 @@
 import SessionEntity, { SessionId } from "./20_SessionEntity";
+import { TimelineSession } from "./20_Timeline";
 import { TimeRange } from "./FuzzyTimePackage/index";
 
 export default class Conflict {
   public readonly overlappingTimeRange: TimeRange;
   public readonly sessionIds: [SessionId, SessionId]; // 2番目の方が後の予定であるとする
 
-  constructor(sessionA: SessionEntity, sessionB: SessionEntity) {
-    const overlappingTimeRange = sessionA.overlaps(sessionB);
+  constructor(
+    sessionA: SessionEntity | TimelineSession,
+    sessionB: SessionEntity | TimelineSession
+  ) {
+    const A_timeRange = sessionA.timeRange;
+    const B_timeRange = sessionB.timeRange;
+
+    const overlappingTimeRange = A_timeRange.overlaps(B_timeRange);
+
     if (!overlappingTimeRange) {
       throw new Error("２つのセッションの時間が重なっていません。");
     }
@@ -38,12 +46,12 @@ export default class Conflict {
   }
 
   toStringEmoji(): string {
-    switch (this.horribleness) {
-      case 0:
+    switch (true) {
+      case 0 <= this.horribleness && this.horribleness <= 1:
         return "🤨";
-      case 1:
+      case this.horribleness <= 2:
         return "😢";
-      case 2:
+      case this.horribleness <= 3:
         return "😡";
       default:
         return "😱";
