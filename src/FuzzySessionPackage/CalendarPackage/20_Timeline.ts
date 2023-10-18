@@ -1,7 +1,7 @@
-import SessionEntity, { SessionId } from "./20_SessionEntity";
+import SessionEntity, { SessionId } from "../20_SessionEntity";
 
 import Conflict from "./20_Conflict";
-import { TimeRange } from "./FuzzyTimePackage";
+import { TimeRange } from "../FuzzyTimePackage";
 
 export default class Timeline {
   private readonly _conflicts: Conflict[];

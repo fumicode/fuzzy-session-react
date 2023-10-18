@@ -1,6 +1,6 @@
-import SessionEntity, { SessionId } from "./20_SessionEntity";
+import SessionEntity, { SessionId } from "../20_SessionEntity";
 import { TimelineSession } from "./20_Timeline";
-import { TimeRange } from "./FuzzyTimePackage/index";
+import { TimeRange } from "../FuzzyTimePackage/index";
 
 export default class Conflict {
   public readonly overlappingTimeRange: TimeRange;

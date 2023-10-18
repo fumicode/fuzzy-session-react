@@ -7,7 +7,7 @@ import Entity, {
   convertIterableEntityToMap,
 } from "../00_Framework/00_Entity";
 import { Session } from "inspector";
-import { User } from "./20_UserEntity";
+import { UserEntity } from "./20_UserEntity";
 
 export class SessionId extends StringId {
   static fromString(str: string): SessionId {
@@ -23,7 +23,7 @@ export class SessionId extends StringId {
 interface SessionSpec {
   readonly title: string;
   readonly timeRange: TimeRange;
-  readonly members?: User[] | Set<string>;
+  readonly members?: UserEntity[] | Set<string>;
 }
 
 export default class SessionEntity implements Entity {

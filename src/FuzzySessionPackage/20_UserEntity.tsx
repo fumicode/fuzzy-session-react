@@ -6,12 +6,16 @@ export interface UserSpec {
   readonly name: string;
 }
 
-export class User implements Entity {
+export class UserEntity implements Entity {
   readonly name: string;
   readonly id: UserId;
-  readonly prev: User | undefined;
+  readonly prev: UserEntity | undefined;
 
-  constructor(id: UserId | string, { name }: UserSpec, prev: User | undefined) {
+  constructor(
+    id: UserId | string,
+    { name }: UserSpec,
+    prev: UserEntity | undefined
+  ) {
     if (id instanceof UserId) {
       this.id = id;
     } else if (typeof id === "string") {

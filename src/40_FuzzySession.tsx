@@ -1,4 +1,4 @@
-import Timeline from "./FuzzySessionPackage/20_Timeline";
+import Timeline from "./FuzzySessionPackage/CalendarPackage/20_Timeline";
 import SessionEntity, {
   SessionAction,
   SessionId,
@@ -17,9 +17,12 @@ import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
 import Layer, { inversePropotionFunction } from "./00_Framework/Panel/02_Layer";
 import styled from "styled-components";
 import { SessionView } from "./FuzzySessionPackage/20_SessionView";
-import { User, UserId } from "./FuzzySessionPackage/20_UserEntity";
+import { UserEntity, UserId } from "./FuzzySessionPackage/20_UserEntity";
+import Entity, { StringId } from "./00_Framework/00_Entity";
+import { th } from "date-fns/locale";
+import CalendarEntity from "./FuzzySessionPackage/CalendarPackage/20_Calendar";
 
-const incho = new User(
+const incho = new UserEntity(
   "incho",
   {
     name: "院長",
@@ -27,7 +30,7 @@ const incho = new User(
   undefined
 );
 
-const tainei = new User(
+const tainei = new UserEntity(
   "tainei",
   {
     name: "タイ姉",
@@ -35,7 +38,7 @@ const tainei = new User(
   undefined
 );
 
-const ashitaro = new User(
+const ashitaro = new UserEntity(
   "ashitaro ",
   {
     name: "アシ太郎",
@@ -143,29 +146,26 @@ const ashitaroSessions: SessionEntity[] = [
 
 const allSessions = [...inchoSessions, ...taineiSessions, ...ashitaroSessions];
 
-interface Calendar {
-  title: string;
-  sessionMap: Timeline;
-}
-
-const _calendars: Calendar[] = [
-  {
+const _calendars: CalendarEntity[] = [
+  new CalendarEntity("cal_incho", {
     title: "院長",
-    sessionMap: new Timeline(inchoSessions),
-  },
-  {
+    timeline: new Timeline(inchoSessions),
+  }),
+
+  new CalendarEntity("cal_tainei", {
     title: "タイ姉",
-    sessionMap: new Timeline(taineiSessions),
-  },
-  {
+    timeline: new Timeline(taineiSessions),
+  }),
+
+  new CalendarEntity("cal_ashitaro", {
     title: "アシ太郎",
-    sessionMap: new Timeline(ashitaroSessions),
-  },
+    timeline: new Timeline(ashitaroSessions),
+  }),
 ];
 
 interface GlobalState {
-  readonly calendars: Map<string, Calendar>;
-  readonly users: Map<string, User>;
+  readonly calendars: Map<string, CalendarEntity>;
+  readonly users: Map<string, UserEntity>;
   readonly sessions: Map<string, SessionEntity>;
 }
 
@@ -188,7 +188,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
 
       onPanelClick,
     } = props;
-    const [calendars, setCalendars] = useState<Calendar[]>(_calendars);
+    const [calendars, setCalendars] = useState<CalendarEntity[]>(_calendars);
 
     const goIntoFutureCalendar = (
       calIndex: number,
@@ -199,7 +199,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
       //検索
-      const session = calendars[calIndex].sessionMap.get(sId);
+      const session = calendars[calIndex].timeline.get(sId);
       if (session === undefined) {
         throw new Error("そんなことはありえないはず");
       }
@@ -210,7 +210,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
         //永続化
         const newCals = update(calendars, {
           [calIndex]: {
-            sessionMap: (list) => list.set(futureSession.id, futureSession),
+            timeline: (list) => list.set(futureSession.id, futureSession),
           },
         });
         setCalendars(newCals);
@@ -219,7 +219,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       }
     };
 
-    const firstSession = calendars[0].sessionMap.get(inchoSessions[0].id);
+    const firstSession = calendars[0].timeline.get(inchoSessions[0].id);
     if (firstSession === undefined) {
       throw new Error("カレンダーからsessionが取得できませんでした。");
     }
@@ -314,11 +314,11 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                       <div className="e-column" key={calIndex}>
                         <h2>{cal.title}</h2>
                         <DailyTimelineWithConflictsView
-                          main={cal.sessionMap}
+                          main={cal.timeline}
                           showsTime={calIndex === 0}
                           onTheSessionChange={goIntoFutureSession}
                           onSessionFocus={(sId, originalRect) => {
-                            const session = cal.sessionMap.get(sId);
+                            const session = cal.timeline.get(sId);
                             if (session === undefined) {
                               return;
                             }
