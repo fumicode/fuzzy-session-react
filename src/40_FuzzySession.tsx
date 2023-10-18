@@ -18,7 +18,10 @@ import Layer, { inversePropotionFunction } from "./00_Framework/Panel/02_Layer";
 import styled from "styled-components";
 import { SessionView } from "./FuzzySessionPackage/20_SessionView";
 import { UserEntity, UserId } from "./FuzzySessionPackage/20_UserEntity";
-import Entity, { StringId } from "./00_Framework/00_Entity";
+import Entity, {
+  StringId,
+  convertIterableEntityToMap,
+} from "./00_Framework/00_Entity";
 import { th } from "date-fns/locale";
 import CalendarEntity from "./FuzzySessionPackage/CalendarPackage/20_Calendar";
 
@@ -46,7 +49,7 @@ const ashitaro = new UserEntity(
   undefined
 );
 
-const users = [incho, tainei, ashitaro];
+const _users = [incho, tainei, ashitaro];
 
 let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, {
@@ -144,7 +147,7 @@ const ashitaroSessions: SessionEntity[] = [
   }),
 ];
 
-const allSessions = [...inchoSessions, ...taineiSessions, ...ashitaroSessions];
+const _allSessions = [...inchoSessions, ...taineiSessions, ...ashitaroSessions];
 
 const _calendars: CalendarEntity[] = [
   new CalendarEntity("cal_incho", {
@@ -188,10 +191,15 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
 
       onPanelClick,
     } = props;
-    const [calendars, setCalendars] = useState<CalendarEntity[]>(_calendars);
+
+    const [globalState, setGlobalState] = useState<GlobalState>({
+      calendars: convertIterableEntityToMap(_calendars),
+      users: convertIterableEntityToMap(_users),
+      sessions: convertIterableEntityToMap(_allSessions),
+    });
 
     const goIntoFutureCalendar = (
-      calIndex: number,
+      DEPRECATEDcalIndex: number,
       sId: SessionId,
       sessionAction: SessionAction
     ) => {
@@ -199,7 +207,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
 
       //検索
-      const session = calendars[calIndex].timeline.get(sId);
+      const session = globalState.sessions.get(sId.toString());
       if (session === undefined) {
         throw new Error("そんなことはありえないはず");
       }
@@ -208,21 +216,16 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
         const futureSession = sessionAction(session);
 
         //永続化
-        const newCals = update(calendars, {
-          [calIndex]: {
-            timeline: (list) => list.set(futureSession.id, futureSession),
+        const newGlobalState = update(globalState, {
+          sessions: {
+            $add: [[session.id.toString(), futureSession]],
           },
         });
-        setCalendars(newCals);
+        setGlobalState(newGlobalState);
       } catch (e) {
         console.log(e);
       }
     };
-
-    const firstSession = calendars[0].timeline.get(inchoSessions[0].id);
-    if (firstSession === undefined) {
-      throw new Error("カレンダーからsessionが取得できませんでした。");
-    }
 
     const [viewZ, setViewZ] = useState<ZIndexCalcurator>(
       new ZIndexCalcurator(["詳細", "一覧"])
@@ -301,44 +304,59 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
               onPanelClick();
             }}
           >
-            {(renderedRect) => (
-              <div className={className}>
-                <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
-                <div className="e-calendar-columns">
-                  {calendars.map((cal, calIndex) => {
-                    const goIntoFutureSession = (
-                      sId: SessionId,
-                      action: SessionAction
-                    ) => goIntoFutureCalendar(calIndex, sId, action);
-                    return (
-                      <div className="e-column" key={calIndex}>
-                        <h2>{cal.title}</h2>
-                        <DailyTimelineWithConflictsView
-                          main={cal.timeline}
-                          showsTime={calIndex === 0}
-                          onTheSessionChange={goIntoFutureSession}
-                          onSessionFocus={(sId, originalRect) => {
-                            const session = cal.timeline.get(sId);
-                            if (session === undefined) {
-                              return;
-                            }
+            {(renderedRect) => {
+              return (
+                <div className={className}>
+                  <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
+                  <div className="e-calendar-columns">
+                    {[...globalState.calendars.values()].map(
+                      (cal, calIndex) => {
+                        const sessionEntities = cal.timeline.sessions.map(
+                          (tls) =>
+                            globalState.sessions.get(
+                              tls.id.toString()
+                            ) as SessionEntity
+                        );
+                        //const sessionEntities = [...globalState.sessions.values()];
 
-                            const positionToOpen =
-                              originalRect.calcPositionToOpen({
-                                width: 200,
-                                height: 200,
-                              });
-                            setSelectedSession(session);
-                            setSelectedPosition(positionToOpen);
-                            setViewZ(viewZ.moveToTop("詳細"));
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
+                        const goIntoFutureSession = (
+                          sId: SessionId,
+                          action: SessionAction
+                        ) => goIntoFutureCalendar(calIndex, sId, action);
+                        return (
+                          <div className="e-column" key={calIndex}>
+                            <h2>{cal.title}</h2>
+                            <DailyTimelineWithConflictsView
+                              main={cal.timeline}
+                              sessionEntities={sessionEntities}
+                              showsTime={calIndex === 0}
+                              onTheSessionChange={goIntoFutureSession}
+                              onSessionFocus={(sId, originalRect) => {
+                                const session = globalState.sessions.get(
+                                  sId.toString()
+                                );
+                                if (session === undefined) {
+                                  return;
+                                }
+
+                                const positionToOpen =
+                                  originalRect.calcPositionToOpen({
+                                    width: 200,
+                                    height: 200,
+                                  });
+                                setSelectedSession(session);
+                                setSelectedPosition(positionToOpen);
+                                setViewZ(viewZ.moveToTop("詳細"));
+                              }}
+                            />
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            }}
           </Panel>
         </Layer>
       </>

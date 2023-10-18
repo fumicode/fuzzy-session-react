@@ -48,6 +48,7 @@ interface DailyTimelineWithConflictsViewModel extends ViewModel<Timeline> {
   className?: string | undefined;
 
   readonly main: Timeline;
+  readonly sessionEntities: SessionEntitly[];
   readonly showsTime?: boolean | undefined;
 
   onTheSessionChange: (sessionId: SessionId, action: SessionAction) => void;
@@ -69,6 +70,7 @@ const createTimeRangeChangingAction = (hourDiff: number): SessionAction => {
 const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   className,
   main: { sessions, conflicts },
+  sessionEntities,
   showsTime,
 
   onTheSessionChange,
@@ -84,7 +86,10 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   >(undefined);
 
   const sesBVMs = new Map(
-    sessions.map((session) => [session.id, new SessionBoxViewModel(session, 0)])
+    sessionEntities.map((session) => [
+      session.id,
+      new SessionBoxViewModel(session, 0),
+    ])
   );
 
   const hoursMax = 24;
