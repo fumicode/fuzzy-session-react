@@ -9,11 +9,11 @@ import Timeline from "./20_Timeline";
 import { TimeRangeView } from "./10_TimeRange";
 import Conflict from "./20_Conflict";
 import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
-import { TimeDiff } from "./10_FuzzyTime";
 import SmartRect from "../00_Framework/Panel/01_SmartRect";
 import WrapperSizeContext from "../00_Framework/Panel/01_WrapperSizeContext";
 import { SessionView } from "./20_SessionView";
 import scaleNumber from "../01_Utils/00_scaleNumber";
+import TimeDiff from "./00_TimeDiff";
 
 class SessionBoxViewModel implements ViewModel<SessionEntitly> {
   public readonly sessionId: SessionId;

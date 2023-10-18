@@ -2,7 +2,8 @@ import React, { FC } from "react";
 
 import ViewModel from "../00_Framework/00_ViewModel";
 import styled from "styled-components";
-import FuzzyTime, { TimeDiff } from "./10_FuzzyTime";
+import FuzzyTime from "./10_FuzzyTime";
+import TimeDiff from "./00_TimeDiff";
 
 export default class TimeRange {
   readonly start: FuzzyTime;
@@ -63,7 +64,10 @@ export default class TimeRange {
     const endDate = new Date(`2023-08-22T${this.end.toString()}`);
 
     //TODO: 簡易的な計算!!!! いずれ、date-fnsなどのlibを使って厳密に計算したい。
-    const duration = (endDate.getHours() + endDate.getMinutes()/60) - (startDate.getHours() + startDate.getMinutes()/60);
+    const duration =
+      endDate.getHours() +
+      endDate.getMinutes() / 60 -
+      (startDate.getHours() + startDate.getMinutes() / 60);
 
     return duration;
   }
@@ -116,9 +120,9 @@ export type TimeRangeViewModel = ViewModel<TimeRange> & {
   hourPx?: number;
 };
 
-export const TimeRangeTextView: FC<TimeRangeViewModel> = (
-  {main: range}: TimeRangeViewModel
-) => {
+export const TimeRangeTextView: FC<TimeRangeViewModel> = ({
+  main: range,
+}: TimeRangeViewModel) => {
   return (
     <>
       {range.start.toString()} 〜 {range.end.toString()}
@@ -127,8 +131,13 @@ export const TimeRangeTextView: FC<TimeRangeViewModel> = (
 };
 
 export const TimeRangeView: FC<TimeRangeViewModel> = styled(
-  ({className, main:range, background, hourPx, children}: TimeRangeViewModel) => {
-
+  ({
+    className,
+    main: range,
+    background,
+    hourPx,
+    children,
+  }: TimeRangeViewModel) => {
     const hoursNum = range.durationHour;
     hourPx = hourPx || 50;
 
