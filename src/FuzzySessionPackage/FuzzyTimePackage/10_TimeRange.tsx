@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 
-import ViewModel from "../00_Framework/00_ViewModel";
+import ViewModel from "../../00_Framework/00_ViewModel";
 import styled from "styled-components";
 import FuzzyTime from "./10_FuzzyTime";
 import TimeDiff from "./00_TimeDiff";

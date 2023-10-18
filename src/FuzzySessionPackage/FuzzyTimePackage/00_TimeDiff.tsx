@@ -5,7 +5,7 @@ export const isPlusOrMinus = (str: string): str is PlusOrMinus => {
 };
 
 export default class TimeDiff {
-  //year(年), month(月), date(日), hour(時), minutes(分), second(秒), mili-second(ミリ秒)
+  //year(年), month(月), date(日), hour(時), minute(分), second(秒), mili-second(ミリ秒)
   //いったん、時間と分だけ実装
 
   private _sign: PlusOrMinus;
@@ -51,6 +51,10 @@ export default class TimeDiff {
 
   get sign(): PlusOrMinus {
     return this._sign;
+  }
+
+  get signedOne(): number {
+    return this._sign === "+" ? 1 : -1;
   }
 
   get hour(): number {
