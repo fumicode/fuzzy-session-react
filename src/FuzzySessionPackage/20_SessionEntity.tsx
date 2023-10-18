@@ -1,14 +1,6 @@
-import { FC } from "react";
-import styled from "styled-components";
+import { FuzzyTime, TimeDiff, TimeRange } from "./FuzzyTimePackage/index";
 
-import ViewModel from "../00_Framework/00_ViewModel";
-
-import TimeRange, { TimeRangeTextView } from "./10_TimeRange";
-import crypto from "crypto";
-import { TimeDiff } from "./10_FuzzyTime";
-
-import classNames from "classnames";
-import { Action, peekIntoFuture } from "../00_Framework/00_Action";
+import { Action } from "../00_Framework/00_Action";
 import Entity, { StringId } from "../00_Framework/00_Entity";
 
 export class SessionId extends StringId {
@@ -19,6 +11,10 @@ export class SessionId extends StringId {
   constructor(value: string | undefined = undefined) {
     super(value);
   }
+}
+
+export class User {
+  constructor(readonly id: string, readonly name: string) {}
 }
 
 export default class SessionEntity implements Entity {
@@ -35,9 +31,11 @@ export default class SessionEntity implements Entity {
 
     this.id = id;
   }
+
   overlaps(otherSession: SessionEntity): TimeRange | undefined {
     return this.timeRange.overlaps(otherSession.timeRange);
   }
+
   changeStartTime(diff: TimeDiff): this {
     return new ThisClass(
       this.id,
@@ -46,6 +44,7 @@ export default class SessionEntity implements Entity {
       this
     ) as this;
   }
+
   changeEndTime(diff: TimeDiff): this {
     return new ThisClass(
       this.id,
@@ -54,8 +53,9 @@ export default class SessionEntity implements Entity {
       this
     ) as this;
   }
+
   changeTimeRange(diff: TimeDiff): this {
-    const nextState = new ThisClass(
+    const newSession = new ThisClass(
       this.id,
       this.title,
       new TimeRange(
@@ -64,17 +64,38 @@ export default class SessionEntity implements Entity {
       ),
       this
     ) as this;
+
+    //最終的にはいらなくなるはずのチェック。今は、時間が循環するから必要になってる。
+    this.checkChangeDirection(
+      diff,
+      this.timeRange.start,
+      newSession.timeRange.start
+    );
+
+    return newSession;
+  }
+
+  //動かそうとした方向と、実際に変化した方向が同じかどうかをチェックする。
+  private checkChangeDirection(
+    diff: TimeDiff,
+    prev: FuzzyTime,
+    next: FuzzyTime
+  ): void {
     //diffの向きに変化した場合のみ、変更する。
     //=diffと違う向きに変化したら、例外を投げる。
-    const sign: number = parseInt(diff.sign + "1");
-    const diffDirection =
-      this.timeRange.start.compare(nextState.timeRange.start) * -1;
+    //未来に向かう方向が+
+    const sign: number = diff.signedOne;
+
+    //compare: 0: 同じ, 1: 未来, -1: 過去
+    const diffDirection = prev.compare(next) * -1;
+
+    //掛けてマイナスなら、diffDirectionとsignは違う向き。
+    //意図した方向と結果が違っていることになる。
     if (diffDirection * sign < 0) {
       throw new Error(
-        `changeTimeRange: diff.sign === ${diff.sign}, but start time has changed to different direction`
+        `changeTimeRange: 変化しようとした方向は ${diff.sign} でしたが、開始時間が逆方向にうごきました。`
       );
     }
-    return nextState;
   }
 }
 

@@ -6,14 +6,14 @@ import "core-js/features/array";
 import SessionEntitly, { SessionAction, SessionId } from "./20_SessionEntity";
 import ViewModel from "../00_Framework/00_ViewModel";
 import Timeline from "./20_Timeline";
-import { TimeRangeView } from "./10_TimeRange";
+import { TimeRangeView, TimeDiff } from "./FuzzyTimePackage/index";
+
 import Conflict from "./20_Conflict";
 import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
 import SmartRect from "../00_Framework/Panel/01_SmartRect";
 import WrapperSizeContext from "../00_Framework/Panel/01_WrapperSizeContext";
 import { SessionView } from "./20_SessionView";
 import scaleNumber from "../01_Utils/00_scaleNumber";
-import TimeDiff from "./00_TimeDiff";
 
 class SessionBoxViewModel implements ViewModel<SessionEntitly> {
   public readonly sessionId: SessionId;

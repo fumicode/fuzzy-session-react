@@ -3,7 +3,7 @@ import SessionEntity, {
   SessionAction,
   SessionId,
 } from "./FuzzySessionPackage/20_SessionEntity";
-import TimeRange from "./FuzzySessionPackage/10_TimeRange";
+import { TimeRange } from "./FuzzySessionPackage/FuzzyTimePackage/index";
 import { FC, useState } from "react";
 
 import update from "immutability-helper";

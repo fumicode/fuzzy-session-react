@@ -1,5 +1,5 @@
 import SessionEntity, { SessionId } from "./20_SessionEntity";
-import TimeRange from "./10_TimeRange";
+import { TimeRange } from "./FuzzyTimePackage/index";
 
 export default class Conflict {
   public readonly overlappingTimeRange: TimeRange;
@@ -7,11 +7,9 @@ export default class Conflict {
 
   constructor(sessionA: SessionEntity, sessionB: SessionEntity) {
     const overlappingTimeRange = sessionA.overlaps(sessionB);
-
     if (!overlappingTimeRange) {
-      throw new Error("No overlapping time range");
+      throw new Error("２つのセッションの時間が重なっていません。");
     }
-
     this.overlappingTimeRange = overlappingTimeRange;
     const sessionPair = [sessionA, sessionB].sort((a, b) =>
       a.timeRange.compare(b.timeRange)

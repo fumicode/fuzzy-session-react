@@ -1,7 +1,5 @@
 import SessionEntity, { SessionId } from "./20_SessionEntity";
-import TimeRange from "./10_TimeRange";
-import FuzzyTime from "./10_FuzzyTime";
-import TimeDiff from "./00_TimeDiff";
+import { TimeRange, FuzzyTime, TimeDiff } from "./FuzzyTimePackage/index";
 
 describe("SessionEntity", () => {
   const id = new SessionId("test-id");

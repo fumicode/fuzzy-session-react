@@ -12,14 +12,6 @@ export class CharactorId extends StringId {
   constructor(value: string | undefined = undefined) {
     super(value);
   }
-
-  equals(otherId: CharactorId): boolean {
-    if (!(otherId instanceof CharactorId)) {
-      throw new Error("同じ型CharactorのIDでないとくらべられません");
-    }
-
-    return super.equals(otherId);
-  }
 }
 
 export default class CharactorEntity implements Entity {
