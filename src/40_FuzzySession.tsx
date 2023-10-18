@@ -9,6 +9,7 @@ import { FC, useState } from "react";
 import update from "immutability-helper";
 import { ThreeRows } from "./GaiaCodePackage/20_GaiaCode";
 import { DailyTimelineWithConflictsView } from "./FuzzySessionPackage/30_DailyTimelineViewWithConflicts";
+
 import ViewModel from "./00_Framework/00_ViewModel";
 import { Point2, Size2 } from "./01_Utils/00_Point";
 import Panel from "./00_Framework/Panel/02_Panel";
@@ -16,63 +17,131 @@ import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
 import Layer, { inversePropotionFunction } from "./00_Framework/Panel/02_Layer";
 import styled from "styled-components";
 import { SessionView } from "./FuzzySessionPackage/20_SessionView";
+import { User, UserId } from "./FuzzySessionPackage/20_UserEntity";
+
+const incho = new User(
+  "incho",
+  {
+    name: "院長",
+  },
+  undefined
+);
+
+const tainei = new User(
+  "tainei",
+  {
+    name: "タイ姉",
+  },
+  undefined
+);
+
+const ashitaro = new User(
+  "ashitaro ",
+  {
+    name: "アシ太郎",
+  },
+  undefined
+);
+
+const users = [incho, tainei, ashitaro];
 
 let inchoSessions: SessionEntity[] = [
-  new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
-  new SessionEntity(undefined, "予定1", new TimeRange("10:00", "12:00")),
-  new SessionEntity(undefined, "予定2", new TimeRange("11:00", "14:00")),
-  new SessionEntity(undefined, "予定3", new TimeRange("15:00", "17:00")),
-  new SessionEntity(undefined, "予定4", new TimeRange("17:00", "18:00")),
-  new SessionEntity(undefined, "予定4", new TimeRange("18:00", "20:00")),
+  new SessionEntity(undefined, {
+    title: "予定0",
+    timeRange: new TimeRange("09:00", "11:00"),
+    members: [incho],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "予定1",
+    timeRange: new TimeRange("10:00", "12:00"),
+    members: [incho],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "予定2",
+    timeRange: new TimeRange("11:00", "14:00"),
+    members: [incho],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "予定3",
+    timeRange: new TimeRange("15:00", "17:00"),
+    members: [incho],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "予定4",
+    timeRange: new TimeRange("17:00", "18:00"),
+    members: [incho],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "予定4",
+    timeRange: new TimeRange("18:00", "20:00"),
+    members: [incho],
+  }),
 ];
 
 const taineiSessions: SessionEntity[] = [
-  new SessionEntity(undefined, "勤務時間", new TimeRange("08:00", "18:00")),
-  new SessionEntity(
-    undefined,
-    "タイ古式3時間",
-    new TimeRange("09:00", "12:00")
-  ),
-  new SessionEntity(
-    undefined,
-    "タイ古式1時間",
-    new TimeRange("13:00", "14:00")
-  ),
+  new SessionEntity(undefined, {
+    title: "勤務時間",
+    timeRange: new TimeRange("08:00", "18:00"),
+    members: [tainei],
+  }),
 
-  new SessionEntity(
-    undefined,
-    "タイ古式1時間",
-    new TimeRange("16:40", "17:00")
-  ),
+  new SessionEntity(undefined, {
+    title: "タイ古式3時間",
+    timeRange: new TimeRange("09:00", "12:00"),
+    members: [tainei],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "タイ古式1時間",
+    timeRange: new TimeRange("13:00", "14:00"),
+    members: [tainei],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "タイ古式1時間",
+    timeRange: new TimeRange("16:40", "17:00"),
+    members: [tainei],
+  }),
 ];
 
 const ashitaroSessions: SessionEntity[] = [
-  new SessionEntity(
-    undefined,
-    "院長アシスタント0",
-    new TimeRange("09:00", "10:00")
-  ),
-  new SessionEntity(
-    undefined,
-    "院長アシスタント1",
-    new TimeRange("10:00", "12:00")
-  ),
-  new SessionEntity(
-    undefined,
-    "院長アシスタント2",
-    new TimeRange("12:00", "14:00")
-  ),
-  new SessionEntity(
-    undefined,
-    "院長アシスタント3",
-    new TimeRange("15:00", "17:00")
-  ),
-  new SessionEntity(
-    undefined,
-    "院長アシスタント4",
-    new TimeRange("18:00", "20:00")
-  ),
+  new SessionEntity(undefined, {
+    title: "院長アシスタント0",
+    timeRange: new TimeRange("09:00", "10:00"),
+    members: [ashitaro],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "院長アシスタント1",
+    timeRange: new TimeRange("10:00", "12:00"),
+    members: [ashitaro],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "院長アシスタント2",
+    timeRange: new TimeRange("12:00", "14:00"),
+    members: [ashitaro],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "院長アシスタント3",
+    timeRange: new TimeRange("15:00", "17:00"),
+    members: [ashitaro],
+  }),
+
+  new SessionEntity(undefined, {
+    title: "院長アシスタント4",
+    timeRange: new TimeRange("18:00", "20:00"),
+    members: [ashitaro],
+  }),
 ];
+
+const allSessions = [...inchoSessions, ...taineiSessions, ...ashitaroSessions];
 
 interface Calendar {
   title: string;
@@ -93,6 +162,12 @@ const _calendars: Calendar[] = [
     sessionMap: new Timeline(ashitaroSessions),
   },
 ];
+
+interface GlobalState {
+  readonly calendars: Map<string, Calendar>;
+  readonly users: Map<string, User>;
+  readonly sessions: Map<string, SessionEntity>;
+}
 
 interface FuzzySessionViewModel extends ViewModel<{}> {
   onPanelClick(): void;
@@ -143,12 +218,6 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
         console.log(e);
       }
     };
-
-    const code: ThreeRows = [
-      [5, 8, 9, 5, 5, 9, 8],
-      [0, 3, 6, 0, 0, 6, 3],
-      [5, 3, 1, 5, 5, 1, 3],
-    ];
 
     const firstSession = calendars[0].sessionMap.get(inchoSessions[0].id);
     if (firstSession === undefined) {

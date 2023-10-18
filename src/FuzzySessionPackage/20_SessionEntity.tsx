@@ -1,7 +1,13 @@
 import { FuzzyTime, TimeDiff, TimeRange } from "./FuzzyTimePackage/index";
 
 import { Action } from "../00_Framework/00_Action";
-import Entity, { StringId } from "../00_Framework/00_Entity";
+import Entity, {
+  StringId,
+  convertIterableEntityToIdSet,
+  convertIterableEntityToMap,
+} from "../00_Framework/00_Entity";
+import { Session } from "inspector";
+import { User } from "./20_UserEntity";
 
 export class SessionId extends StringId {
   static fromString(str: string): SessionId {
@@ -13,16 +19,23 @@ export class SessionId extends StringId {
   }
 }
 
-export class User {
-  constructor(readonly id: string, readonly name: string) {}
+//Specとは、完全にオブジェクトの状態を再現できる情報のこと。
+interface SessionSpec {
+  readonly title: string;
+  readonly timeRange: TimeRange;
+  readonly members?: User[] | Set<string>;
 }
 
 export default class SessionEntity implements Entity {
   readonly id: SessionId;
+
+  readonly title: string;
+  readonly timeRange: TimeRange;
+  readonly members: Set<string> | undefined;
+
   constructor(
-    id: SessionId | undefined,
-    readonly title: string,
-    readonly timeRange: TimeRange,
+    id: SessionId | undefined, //TODO: 文字列も許容したい。あとで。
+    { title, timeRange, members }: SessionSpec,
     readonly prev: SessionEntity | undefined = undefined
   ) {
     if (!id) {
@@ -30,6 +43,23 @@ export default class SessionEntity implements Entity {
     }
 
     this.id = id;
+
+    this.title = title;
+    this.timeRange = timeRange;
+
+    if (members instanceof Set) {
+      this.members = members;
+    } else if (members instanceof Array) {
+      this.members = convertIterableEntityToIdSet(members);
+    } else if (members === undefined) {
+      this.members = undefined;
+    } else {
+      throw new Error("membersの型がおかしいです。");
+    }
+
+    if (!this.timeRange) {
+      throw new Error("time range がありません。");
+    }
   }
 
   overlaps(otherSession: SessionEntity): TimeRange | undefined {
@@ -39,8 +69,14 @@ export default class SessionEntity implements Entity {
   changeStartTime(diff: TimeDiff): this {
     return new ThisClass(
       this.id,
-      this.title,
-      new TimeRange(this.timeRange.start.change(diff), this.timeRange.end),
+      {
+        title: this.title,
+        timeRange: new TimeRange(
+          this.timeRange.start.change(diff),
+          this.timeRange.end
+        ),
+        members: this.members,
+      },
       this
     ) as this;
   }
@@ -48,8 +84,14 @@ export default class SessionEntity implements Entity {
   changeEndTime(diff: TimeDiff): this {
     return new ThisClass(
       this.id,
-      this.title,
-      new TimeRange(this.timeRange.start, this.timeRange.end.change(diff)),
+      {
+        title: this.title,
+        timeRange: new TimeRange(
+          this.timeRange.start,
+          this.timeRange.end.change(diff)
+        ),
+        members: this.members,
+      },
       this
     ) as this;
   }
@@ -57,11 +99,14 @@ export default class SessionEntity implements Entity {
   changeTimeRange(diff: TimeDiff): this {
     const newSession = new ThisClass(
       this.id,
-      this.title,
-      new TimeRange(
-        this.timeRange.start.change(diff),
-        this.timeRange.end.change(diff)
-      ),
+      {
+        title: this.title,
+        timeRange: new TimeRange(
+          this.timeRange.start.change(diff),
+          this.timeRange.end.change(diff)
+        ),
+        members: this.members,
+      },
       this
     ) as this;
 
@@ -71,7 +116,6 @@ export default class SessionEntity implements Entity {
       this.timeRange.start,
       newSession.timeRange.start
     );
-
     return newSession;
   }
 

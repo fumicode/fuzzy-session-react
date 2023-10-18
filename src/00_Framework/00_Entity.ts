@@ -9,6 +9,26 @@ export default interface Entity {
   readonly prev: Entity | undefined;
 }
 
+export const convertIterableEntityToMap = <T extends Entity>(
+  entities: Iterable<T>
+): Map<string, T> => {
+  const map = new Map<string, T>();
+  for (const entity of entities) {
+    map.set(entity.id.toString(), entity);
+  }
+  return map;
+};
+
+export const convertIterableEntityToIdSet = <T extends Entity>(
+  entities: Iterable<T>
+): Set<string> => {
+  const set = new Set<string>();
+  for (const entity of entities) {
+    set.add(entity.id.toString());
+  }
+  return set;
+};
+
 export class StringId implements Id {
   private readonly _value: string;
 
