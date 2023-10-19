@@ -20,7 +20,7 @@ import { SessionView } from "./FuzzySessionPackage/20_SessionView";
 import { UserEntity, UserId } from "./FuzzySessionPackage/20_UserEntity";
 import Entity, {
   StringId,
-  convertIterableEntityToMap,
+  convertIdentifiablesToMap,
 } from "./00_Framework/00_Entity";
 import { th } from "date-fns/locale";
 import CalendarEntity from "./FuzzySessionPackage/CalendarPackage/20_Calendar";
@@ -193,13 +193,12 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
     } = props;
 
     const [globalState, setGlobalState] = useState<GlobalState>({
-      calendars: convertIterableEntityToMap(_calendars),
-      users: convertIterableEntityToMap(_users),
-      sessions: convertIterableEntityToMap(_allSessions),
+      calendars: convertIdentifiablesToMap(_calendars),
+      users: convertIdentifiablesToMap(_users),
+      sessions: convertIdentifiablesToMap(_allSessions),
     });
 
-    const goIntoFutureCalendar = (
-      DEPRECATEDcalIndex: number,
+    const goIntoFutureSession = (
       sId: SessionId,
       sessionAction: SessionAction
     ) => {
@@ -221,7 +220,10 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
             $add: [[session.id.toString(), futureSession]],
           },
         });
+
         setGlobalState(newGlobalState);
+        //このあと、関連イベントが発火などすべき。
+        //TODO: 実装。
       } catch (e) {
         console.log(e);
       }
@@ -304,59 +306,51 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
               onPanelClick();
             }}
           >
-            {(renderedRect) => {
-              return (
-                <div className={className}>
-                  <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
-                  <div className="e-calendar-columns">
-                    {[...globalState.calendars.values()].map(
-                      (cal, calIndex) => {
-                        const sessionEntities = cal.timeline.sessions.map(
-                          (tls) =>
-                            globalState.sessions.get(
-                              tls.id.toString()
-                            ) as SessionEntity
-                        );
-                        //const sessionEntities = [...globalState.sessions.values()];
+            {(renderedRect) => (
+              <div className={className}>
+                <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
+                <div className="e-calendar-columns">
+                  {[...globalState.calendars.values()].map((cal, calIndex) => {
+                    const sessionEntities = cal.timeline.sessions.map(
+                      (tls) =>
+                        globalState.sessions.get(
+                          tls.id.toString()
+                        ) as SessionEntity
+                    );
+                    //const sessionEntities = [...globalState.sessions.values()];
 
-                        const goIntoFutureSession = (
-                          sId: SessionId,
-                          action: SessionAction
-                        ) => goIntoFutureCalendar(calIndex, sId, action);
-                        return (
-                          <div className="e-column" key={calIndex}>
-                            <h2>{cal.title}</h2>
-                            <DailyTimelineWithConflictsView
-                              main={cal.timeline}
-                              sessionEntities={sessionEntities}
-                              showsTime={calIndex === 0}
-                              onTheSessionChange={goIntoFutureSession}
-                              onSessionFocus={(sId, originalRect) => {
-                                const session = globalState.sessions.get(
-                                  sId.toString()
-                                );
-                                if (session === undefined) {
-                                  return;
-                                }
+                    return (
+                      <div className="e-column" key={calIndex}>
+                        <h2>{cal.title}</h2>
+                        <DailyTimelineWithConflictsView
+                          main={cal.timeline}
+                          sessionEntities={sessionEntities}
+                          showsTime={calIndex === 0}
+                          onTheSessionChange={goIntoFutureSession}
+                          onSessionFocus={(sId, originalRect) => {
+                            const session = globalState.sessions.get(
+                              sId.toString()
+                            );
+                            if (session === undefined) {
+                              return;
+                            }
 
-                                const positionToOpen =
-                                  originalRect.calcPositionToOpen({
-                                    width: 200,
-                                    height: 200,
-                                  });
-                                setSelectedSession(session);
-                                setSelectedPosition(positionToOpen);
-                                setViewZ(viewZ.moveToTop("詳細"));
-                              }}
-                            />
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
+                            const positionToOpen =
+                              originalRect.calcPositionToOpen({
+                                width: 200,
+                                height: 200,
+                              });
+                            setSelectedSession(session);
+                            setSelectedPosition(positionToOpen);
+                            setViewZ(viewZ.moveToTop("詳細"));
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            }}
+              </div>
+            )}
           </Panel>
         </Layer>
       </>

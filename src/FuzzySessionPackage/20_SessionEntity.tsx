@@ -3,8 +3,8 @@ import { FuzzyTime, TimeDiff, TimeRange } from "./FuzzyTimePackage/index";
 import { Action } from "../00_Framework/00_Action";
 import Entity, {
   StringId,
-  convertIterableEntityToIdSet,
-  convertIterableEntityToMap,
+  convertIdentifiablesToIdSet,
+  convertIdentifiablesToMap,
 } from "../00_Framework/00_Entity";
 import { Session } from "inspector";
 import { UserEntity } from "./20_UserEntity";
@@ -50,7 +50,7 @@ export default class SessionEntity implements Entity {
     if (members instanceof Set) {
       this.members = members;
     } else if (members instanceof Array) {
-      this.members = convertIterableEntityToIdSet(members);
+      this.members = convertIdentifiablesToIdSet(members);
     } else if (members === undefined) {
       this.members = undefined;
     } else {

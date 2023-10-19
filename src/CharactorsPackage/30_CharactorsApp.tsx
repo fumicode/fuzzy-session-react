@@ -13,7 +13,7 @@ import CharactorEntity, {
 } from "./20_CharactorEntity";
 import update from "immutability-helper";
 import { Action } from "../00_Framework/00_Action";
-import { Id } from "../00_Framework/00_Entity";
+import { Id, convertIdentifiablesToMap } from "../00_Framework/00_Entity";
 
 export class PanelBoxViewModel<T> {
   constructor(
@@ -76,15 +76,11 @@ interface GlobalStore {
 const useGlobalStore = function () {
   const [globalStore, setGlobalStore] = useState<GlobalStore>({
     //localStorage とか cookie とかに保存したい
-    charactors: new Map([
-      [itachi.id.toString(), itachi],
-      [sasuke.id.toString(), sasuke],
-      [naruto.id.toString(), naruto],
-    ]),
-    charactorPBVMs: new Map([
-      [itachiBVM.id.toString(), itachiBVM],
-      [sasukeBVM.id.toString(), sasukeBVM],
-      [narutoBVM.id.toString(), narutoBVM],
+    charactors: convertIdentifiablesToMap([itachi, sasuke, naruto]),
+    charactorPBVMs: convertIdentifiablesToMap([
+      itachiBVM,
+      sasukeBVM,
+      narutoBVM,
     ]),
   });
 

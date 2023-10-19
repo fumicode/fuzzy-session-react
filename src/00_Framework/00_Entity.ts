@@ -9,7 +9,11 @@ export default interface Entity {
   readonly prev: Entity | undefined;
 }
 
-export const convertIterableEntityToMap = <T extends Entity>(
+export interface Identifiable {
+  readonly id: Id;
+}
+
+export const convertIdentifiablesToMap = <T extends Identifiable>(
   entities: Iterable<T>
 ): Map<string, T> => {
   const map = new Map<string, T>();
@@ -19,7 +23,7 @@ export const convertIterableEntityToMap = <T extends Entity>(
   return map;
 };
 
-export const convertIterableEntityToIdSet = <T extends Entity>(
+export const convertIdentifiablesToIdSet = <T extends Identifiable>(
   entities: Iterable<T>
 ): Set<string> => {
   const set = new Set<string>();
