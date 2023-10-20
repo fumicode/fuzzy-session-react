@@ -48,7 +48,7 @@ interface DailyTimelineWithConflictsViewModel extends ViewModel<Timeline> {
   className?: string | undefined;
 
   readonly main: Timeline;
-  readonly sessionEntities: SessionEntitly[];
+  readonly sessionEntities: Map<string, SessionEntitly>;
   readonly showsTime?: boolean | undefined;
 
   onTheSessionChange: (sessionId: SessionId, action: SessionAction) => void;
@@ -69,13 +69,15 @@ const createTimeRangeChangingAction = (hourDiff: number): SessionAction => {
 
 const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   className,
-  main: { sessions, conflicts },
+  main: timeline,
   sessionEntities,
   showsTime,
 
   onTheSessionChange,
   onSessionFocus,
 }: DailyTimelineWithConflictsViewModel) => {
+  const { conflicts } = timeline;
+
   showsTime = showsTime || true;
   //states
   const [hoveredSessionId, setHoveredSessionId] = useState<
@@ -85,8 +87,18 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     SessionBoxViewModel | undefined
   >(undefined);
 
+  //集約内のクラスから、他の集約のクラスを手繰り寄せる
+  const timelineSessionEntities = timeline.sessions.map((tls) => {
+    const a = sessionEntities.get(tls.id.toString());
+    if (a === undefined) {
+      throw new Error("timelineにあるsessionが、sessionEntitiesにない。");
+    }
+
+    return a;
+  });
+
   const sesBVMs = new Map(
-    sessionEntities.map((session) => [
+    timelineSessionEntities.map((session) => [
       session.id,
       new SessionBoxViewModel(session, 0),
     ])

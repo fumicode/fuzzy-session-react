@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import styled from "styled-components";
 
 import ViewModel from "../00_Framework/00_ViewModel";
@@ -23,21 +23,51 @@ export interface SessionViewModel extends ViewModel<SessionEntity> {
   isHovered: boolean;
 }
 
-export const titleChangeActionCreator: (title: string) => SessionAction =
+export const titleChangeActionCreator =
   (title: string) => (session: SessionEntity) =>
     session.updateTitle(title);
 
-export const startTimeBackAction: SessionAction = (session: SessionEntity) =>
-  session.changeTimeRange(new TimeDiff("-", 0, 15));
+export const changeTimeRangeActionCreator =
+  (diff: TimeDiff) => (session: SessionEntity) =>
+    session.changeTimeRange(diff);
 
-export const startTimeGoAction: SessionAction = (session: SessionEntity) =>
-  session.changeTimeRange(new TimeDiff("+", 0, 15));
+export const timeRangeBackAction: SessionAction = changeTimeRangeActionCreator(
+  new TimeDiff("-", 0, 15)
+);
 
-export const endTimeBackAction: SessionAction = (session: SessionEntity) =>
-  session.changeEndTime(new TimeDiff("-", 0, 15));
+export const timeRangeGoAction: SessionAction = changeTimeRangeActionCreator(
+  new TimeDiff("+", 0, 15)
+);
 
-export const endTimeGoAction: SessionAction = (session: SessionEntity) =>
-  session.changeEndTime(new TimeDiff("+", 0, 15));
+export const changeEndTimeActionCreator =
+  (diff: TimeDiff) => (session: SessionEntity) =>
+    session.changeEndTime(diff);
+
+export const endTimeBackAction: SessionAction = changeEndTimeActionCreator(
+  new TimeDiff("-", 0, 15)
+);
+
+export const endTimeGoAction: SessionAction = changeEndTimeActionCreator(
+  new TimeDiff("+", 0, 15)
+);
+
+class Text {
+  private readonly _value: string;
+
+  constructor(value: string) {
+    this._value = value;
+
+    console.log(this._value);
+  }
+
+  update(value: string): this {
+    return new Text(value) as this;
+  }
+
+  get value() {
+    return this._value;
+  }
+}
 
 const SessionDetailView: FC<SessionViewModel> = styled(
   ({
@@ -54,6 +84,12 @@ const SessionDetailView: FC<SessionViewModel> = styled(
     const timeRange = session.timeRange;
     const hoursNum = timeRange.durationHour;
 
+    const [title, setTitle] = useState<Text>(new Text(session.title));
+
+    useEffect(() => {
+      setTitle(new Text(session.title));
+    }, [session.title]);
+
     return (
       <section
         className={c + " " + (isHovered && "m-hover")}
@@ -69,9 +105,20 @@ const SessionDetailView: FC<SessionViewModel> = styled(
             type="text"
             name="title"
             id="title"
-            value={session.title}
+            value={title.value}
             onChange={(e) => {
-              actionDispatcher(titleChangeActionCreator(e.target.value));
+              setTitle(title.update(e.target.value));
+              console.log("change");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                actionDispatcher(titleChangeActionCreator(title.value));
+
+                e.currentTarget.blur();
+              }
+            }}
+            onBlur={(e) => {
+              actionDispatcher(titleChangeActionCreator(title.value));
             }}
           />
         </div>
@@ -104,18 +151,18 @@ const SessionDetailView: FC<SessionViewModel> = styled(
           <div className="e-control-buttons m-start">
             <button
               className="e-button m-up"
-              disabled={!peekIntoFuture(session, startTimeBackAction)}
+              disabled={!peekIntoFuture(session, timeRangeBackAction)}
               onClick={() => {
-                actionDispatcher(startTimeBackAction);
+                actionDispatcher(timeRangeBackAction);
               }}
             >
               ▲
             </button>
             <button
               className="e-button m-down"
-              disabled={!peekIntoFuture(session, startTimeGoAction)}
+              disabled={!peekIntoFuture(session, timeRangeGoAction)}
               onClick={() => {
-                actionDispatcher(startTimeGoAction);
+                actionDispatcher(timeRangeGoAction);
               }}
             >
               ▼

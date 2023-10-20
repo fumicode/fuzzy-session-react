@@ -277,6 +277,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
               size={{ width: 300, height: 300 }}
               zIndex={0}
               isActive={true}
+              overflow="visible"
               onMove={() => {}}
               bgColor="white"
               onPanelClick={() => {
@@ -336,20 +337,20 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                 <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
                 <div className="e-calendar-columns">
                   {[...globalState.calendars.values()].map((cal, calIndex) => {
+                    //const sessionEntities =
                     const sessionEntities = cal.timeline.sessions.map(
                       (tls) =>
                         globalState.sessions.get(
                           tls.id.toString()
                         ) as SessionEntity
                     );
-                    //const sessionEntities = [...globalState.sessions.values()];
 
                     return (
                       <div className="e-column" key={calIndex}>
                         <h2>{cal.title}</h2>
                         <DailyTimelineWithConflictsView
                           main={cal.timeline}
-                          sessionEntities={sessionEntities}
+                          sessionEntities={globalState.sessions}
                           showsTime={calIndex === 0}
                           onTheSessionChange={updateSession}
                           onSessionFocus={(sId, originalRect) => {
