@@ -66,6 +66,15 @@ export default class SessionEntity implements Entity {
     return this.timeRange.overlaps(otherSession.timeRange);
   }
 
+  updateTitle(title: string): this {
+    if (!(title.length <= 100)) {
+      throw new Error("タイトルが長すぎます。タイトルは100文字までです。");
+    }
+    return this.update({
+      title,
+    });
+  }
+
   changeStartTime(diff: TimeDiff): this {
     return this.update({
       timeRange: new TimeRange(

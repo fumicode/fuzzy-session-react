@@ -24,6 +24,7 @@ import Entity, {
 } from "./00_Framework/00_Entity";
 import { th } from "date-fns/locale";
 import CalendarEntity from "./FuzzySessionPackage/CalendarPackage/20_CalendarEntity";
+import SessionDetailView from "./FuzzySessionPackage/20_SessionDetailView";
 
 const incho = new UserEntity(
   "incho",
@@ -201,7 +202,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
     });
 
     const onSessionSave = () => {
-      //カレンダーも更新。（全部イチから作り直す）
+      //カレンダーも更新。（全部イチから作り直している。これはぜったいよくない。要点チェックにしたい）
       setGlobalState((gs) =>
         update(gs, {
           calendars: {
@@ -213,15 +214,14 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       );
     };
 
-    const goIntoFutureSession = (
-      sId: SessionId,
-      sessionAction: SessionAction
-    ) => {
+    const updateSession = (sId: SessionId, sessionAction: SessionAction) => {
       try {
         //検索
         const session = globalState.sessions.get(sId.toString());
         if (session === undefined) {
-          throw new Error("そんなことはありえないはず");
+          throw new Error(
+            `指定されたid ${sId} のsessionが見つかりませんでした。`
+          );
         }
 
         //更新
@@ -274,7 +274,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
           >
             <Panel
               position={selectedPosition}
-              size={{ width: 200, height: 200 }}
+              size={{ width: 300, height: 300 }}
               zIndex={0}
               isActive={true}
               onMove={() => {}}
@@ -286,11 +286,12 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
             >
               {(renderedRect) => (
                 <div>
-                  <SessionView
+                  <SessionDetailView
                     main={selectedSession}
                     hourPx={20}
-                    onStartTimeChange={() => {}}
-                    onEndTimeChange={() => {}}
+                    actionDispatcher={(action: SessionAction) =>
+                      updateSession(selectedSession.id, action)
+                    }
                     onDragStart={() => {}}
                     isHovered={true}
                   />
@@ -350,7 +351,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                           main={cal.timeline}
                           sessionEntities={sessionEntities}
                           showsTime={calIndex === 0}
-                          onTheSessionChange={goIntoFutureSession}
+                          onTheSessionChange={updateSession}
                           onSessionFocus={(sId, originalRect) => {
                             const session = globalState.sessions.get(
                               sId.toString()
@@ -361,8 +362,8 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
 
                             const positionToOpen =
                               originalRect.calcPositionToOpen({
-                                width: 200,
-                                height: 200,
+                                width: 300, //適当
+                                height: 300,
                               });
                             setSelectedSession(session);
                             setSelectedPosition(positionToOpen);
