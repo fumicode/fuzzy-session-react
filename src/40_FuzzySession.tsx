@@ -23,7 +23,7 @@ import Entity, {
   convertIdentifiablesToMap,
 } from "./00_Framework/00_Entity";
 import { th } from "date-fns/locale";
-import CalendarEntity from "./FuzzySessionPackage/CalendarPackage/20_Calendar";
+import CalendarEntity from "./FuzzySessionPackage/CalendarPackage/20_CalendarEntity";
 
 const incho = new UserEntity(
   "incho",
@@ -55,7 +55,7 @@ let inchoSessions: SessionEntity[] = [
   new SessionEntity(undefined, {
     title: "予定0",
     timeRange: new TimeRange("09:00", "11:00"),
-    members: [incho],
+    members: [incho, ashitaro],
   }),
 
   new SessionEntity(undefined, {
@@ -149,22 +149,24 @@ const ashitaroSessions: SessionEntity[] = [
 
 const _allSessions = [...inchoSessions, ...taineiSessions, ...ashitaroSessions];
 
-const _calendars: CalendarEntity[] = [
-  new CalendarEntity("cal_incho", {
-    title: "院長",
-    timeline: new Timeline(inchoSessions),
-  }),
+const updateCalendar = (
+  users: Iterable<UserEntity>,
+  sessions: Iterable<SessionEntity>
+) => {
+  const newCalendars = [...users].map((user) => {
+    const userSessions = [...sessions].filter((s) =>
+      s?.members?.has(user.id.toString())
+    );
+    return new CalendarEntity("cal_" + user.id.toString(), {
+      title: user.name + "のカレンダー",
+      timeline: new Timeline(userSessions),
+    });
+  });
 
-  new CalendarEntity("cal_tainei", {
-    title: "タイ姉",
-    timeline: new Timeline(taineiSessions),
-  }),
+  return newCalendars;
+};
 
-  new CalendarEntity("cal_ashitaro", {
-    title: "アシ太郎",
-    timeline: new Timeline(ashitaroSessions),
-  }),
-];
+const _calendars: CalendarEntity[] = updateCalendar(_users, _allSessions);
 
 interface GlobalState {
   readonly calendars: Map<string, CalendarEntity>;
@@ -198,30 +200,44 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       sessions: convertIdentifiablesToMap(_allSessions),
     });
 
+    const onSessionSave = () => {
+      //カレンダーも更新。（全部イチから作り直す）
+      setGlobalState((gs) =>
+        update(gs, {
+          calendars: {
+            $set: convertIdentifiablesToMap(
+              updateCalendar([...gs.users.values()], [...gs.sessions.values()])
+            ),
+          },
+        })
+      );
+    };
+
     const goIntoFutureSession = (
       sId: SessionId,
       sessionAction: SessionAction
     ) => {
-      //要するに何をしたいかと言うと：
-      //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
-
-      //検索
-      const session = globalState.sessions.get(sId.toString());
-      if (session === undefined) {
-        throw new Error("そんなことはありえないはず");
-      }
-
       try {
+        //検索
+        const session = globalState.sessions.get(sId.toString());
+        if (session === undefined) {
+          throw new Error("そんなことはありえないはず");
+        }
+
+        //更新
         const futureSession = sessionAction(session);
 
         //永続化
-        const newGlobalState = update(globalState, {
-          sessions: {
-            $add: [[session.id.toString(), futureSession]],
-          },
-        });
+        setGlobalState((globalState) =>
+          update(globalState, {
+            sessions: {
+              $add: [[session.id.toString(), futureSession]],
+            },
+          })
+        );
 
-        setGlobalState(newGlobalState);
+        onSessionSave();
+
         //このあと、関連イベントが発火などすべき。
         //TODO: 実装。
       } catch (e) {
@@ -278,6 +294,14 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                     onDragStart={() => {}}
                     isHovered={true}
                   />
+                  <p></p>
+                  <p>参加者：</p>
+                  <ul>
+                    {selectedSession.members &&
+                      [...selectedSession.members].map((memberId) => (
+                        <li>{globalState.users.get(memberId)?.name}</li>
+                      ))}
+                  </ul>
                 </div>
               )}
             </Panel>
@@ -295,7 +319,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
           }}
         >
           <Panel
-            position={{ x: 600, y: 200 }}
+            position={{ x: 100, y: 200 }}
             size={{ width: 900, height: 700 }}
             zIndex={0}
             isActive={true}

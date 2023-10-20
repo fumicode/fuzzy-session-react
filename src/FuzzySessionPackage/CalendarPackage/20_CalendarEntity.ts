@@ -29,4 +29,18 @@ export default class CalendarEntity implements Entity {
     this.title = spec.title;
     this.timeline = spec.timeline;
   }
+
+  exportSpec(): CalendarSpec {
+    return {
+      title: this.title,
+      timeline: this.timeline,
+    };
+  }
+
+  setTimeline(timeline: Timeline): this {
+    const newSpec: CalendarSpec = Object.assign(this.exportSpec(), {
+      timeline,
+    });
+    return new CalendarEntity(this.id, newSpec, this) as this;
+  }
 }
