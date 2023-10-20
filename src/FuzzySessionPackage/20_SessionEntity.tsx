@@ -19,7 +19,7 @@ export class SessionId extends StringId {
   }
 }
 
-//Specとは、完全にオブジェクトの状態を再現できる情報のこと。
+//Specとは、完全にオブジェクトの状態を再現できる情報のあつまりのこと。
 interface SessionSpec {
   readonly title: string;
   readonly timeRange: TimeRange;
@@ -67,48 +67,30 @@ export default class SessionEntity implements Entity {
   }
 
   changeStartTime(diff: TimeDiff): this {
-    return new ThisClass(
-      this.id,
-      {
-        title: this.title,
-        timeRange: new TimeRange(
-          this.timeRange.start.change(diff),
-          this.timeRange.end
-        ),
-        members: this.members,
-      },
-      this
-    ) as this;
+    return this.update({
+      timeRange: new TimeRange(
+        this.timeRange.start.change(diff),
+        this.timeRange.end
+      ),
+    });
   }
 
   changeEndTime(diff: TimeDiff): this {
-    return new ThisClass(
-      this.id,
-      {
-        title: this.title,
-        timeRange: new TimeRange(
-          this.timeRange.start,
-          this.timeRange.end.change(diff)
-        ),
-        members: this.members,
-      },
-      this
-    ) as this;
+    return this.update({
+      timeRange: new TimeRange(
+        this.timeRange.start,
+        this.timeRange.end.change(diff)
+      ),
+    });
   }
 
   changeTimeRange(diff: TimeDiff): this {
-    const newSession = new ThisClass(
-      this.id,
-      {
-        title: this.title,
-        timeRange: new TimeRange(
-          this.timeRange.start.change(diff),
-          this.timeRange.end.change(diff)
-        ),
-        members: this.members,
-      },
-      this
-    ) as this;
+    const newSession = this.update({
+      timeRange: new TimeRange(
+        this.timeRange.start.change(diff),
+        this.timeRange.end.change(diff)
+      ),
+    });
 
     //最終的にはいらなくなるはずのチェック。今は、時間が循環するから必要になってる。
     this.checkChangeDirection(
@@ -140,6 +122,21 @@ export default class SessionEntity implements Entity {
         `changeTimeRange: 変化しようとした方向は ${diff.sign} でしたが、開始時間が逆方向にうごきました。`
       );
     }
+  }
+
+  update(changingContent: Partial<SessionSpec>): this {
+    return new ThisClass(
+      this.id,
+      Object.assign(this.exportSpec(), changingContent),
+      this
+    ) as this;
+  }
+  exportSpec(): SessionSpec {
+    return {
+      title: this.title,
+      timeRange: this.timeRange,
+      members: this.members,
+    };
   }
 }
 
