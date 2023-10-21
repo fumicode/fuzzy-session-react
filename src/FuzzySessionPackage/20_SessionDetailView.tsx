@@ -8,6 +8,7 @@ import { TimeRangeTextView, TimeDiff } from "./FuzzyTimePackage/index";
 import classNames from "classnames";
 import { peekIntoFuture } from "../00_Framework/00_Action";
 import SessionEntity, { SessionAction } from "./20_SessionEntity";
+import { log } from "console";
 
 export interface SessionViewModel extends ViewModel<SessionEntity> {
   //className,
@@ -81,6 +82,9 @@ const SessionDetailView: FC<SessionViewModel> = styled(
     actionDispatcher,
     isHovered,
   }: SessionViewModel) => {
+    console.log("SessionDetailView render");
+    console.log(session.title);
+
     const timeRange = session.timeRange;
     const hoursNum = timeRange.durationHour;
 

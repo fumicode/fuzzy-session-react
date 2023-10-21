@@ -249,9 +249,13 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       new ZIndexCalcurator(["詳細", "一覧"])
     );
 
-    const [selectedSession, setSelectedSession] = useState<
-      SessionEntity | undefined
+    const [selectedSessionId, setSelectedSessionId] = useState<
+      SessionId | undefined
     >(undefined);
+
+    const selectedSession =
+      selectedSessionId &&
+      globalState.sessions.get(selectedSessionId.toString());
 
     const [selectedPosition, setSelectedPosition] = useState<Point2>({
       x: 0,
@@ -366,7 +370,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                                 width: 300, //適当
                                 height: 300,
                               });
-                            setSelectedSession(session);
+                            setSelectedSessionId(session.id);
                             setSelectedPosition(positionToOpen);
                             setViewZ(viewZ.moveToTop("詳細"));
                           }}
