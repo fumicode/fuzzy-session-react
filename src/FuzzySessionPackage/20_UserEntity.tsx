@@ -6,9 +6,9 @@ export interface UserSpec {
   readonly name: string;
 }
 
-export class UserEntity implements Entity {
-  readonly name: string;
+export default class UserEntity implements Entity {
   readonly id: UserId;
+  readonly name: string;
   readonly prev: UserEntity | undefined;
 
   constructor(

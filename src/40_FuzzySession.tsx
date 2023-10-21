@@ -7,24 +7,19 @@ import { TimeRange } from "./FuzzySessionPackage/FuzzyTimePackage/index";
 import { FC, useState } from "react";
 
 import update from "immutability-helper";
-import { ThreeRows } from "./GaiaCodePackage/20_GaiaCode";
 import { DailyTimelineWithConflictsView } from "./FuzzySessionPackage/30_DailyTimelineViewWithConflicts";
 
 import ViewModel from "./00_Framework/00_ViewModel";
-import { Point2, Size2 } from "./01_Utils/00_Point";
+import { Point2 } from "./01_Utils/00_Point";
 import Panel from "./00_Framework/Panel/02_Panel";
 import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
 import Layer, { inversePropotionFunction } from "./00_Framework/Panel/02_Layer";
 import styled from "styled-components";
-import { SessionView } from "./FuzzySessionPackage/20_SessionView";
-import { UserEntity, UserId } from "./FuzzySessionPackage/20_UserEntity";
-import Entity, {
-  StringId,
-  convertIdentifiablesToMap,
-} from "./00_Framework/00_Entity";
-import { th } from "date-fns/locale";
+import UserEntity from "./FuzzySessionPackage/20_UserEntity";
+import { convertIdentifiablesToMap } from "./00_Framework/00_Entity";
 import CalendarEntity from "./FuzzySessionPackage/CalendarPackage/20_CalendarEntity";
 import SessionDetailView from "./FuzzySessionPackage/20_SessionDetailView";
+import FuzzySessionGlobalState from "./FuzzySessionPackage/FuzzySessionGlobalState";
 
 const incho = new UserEntity(
   "incho",
@@ -169,12 +164,6 @@ const updateCalendar = (
 
 const _calendars: CalendarEntity[] = updateCalendar(_users, _allSessions);
 
-interface GlobalState {
-  readonly calendars: Map<string, CalendarEntity>;
-  readonly users: Map<string, UserEntity>;
-  readonly sessions: Map<string, SessionEntity>;
-}
-
 interface FuzzySessionViewModel extends ViewModel<{}> {
   onPanelClick(): void;
 }
@@ -195,7 +184,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       onPanelClick,
     } = props;
 
-    const [globalState, setGlobalState] = useState<GlobalState>({
+    const [globalState, setGlobalState] = useState<FuzzySessionGlobalState>({
       calendars: convertIdentifiablesToMap(_calendars),
       users: convertIdentifiablesToMap(_users),
       sessions: convertIdentifiablesToMap(_allSessions),
@@ -293,6 +282,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                 <div>
                   <SessionDetailView
                     main={selectedSession}
+                    users={globalState.users}
                     hourPx={20}
                     actionDispatcher={(action: SessionAction) =>
                       updateSession(selectedSession.id, action)
@@ -301,18 +291,12 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                     isHovered={true}
                   />
                   <p></p>
-                  <p>参加者：</p>
-                  <ul>
-                    {selectedSession.members &&
-                      [...selectedSession.members].map((memberId) => (
-                        <li>{globalState.users.get(memberId)?.name}</li>
-                      ))}
-                  </ul>
                 </div>
               )}
             </Panel>
           </Layer>
         )}
+
         <Layer
           zIndex={viewZ.get("一覧")}
           colorHue={0}
@@ -341,14 +325,6 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                 <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
                 <div className="e-calendar-columns">
                   {[...globalState.calendars.values()].map((cal, calIndex) => {
-                    //const sessionEntities =
-                    const sessionEntities = cal.timeline.sessions.map(
-                      (tls) =>
-                        globalState.sessions.get(
-                          tls.id.toString()
-                        ) as SessionEntity
-                    );
-
                     return (
                       <div className="e-column" key={calIndex}>
                         <h2>{cal.title}</h2>

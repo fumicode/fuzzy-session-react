@@ -1,7 +1,7 @@
 import Conflict from "./20_Conflict";
 import SessionEntity from "../20_SessionEntity";
 import Timeline, { TimelineSession } from "./20_Timeline";
-import { UserEntity } from "../20_UserEntity";
+import UserEntity from "../20_UserEntity";
 import { TimeRange } from "../FuzzyTimePackage";
 
 describe("Timeline", () => {

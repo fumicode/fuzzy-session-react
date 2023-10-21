@@ -7,7 +7,7 @@ import Entity, {
   convertIdentifiablesToMap,
 } from "../00_Framework/00_Entity";
 import { Session } from "inspector";
-import { UserEntity } from "./20_UserEntity";
+import UserEntity from "./20_UserEntity";
 
 export class SessionId extends StringId {
   static fromString(str: string): SessionId {
