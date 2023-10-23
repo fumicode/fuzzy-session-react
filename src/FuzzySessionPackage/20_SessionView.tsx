@@ -15,11 +15,11 @@ export interface SessionViewModel extends ViewModel<SessionEntity> {
 
   hourPx: number;
 
-  onStartTimeChange: (sessionAction: SessionAction) => void;
-  onEndTimeChange: (sessionAction: SessionAction) => void;
+  dispatchAction: (sessionAction: SessionAction) => void;
   onDragStart: (startY: number) => void;
 
   onDoubleClick?: (e: React.MouseEvent) => void;
+  onDetailOpen?: (e: React.MouseEvent) => void;
 
   isHovered: boolean;
 }
@@ -43,10 +43,11 @@ export const SessionView: FC<SessionViewModel> = styled(
 
     hourPx,
 
-    onStartTimeChange,
-    onEndTimeChange,
+    dispatchAction,
+
     onDragStart,
     onDoubleClick,
+    onDetailOpen,
 
     isHovered,
   }: SessionViewModel) => {
@@ -66,6 +67,18 @@ export const SessionView: FC<SessionViewModel> = styled(
         <div style={{ fontSize: "13px" }}>{session.title}</div>
         <div style={{ fontSize: "10px" }}>
           <TimeRangeTextView main={timeRange} />
+        </div>
+        <div style={{ fontSize: "10px" }}>
+          {/*
+
+          <button
+            onClick={(e) => {
+              onDetailOpen && onDetailOpen(e);
+            }}
+          >
+            開く
+          </button>
+          */}
         </div>
         <div className="e-time-range-wrapper m-start">
           <div className="e-time-range">
@@ -95,7 +108,7 @@ export const SessionView: FC<SessionViewModel> = styled(
               className="e-button m-up"
               disabled={!peekIntoFuture(session, startTimeBackAction)}
               onClick={() => {
-                onStartTimeChange(startTimeBackAction);
+                dispatchAction(startTimeBackAction);
               }}
             >
               ▲
@@ -104,7 +117,7 @@ export const SessionView: FC<SessionViewModel> = styled(
               className="e-button m-down"
               disabled={!peekIntoFuture(session, startTimeGoAction)}
               onClick={() => {
-                onStartTimeChange(startTimeGoAction);
+                dispatchAction(startTimeGoAction);
               }}
             >
               ▼
@@ -115,7 +128,7 @@ export const SessionView: FC<SessionViewModel> = styled(
               className="e-button m-up"
               disabled={!peekIntoFuture(session, endTimeBackAction)}
               onClick={() => {
-                onEndTimeChange(endTimeBackAction);
+                dispatchAction(endTimeBackAction);
               }}
             >
               ▲
@@ -124,7 +137,7 @@ export const SessionView: FC<SessionViewModel> = styled(
               className="e-button m-down"
               disabled={!peekIntoFuture(session, endTimeGoAction)}
               onClick={() => {
-                onEndTimeChange(endTimeGoAction);
+                dispatchAction(endTimeGoAction);
               }}
             >
               ▼

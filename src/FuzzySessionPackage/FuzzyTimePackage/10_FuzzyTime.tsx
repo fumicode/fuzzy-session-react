@@ -61,9 +61,7 @@ export default class FuzzyTime {
   }
 
   change(diff: TimeDiff): FuzzyTime {
-    const d = new Date(
-      `2020-01-01T${zeroPadStr(this.hour, 2)}:${zeroPadStr(this.minute, 2)}:00`
-    );
+    const d = this.convertToDate();
 
     const func = diff.sign === "-" ? sub : add;
     const newD = func(d, { minutes: diff.minute, hours: diff.hour });
@@ -72,17 +70,16 @@ export default class FuzzyTime {
   }
 
   compare(other: FuzzyTime): number {
-    const thisDate = new Date(
-      `2020-01-01T${zeroPadStr(this.hour, 2)}:${zeroPadStr(this.minute, 2)}:00`
-    );
-    const otherDate = new Date(
-      `2020-01-01T${zeroPadStr(other.hour, 2)}:${zeroPadStr(
-        other.minute,
-        2
-      )}:00`
-    );
+    const thisDate = this.convertToDate();
+    const otherDate = other.convertToDate();
 
     return thisDate.getTime() - otherDate.getTime(); //簡易的な実装だが十分。
+  }
+
+  convertToDate(): Date {
+    return new Date(
+      `1970-01-01T${zeroPadStr(this.hour, 2)}:${zeroPadStr(this.minute, 2)}:00`
+    );
   }
 
   toString(): string {

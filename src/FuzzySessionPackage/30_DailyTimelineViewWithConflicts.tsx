@@ -276,8 +276,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
               <SessionView
                 main={session}
                 hourPx={hourPx}
-                onStartTimeChange={onSessionChange}
-                onEndTimeChange={onSessionChange}
+                dispatchAction={onSessionChange}
                 onDragStart={(startY: number) => {
                   setDragTargetAndStartY({ session, startY });
                 }}
@@ -292,6 +291,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                   }
 
                   const originalRect = new SmartRect(rect, wrapperSize);
+                  console.log(originalRect.toJSON());
 
                   onSessionFocus && onSessionFocus(session.id, originalRect);
                 }}

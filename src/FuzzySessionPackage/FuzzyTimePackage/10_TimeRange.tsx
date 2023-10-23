@@ -4,6 +4,10 @@ import ViewModel from "../../00_Framework/00_ViewModel";
 import styled from "styled-components";
 import FuzzyTime from "./10_FuzzyTime";
 import TimeDiff from "./00_TimeDiff";
+import { formatDistance, setDefaultOptions } from "date-fns";
+
+import { ja } from "date-fns/locale";
+setDefaultOptions({ locale: ja });
 
 export default class TimeRange {
   readonly start: FuzzyTime;
@@ -40,6 +44,7 @@ export default class TimeRange {
       }
     }
   }
+
   changeStartTime(diff: FuzzyTime | TimeDiff): TimeRange {
     if (diff instanceof FuzzyTime) {
       const start = diff;
@@ -49,6 +54,24 @@ export default class TimeRange {
     } else {
       throw new Error("diff must be FuzzyTime or TimeDiff");
     }
+  }
+
+  changeEndTime(diff: FuzzyTime | TimeDiff): TimeRange {
+    if (diff instanceof FuzzyTime) {
+      const end = diff;
+      return new TimeRange(this.start, end);
+    } else if (diff instanceof TimeDiff) {
+      return new TimeRange(this.start, this.end.change(diff));
+    } else {
+      throw new Error("diff must be FuzzyTime or TimeDiff");
+    }
+  }
+
+  move(diff: TimeDiff): this {
+    return new TimeRange(
+      this.start.change(diff),
+      this.end.change(diff)
+    ) as this;
   }
 
   get startHour(): number {
@@ -70,6 +93,12 @@ export default class TimeRange {
       (startDate.getHours() + startDate.getMinutes() / 60);
 
     return duration;
+  }
+  formatDuration(): string {
+    const startDate = this.start.convertToDate();
+    const endDate = this.end.convertToDate();
+
+    return formatDistance(startDate, endDate, { includeSeconds: false });
   }
 
   overlaps(otherTR: TimeRange): TimeRange | undefined {

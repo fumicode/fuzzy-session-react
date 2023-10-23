@@ -267,12 +267,11 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
           >
             <Panel
               position={selectedPosition}
-              size={{ width: 300, height: 300 }}
               zIndex={0}
               isActive={true}
               overflow="visible"
+              shadow={false}
               onMove={() => {}}
-              bgColor="white"
               onPanelClick={() => {
                 setViewZ(viewZ.moveToTop("詳細"));
                 onPanelClick();
@@ -290,7 +289,6 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                     onDragStart={() => {}}
                     isHovered={true}
                   />
-                  <p></p>
                 </div>
               )}
             </Panel>

@@ -110,6 +110,12 @@ export default class SessionEntity implements Entity {
     return newSession;
   }
 
+  setTimeRange(timeRange: TimeRange): this {
+    return this.update({
+      timeRange,
+    });
+  }
+
   //動かそうとした方向と、実際に変化した方向が同じかどうかをチェックする。
   private checkChangeDirection(
     diff: TimeDiff,

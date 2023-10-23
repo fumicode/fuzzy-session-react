@@ -13,7 +13,7 @@ interface PanelProps {
 
   position: Point2;
 
-  size: Size2;
+  size?: Size2;
 
   zIndex?: number;
   isActive: boolean;
@@ -26,6 +26,8 @@ interface PanelProps {
 
   onMove(smartRect: SmartRect): void;
   onPanelClick?(): void;
+
+  shadow?: boolean;
 
   debugMode?: boolean;
 }
@@ -82,8 +84,8 @@ export const PanelCore = styled(
           style={{
             left: `${position.x}px`,
             top: `${position.y}px`,
-            width: `${size.width}px`,
-            height: `${size.height}px`,
+            width: size && `${size.width}px`,
+            height: size && `${size.height}px`,
             zIndex: zIndex,
             ...defaultStyle,
             ...transitionStyles[transitionState],
@@ -107,7 +109,11 @@ export const PanelCore = styled(
 )`
   position: absolute;
   background: ${({ bgColor }) => bgColor || "hsla(0, 0%, 0%, 0.1)"};
-  box-shadow: 0 0 10px 3px hsla(0, 0%, 0%, 0.5);
+
+  box-shadow: ${({ shadow }) =>
+    shadow === undefined || shadow === true
+      ? `0 0 10px 3px hsla(0, 0%, 0%, 0.5)`
+      : "none"};
 
   pointer-events: auto;
   overflow:${({ overflow }) => overflow || "auto"}} ;
