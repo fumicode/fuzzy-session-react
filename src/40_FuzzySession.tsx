@@ -19,7 +19,7 @@ import UserEntity from "./FuzzySessionPackage/20_UserEntity";
 import { convertIdentifiablesToMap } from "./00_Framework/00_Entity";
 import CalendarEntity from "./FuzzySessionPackage/CalendarPackage/20_CalendarEntity";
 import SessionDetailView from "./FuzzySessionPackage/20_SessionDetailView";
-import FuzzySessionGlobalState from "./FuzzySessionPackage/FuzzySessionGlobalState";
+import FuzzySessionGlobalState from "./FuzzySessionPackage/30_FuzzySessionGlobalState";
 
 const incho = new UserEntity(
   "incho",
@@ -188,6 +188,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       calendars: convertIdentifiablesToMap(_calendars),
       users: convertIdentifiablesToMap(_users),
       sessions: convertIdentifiablesToMap(_allSessions),
+      relations: {},
     });
 
     const onSessionSave = () => {

@@ -1,4 +1,6 @@
 import Entity, { StringId } from "../../00_Framework/00_Entity";
+import { SessionId } from "../20_SessionEntity";
+import { TimeRange } from "../FuzzyTimePackage";
 import Timeline from "./20_Timeline";
 
 export class CalendarId extends StringId {}
@@ -41,6 +43,25 @@ export default class CalendarEntity implements Entity {
     const newSpec: CalendarSpec = Object.assign(this.exportSpec(), {
       timeline,
     });
-    return new CalendarEntity(this.id, newSpec, this) as this;
+
+    return this.update(newSpec);
+  }
+
+  setSessionTimeRange(sessionId: SessionId, timeRange: TimeRange): this {
+    return this.update({
+      timeline: this.timeline.setSessionTimeRange(sessionId, timeRange),
+    });
+  }
+
+  update(changingContent: Partial<CalendarSpec>): this {
+    return new this.ThisClass(
+      this.id,
+      Object.assign(this.exportSpec(), changingContent),
+      this
+    ) as this;
+  }
+
+  get ThisClass(): typeof CalendarEntity {
+    return CalendarEntity;
   }
 }

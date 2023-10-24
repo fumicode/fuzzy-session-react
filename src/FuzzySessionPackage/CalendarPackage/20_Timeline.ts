@@ -3,6 +3,9 @@ import SessionEntity, { SessionId } from "../20_SessionEntity";
 import Conflict from "./20_Conflict";
 import { TimeRange } from "../FuzzyTimePackage";
 
+import update from "immutability-helper";
+import { th } from "date-fns/locale";
+
 export default class Timeline {
   private readonly _conflicts: Conflict[];
 
@@ -58,6 +61,22 @@ export default class Timeline {
     return "ConflictsWarningSessionList";
   }
 
+  setSessionTimeRange(sessionId: SessionId, timeRange: TimeRange): this {
+    const currentSession = this.get(sessionId);
+
+    if (currentSession === undefined) {
+      throw new Error(
+        `このカレンダータイムライにはセッション${sessionId.toString()}が存在しません。`
+      );
+    }
+
+    const newSessions = update(this._sessions, {
+      $add: [[sessionId.toString(), currentSession.setTimeRange(timeRange)]],
+    });
+
+    return new Timeline(newSessions) as this;
+  }
+
   get sessions(): TimelineSession[] {
     return this.orderedSessionsByTimeRange; //互換性のために、ソートしておく。
   }
@@ -89,6 +108,11 @@ export default class Timeline {
 
 const ThisClass = Timeline;
 
+interface TimelineSessionSpec {
+  readonly title: string;
+  readonly timeRange: TimeRange;
+}
+
 export class TimelineSession {
   readonly id: SessionId;
 
@@ -97,14 +121,49 @@ export class TimelineSession {
   readonly title: string;
   readonly timeRange: TimeRange;
 
-  constructor(session: SessionEntity) {
-    this.title = session.title;
-    this.timeRange = session.timeRange;
-    this.id = session.id;
+  constructor(session: SessionEntity);
+  constructor(id: SessionId, spec: TimelineSessionSpec);
+  constructor(
+    sessionOrId: SessionEntity | SessionId,
+    spec: TimelineSessionSpec | undefined = undefined
+  ) {
+    if (sessionOrId instanceof SessionEntity) {
+      const session = sessionOrId;
+      this.id = session.id;
+      this.title = session.title;
+      this.timeRange = session.timeRange;
+    } else if (sessionOrId instanceof SessionId && spec !== undefined) {
+      const sessionId = sessionOrId;
+      this.id = sessionId;
+      this.title = spec.title;
+      this.timeRange = spec.timeRange;
+    } else {
+      throw new Error("TimelineSessionのコンストラクタの引数がおかしいです。");
+    }
+  }
+
+  exportSpec(): TimelineSessionSpec {
+    return {
+      title: this.title,
+      timeRange: this.timeRange,
+    };
   }
 
   overlaps(otherSession: this): TimeRange | undefined {
     return this.timeRange.overlaps(otherSession.timeRange);
+  }
+
+  setTimeRange(timeRange: TimeRange): this {
+    return this.update({
+      timeRange,
+    });
+  }
+
+  update(changingContent: Partial<TimelineSessionSpec>): this {
+    return new TimelineSession(
+      this.id,
+      Object.assign(this.exportSpec(), changingContent)
+    ) as this;
   }
 
   hoge() {

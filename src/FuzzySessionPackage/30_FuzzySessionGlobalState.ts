@@ -6,4 +6,6 @@ export default interface FuzzySessionGlobalState {
   readonly calendars: Map<string, CalendarEntity>;
   readonly users: Map<string, UserEntity>;
   readonly sessions: Map<string, SessionEntity>;
+
+  readonly relations: {};
 }

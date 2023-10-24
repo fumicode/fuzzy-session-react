@@ -226,6 +226,10 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
             { start: 0, end: 3 * leftUnitPx },
             { start: 0, end: 3 }
           );
+
+          const timelineSession = timeline.sessions.find((ts) =>
+            ts.id.equals(session.id)
+          );
           return (
             <div
               className="e-session-box"
@@ -297,6 +301,11 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                 }}
                 isHovered={isGrabbed}
               />
+              <div style={{ fontSize: "9px" }}>timeline session</div>
+              <div style={{ fontSize: "9px" }}>{timelineSession?.title}</div>
+              <div style={{ fontSize: "9px" }}>
+                {timelineSession?.timeRange.toString()}
+              </div>
             </div>
           );
         })}

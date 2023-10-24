@@ -121,4 +121,27 @@ describe("Timeline", () => {
       new Conflict(inchoSessions[1], inchoSessions[2]),
     ]);
   });
+
+  it("予定の時間を変更できる", () => {
+    //given
+    const timeline = new Timeline(inchoSessions);
+    const firstId = inchoSessions[0].id;
+
+    //when
+
+    const newTimeline = timeline.setSessionTimeRange(
+      firstId,
+      new TimeRange("10:00", "12:00")
+    );
+
+    //then
+    //前のやつは変更されてないけど
+    expect(timeline.get(firstId)?.timeRange).toEqual(
+      new TimeRange("09:00", "11:00")
+    );
+    //新しいやつは変更されてる
+    expect(newTimeline.get(firstId)?.timeRange).toEqual(
+      new TimeRange("10:00", "12:00")
+    );
+  });
 });
