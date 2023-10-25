@@ -83,4 +83,14 @@ export class RelationRepository {
 
     return found;
   }
+
+  send(fromId: Id, event: unknown): unknown {
+    const found = this.findAllByFromId(fromId);
+
+    if (found === undefined) throw new Error("関係性が見つかりませんでした。");
+
+    const firstRel = found[0];
+
+    return firstRel.send(fromId, event);
+  }
 }

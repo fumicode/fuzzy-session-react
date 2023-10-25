@@ -15,9 +15,11 @@ import Panel from "./00_Framework/Panel/02_Panel";
 import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
 import Layer, { inversePropotionFunction } from "./00_Framework/Panel/02_Layer";
 import styled from "styled-components";
-import UserEntity from "./FuzzySessionPackage/20_UserEntity";
-import { convertIdentifiablesToMap } from "./00_Framework/00_Entity";
-import CalendarEntity from "./FuzzySessionPackage/CalendarPackage/20_CalendarEntity";
+import UserEntity, { UserId } from "./FuzzySessionPackage/20_UserEntity";
+import { Id, convertIdentifiablesToMap } from "./00_Framework/00_Entity";
+import CalendarEntity, {
+  CalendarId,
+} from "./FuzzySessionPackage/CalendarPackage/20_CalendarEntity";
 import SessionDetailView from "./FuzzySessionPackage/20_SessionDetailView";
 import FuzzySessionGlobalState from "./FuzzySessionPackage/30_FuzzySessionGlobalState";
 
@@ -168,6 +170,89 @@ interface FuzzySessionViewModel extends ViewModel<{}> {
   onPanelClick(): void;
 }
 
+const useGlobalState = () => {
+  const [globalState, setGlobalState] = useState<FuzzySessionGlobalState>({
+    calendars: convertIdentifiablesToMap(_calendars),
+    users: convertIdentifiablesToMap(_users),
+    sessions: convertIdentifiablesToMap(_allSessions),
+    relations: {},
+  });
+
+  const onSessionSave = () => {
+    //カレンダーも更新。（全部イチから作り直している。これはぜったいよくない。要点チェックにしたい）
+
+    setGlobalState((gs) =>
+      update(gs, {
+        calendars: {
+          $set: convertIdentifiablesToMap(
+            updateCalendar([...gs.users.values()], [...gs.sessions.values()])
+          ),
+        },
+      })
+    );
+  };
+
+  const dictionary = new Map<
+    Function,
+    { property: keyof FuzzySessionGlobalState }
+  >([
+    [SessionId, { property: "sessions" }],
+    [CalendarId, { property: "calendars" }],
+    [UserId, { property: "users" }],
+  ]);
+
+  //作ってみたけど、まだ使えてない。dispatchを一元化しようとしてるけど最後よくわからん。
+  // 返り値のMapの型がunknownにしかできてないの残念。
+  const decideRepoById = (id: Id, action: Function): Map<string, unknown> => {
+    if (!dictionary.has(id.constructor)) {
+      throw new Error(`指定されたid ${id} は未対応です。`);
+    }
+
+    const propertyName = dictionary.get(id.constructor)?.property;
+    if (propertyName === undefined) {
+      throw new Error(`指定されたid ${id} は未対応です。`);
+    }
+
+    return globalState[propertyName] as Map<string, unknown>;
+  };
+
+  const dispatchSessionAction = (
+    sId: SessionId,
+    sessionAction: SessionAction
+  ) => {
+    try {
+      //検索
+      const session = globalState.sessions.get(sId.toString());
+      if (session === undefined) {
+        throw new Error(
+          `指定されたid ${sId} のsessionが見つかりませんでした。`
+        );
+      }
+
+      //更新
+      const futureSession = sessionAction(session);
+
+      //永続化
+      setGlobalState((globalState) =>
+        update(globalState, {
+          sessions: {
+            $add: [[session.id.toString(), futureSession]],
+          },
+        })
+      );
+
+      onSessionSave();
+
+      //このあと、関連イベントが発火などすべき。
+      //TODO: 実装。
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  return { globalState, dispatchSessionAction } as const;
+};
+
 const FuzzySession: FC<FuzzySessionViewModel> = styled(
   (props: FuzzySessionViewModel) => {
     const {
@@ -184,56 +269,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       onPanelClick,
     } = props;
 
-    const [globalState, setGlobalState] = useState<FuzzySessionGlobalState>({
-      calendars: convertIdentifiablesToMap(_calendars),
-      users: convertIdentifiablesToMap(_users),
-      sessions: convertIdentifiablesToMap(_allSessions),
-      relations: {},
-    });
-
-    const onSessionSave = () => {
-      //カレンダーも更新。（全部イチから作り直している。これはぜったいよくない。要点チェックにしたい）
-      setGlobalState((gs) =>
-        update(gs, {
-          calendars: {
-            $set: convertIdentifiablesToMap(
-              updateCalendar([...gs.users.values()], [...gs.sessions.values()])
-            ),
-          },
-        })
-      );
-    };
-
-    const updateSession = (sId: SessionId, sessionAction: SessionAction) => {
-      try {
-        //検索
-        const session = globalState.sessions.get(sId.toString());
-        if (session === undefined) {
-          throw new Error(
-            `指定されたid ${sId} のsessionが見つかりませんでした。`
-          );
-        }
-
-        //更新
-        const futureSession = sessionAction(session);
-
-        //永続化
-        setGlobalState((globalState) =>
-          update(globalState, {
-            sessions: {
-              $add: [[session.id.toString(), futureSession]],
-            },
-          })
-        );
-
-        onSessionSave();
-
-        //このあと、関連イベントが発火などすべき。
-        //TODO: 実装。
-      } catch (e) {
-        console.log(e);
-      }
-    };
+    const { globalState, dispatchSessionAction } = useGlobalState();
 
     const [viewZ, setViewZ] = useState<ZIndexCalcurator>(
       new ZIndexCalcurator(["詳細", "一覧"])
@@ -284,8 +320,8 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                     main={selectedSession}
                     users={globalState.users}
                     hourPx={20}
-                    actionDispatcher={(action: SessionAction) =>
-                      updateSession(selectedSession.id, action)
+                    dispatchSessionAction={(action: SessionAction) =>
+                      dispatchSessionAction(selectedSession.id, action)
                     }
                     onDragStart={() => {}}
                     isHovered={true}
@@ -331,7 +367,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                           main={cal.timeline}
                           sessionEntities={globalState.sessions}
                           showsTime={calIndex === 0}
-                          onTheSessionChange={updateSession}
+                          onTheSessionChange={dispatchSessionAction}
                           onSessionFocus={(sId, originalRect) => {
                             const session = globalState.sessions.get(
                               sId.toString()

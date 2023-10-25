@@ -22,7 +22,7 @@ export interface SessionViewModel extends ViewModel<SessionEntity> {
   onDragStart: (startY: number) => void;
   onDoubleClick?: (e: React.MouseEvent) => void;
 
-  actionDispatcher: (sessionAction: SessionAction) => void;
+  dispatchSessionAction: (sessionAction: SessionAction) => void;
 
   isHovered: boolean;
 }
@@ -77,7 +77,7 @@ const SessionDetailView: FC<SessionViewModel> = styled(
     main: session,
     users,
 
-    actionDispatcher: sessionActionDispatcher,
+    dispatchSessionAction,
   }: SessionViewModel) => {
     const timeRange = session.timeRange;
     const hoursNum = timeRange.durationHour;
@@ -106,13 +106,13 @@ const SessionDetailView: FC<SessionViewModel> = styled(
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                sessionActionDispatcher(titleChangeActionCreator(title.value));
+                dispatchSessionAction(titleChangeActionCreator(title.value));
 
                 e.currentTarget.blur();
               }
             }}
             onBlur={(e) => {
-              sessionActionDispatcher(titleChangeActionCreator(title.value));
+              dispatchSessionAction(titleChangeActionCreator(title.value));
             }}
           />
         </h2>
@@ -121,7 +121,7 @@ const SessionDetailView: FC<SessionViewModel> = styled(
           <TimeRangeCharactorView
             main={timeRange}
             dispatchAction={(action) => {
-              sessionActionDispatcher((session) =>
+              dispatchSessionAction((session) =>
                 session.setTimeRange(action(timeRange))
               );
             }}
