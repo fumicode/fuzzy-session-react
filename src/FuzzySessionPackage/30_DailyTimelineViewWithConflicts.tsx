@@ -301,11 +301,6 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                 }}
                 isHovered={isGrabbed}
               />
-              <div style={{ fontSize: "9px" }}>timeline session</div>
-              <div style={{ fontSize: "9px" }}>{timelineSession?.title}</div>
-              <div style={{ fontSize: "9px" }}>
-                {timelineSession?.timeRange.toString()}
-              </div>
             </div>
           );
         })}
