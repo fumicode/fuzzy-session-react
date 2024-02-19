@@ -114,6 +114,21 @@ const App: FC = styled((props: { className: string }) => {
           }}
         />
       </Layer>
+
+      <ul className="e-layer-list">
+        {appZ.ids.map((id) => {
+          return (
+            <li
+              key={id}
+              onClick={() => {
+                setAppZ(appZ.moveToTop(id));
+              }}
+            >
+              {id}
+            </li>
+          );
+        })}
+      </ul>
     </PanelSystem>
   );
 })`
@@ -129,6 +144,32 @@ const App: FC = styled((props: { className: string }) => {
     flex-direction: row;
 
     > .e-column {
+    }
+  }
+
+  .e-layer-list {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+
+    display: flex;
+    flex-direction: column-reverse;
+
+    margin: 0;
+    padding: 0;
+
+    z-index: 100; //最前面に表示されるようにする。TODO: 適当なので後で直す。
+
+    list-style: none;
+
+    > li {
+      padding: 5px;
+      background: white;
+
+      &:hover {
+        background: skyblue;
+        cursor: pointer;
+      }
     }
   }
 `;
