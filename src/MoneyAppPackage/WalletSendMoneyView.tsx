@@ -9,7 +9,9 @@ import {
   peekIntoFuture,
 } from "../00_Framework/00_Action";
 
-export type WalletPairAction = Action<[WalletEntity|undefined, WalletEntity|undefined]>; //送金元、送金先
+export type WalletPairAction = Action<
+  [WalletEntity | undefined, WalletEntity | undefined]
+>; //送金元、送金先
 
 export interface WalletSendMoneyViewModel extends ViewModel<WalletEntity> {
   otherWallets: Iterable<WalletEntity>;
@@ -52,9 +54,8 @@ export const WalletSendMoneyView: FC<WalletSendMoneyViewModel> = styled(
     const [distinationWalletId, setDistinationWalletId] = useState<
       WalletId | undefined
     >(undefined);
-    
 
-    if(Array.from(otherWallets).length === 0){
+    if (Array.from(otherWallets).length === 0) {
       throw new Error("送金先がありません。");
     }
 
@@ -167,6 +168,7 @@ export const WalletSendMoneyView: FC<WalletSendMoneyViewModel> = styled(
           line-height: 1;
           white-space: nowrap;
           max-width: 20em;
+          overflow: hidden;
 
           color: #fff;
           border-radius: 2px;
