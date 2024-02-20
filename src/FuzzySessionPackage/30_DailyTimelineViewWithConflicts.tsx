@@ -1,19 +1,19 @@
-import { FC, useState } from "react";
+import { FC, useContext, useState } from "react";
 import styled from "styled-components";
 
 import "core-js/features/array";
 
-import SessionEntitly, {
-  SessionAction,
-  SessionId,
-  SessionView,
-} from "./20_SessionEntity";
+import SessionEntitly, { SessionAction, SessionId } from "./20_SessionEntity";
 import ViewModel from "../00_Framework/00_ViewModel";
-import Timeline from "./20_Timeline";
-import { TimeRangeView } from "./10_TimeRange";
-import Conflict from "./20_Conflict";
+import Timeline from "./CalendarPackage/20_Timeline";
+import { TimeRangeView, TimeDiff } from "./FuzzyTimePackage/index";
+
+import Conflict from "./CalendarPackage/20_Conflict";
 import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
-import { TimeDiff } from "./10_FuzzyTime";
+import SmartRect from "../00_Framework/Panel/01_SmartRect";
+import WrapperSizeContext from "../00_Framework/Panel/01_WrapperSizeContext";
+import { SessionView } from "./20_SessionView";
+import scaleNumber from "../01_Utils/00_scaleNumber";
 
 class SessionBoxViewModel implements ViewModel<SessionEntitly> {
   public readonly sessionId: SessionId;
@@ -43,54 +43,20 @@ class ConflictViewModel implements ViewModel<Conflict> {
   }
 }
 
-interface NumberRange {
-  start: number;
-  end: number;
-}
-
-function scaleNumber(
-  input: number,
-  from: NumberRange = { start: 0, end: 1 },
-  to: NumberRange = { start: 0, end: 1 }
-): number {
-  const x = input;
-
-  const x1 = from.start,
-    y1 = to.start,
-    x2 = from.end,
-    y2 = to.end;
-
-  if (x > x2) {
-    //とてもひどいなら真っ赤
-    return y2;
-  } else if (x < x1) {
-    //ちょっとかさなってるだけなら真っ黄
-    return y1;
-  }
-
-  const a = (y2 - y1) / (x2 - x1); //傾き
-  return a * (x - x1) + y1;
-}
-
 //TODO: classなのはいいのだろうか？
-class DailyTimelineWithConflictsViewModel implements ViewModel<Timeline> {
+interface DailyTimelineWithConflictsViewModel extends ViewModel<Timeline> {
   className?: string | undefined;
 
-  constructor(
-    public readonly main: Timeline,
-    public readonly showsTime: boolean = true,
+  readonly main: Timeline;
+  readonly sessionEntities: Map<string, SessionEntitly>;
+  readonly showsTime?: boolean | undefined;
 
-    public onTheSessionChange: (
-      sessionId: SessionId,
-      action: SessionAction
-    ) => void
-  ) {
-    //TODO: コンフリクトがコンフリクトしてる場合には横にずらしたい。
-    //const metaConflicts = this.main.conflicts;
-  }
+  onTheSessionChange: (sessionId: SessionId, action: SessionAction) => void;
+
+  onSessionFocus?: (sessionId: SessionId, originalRect: SmartRect) => void;
 }
 
-const createTimeRangeChangingAction = (hourDiff:number): SessionAction => {
+const createTimeRangeChangingAction = (hourDiff: number): SessionAction => {
   const timeRangeChangingAction: SessionAction = (session) => {
     const diffObj = new TimeDiff(hourDiff);
     const addingSession = session.changeTimeRange(diffObj);
@@ -99,15 +65,20 @@ const createTimeRangeChangingAction = (hourDiff:number): SessionAction => {
   };
 
   return timeRangeChangingAction;
-}
+};
 
 const Component: FC<DailyTimelineWithConflictsViewModel> = ({
   className,
-  main: { sessions, conflicts },
+  main: timeline,
+  sessionEntities,
   showsTime,
 
-  onTheSessionChange
+  onTheSessionChange,
+  onSessionFocus,
 }: DailyTimelineWithConflictsViewModel) => {
+  const { conflicts } = timeline;
+
+  showsTime = showsTime || true;
   //states
   const [hoveredSessionId, setHoveredSessionId] = useState<
     SessionId | undefined
@@ -116,8 +87,21 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     SessionBoxViewModel | undefined
   >(undefined);
 
+  //集約内のクラスから、他の集約のクラスを手繰り寄せる
+  const timelineSessionEntities = timeline.sessions.map((tls) => {
+    const a = sessionEntities.get(tls.id.toString());
+    if (a === undefined) {
+      throw new Error("timelineにあるsessionが、sessionEntitiesにない。");
+    }
+
+    return a;
+  });
+
   const sesBVMs = new Map(
-    sessions.map((session) => [session.id, new SessionBoxViewModel(session, 0)])
+    timelineSessionEntities.map((session) => [
+      session.id,
+      new SessionBoxViewModel(session, 0),
+    ])
   );
 
   const hoursMax = 24;
@@ -177,6 +161,8 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
     setHourDiff(0);
   };
 
+  const wrapperSize = useContext(WrapperSizeContext);
+
   return (
     <div
       className={className}
@@ -228,9 +214,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
           const onSessionChange = (action: SessionAction) =>
             onTheSessionChange(session.id, action);
 
-          const zIndex = zIndexCalcurator.getZIndex(
-            sesBVM.sessionId.toString()
-          );
+          const zIndex = zIndexCalcurator.get(sesBVM.sessionId.toString());
 
           const layerScaleRatio = scaleNumber(
             x,
@@ -241,6 +225,10 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
             x,
             { start: 0, end: 3 * leftUnitPx },
             { start: 0, end: 3 }
+          );
+
+          const timelineSession = timeline.sessions.find((ts) =>
+            ts.id.equals(session.id)
           );
           return (
             <div
@@ -254,9 +242,7 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
                   "px",
                 left: x + "px",
                 zIndex,
-                transform: isGrabbed
-                  ? `scale(1)`
-                  : `scale(${layerScaleRatio})`,
+                transform: isGrabbed ? `scale(1)` : `scale(${layerScaleRatio})`,
                 boxShadow: isGrabbed
                   ? "0 0 10px 5px hsla(47,100%,49%,0.57)"
                   : x > 0
@@ -294,10 +280,24 @@ const Component: FC<DailyTimelineWithConflictsViewModel> = ({
               <SessionView
                 main={session}
                 hourPx={hourPx}
-                onStartTimeChange={onSessionChange}
-                onEndTimeChange={onSessionChange}
+                dispatchAction={onSessionChange}
                 onDragStart={(startY: number) => {
                   setDragTargetAndStartY({ session, startY });
+                }}
+                onDoubleClick={(e) => {
+                  const rect =
+                    e.target instanceof HTMLElement &&
+                    e.target.getBoundingClientRect();
+                  if (!rect) {
+                    throw new Error(
+                      "rectが取得できなかった。要素がダブルクリックできてるのに要素がないってどゆこと！？"
+                    );
+                  }
+
+                  const originalRect = new SmartRect(rect, wrapperSize);
+                  console.log(originalRect.toJSON());
+
+                  onSessionFocus && onSessionFocus(session.id, originalRect);
                 }}
                 isHovered={isGrabbed}
               />

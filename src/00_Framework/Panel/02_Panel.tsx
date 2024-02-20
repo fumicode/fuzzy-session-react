@@ -1,11 +1,11 @@
-import { FC, RefObject, forwardRef, useEffect, useRef } from "react";
+import { FC, RefObject, forwardRef, useContext, useRef } from "react";
 import styled from "styled-components";
 import React from "react";
 import SmartRect, { SmartRectView } from "./01_SmartRect";
 import { Point2, Size2 } from "../../01_Utils/00_Point";
 import useGetSmartRect from "./01_useGetSmartRect";
 import { Transition, TransitionStatus } from "react-transition-group";
-import { on } from "events";
+import WrapperSizeContext from "./01_WrapperSizeContext";
 
 interface PanelProps {
   //string: テキトーな型
@@ -13,13 +13,12 @@ interface PanelProps {
 
   position: Point2;
 
-  size: Size2;
-
-  parentSize: Size2; //ない場合には描画されない
+  size?: Size2;
 
   zIndex?: number;
   isActive: boolean;
   bgColor?: string;
+  overflow?: string;
 
   children: (renderedRect: SmartRect) => React.ReactNode;
 
@@ -28,18 +27,19 @@ interface PanelProps {
   onMove(smartRect: SmartRect): void;
   onPanelClick?(): void;
 
+  shadow?: boolean;
+
   debugMode?: boolean;
 }
 
 const duration = 1000;
-export const Panel = styled(
+export const PanelCore = styled(
   forwardRef<HTMLDivElement, PanelProps>(
     (
       {
         className,
         position,
         size,
-        parentSize,
         children,
         transitionState,
         zIndex,
@@ -51,9 +51,11 @@ export const Panel = styled(
     ) => {
       debugMode = debugMode || false;
 
+      const wrapperSize = useContext(WrapperSizeContext);
+
       const renderedRect = useGetSmartRect(
         position,
-        parentSize,
+        wrapperSize,
         panelRef as RefObject<HTMLDivElement>,
         transitionState,
         onMove
@@ -82,8 +84,8 @@ export const Panel = styled(
           style={{
             left: `${position.x}px`,
             top: `${position.y}px`,
-            width: `${size.width}px`,
-            height: `${size.height}px`,
+            width: size && `${size.width}px`,
+            height: size && `${size.height}px`,
             zIndex: zIndex,
             ...defaultStyle,
             ...transitionStyles[transitionState],
@@ -107,10 +109,14 @@ export const Panel = styled(
 )`
   position: absolute;
   background: ${({ bgColor }) => bgColor || "hsla(0, 0%, 0%, 0.1)"};
-  box-shadow: 0 0 10px 3px hsla(0, 0%, 0%, 0.5);
+
+  box-shadow: ${({ shadow }) =>
+    shadow === undefined || shadow === true
+      ? `0 0 10px 3px hsla(0, 0%, 0%, 0.5)`
+      : "none"};
 
   pointer-events: auto;
-  overflow: auto;
+  overflow:${({ overflow }) => overflow || "auto"}} ;
 
   > .e-rect-info {
     position: absolute;
@@ -131,7 +137,9 @@ export const ProxyPanel: FC<PanelPropsWithoutRef> = (
 
   return (
     <Transition nodeRef={panelRef} in={isActive} timeout={duration}>
-      {(state) => <Panel {...props} ref={panelRef} transitionState={state} />}
+      {(state) => (
+        <PanelCore {...props} ref={panelRef} transitionState={state} />
+      )}
     </Transition>
   );
 };

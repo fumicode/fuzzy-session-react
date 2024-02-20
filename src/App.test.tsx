@@ -2,9 +2,10 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import App from "./App";
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/Fuzzy/i);
-  expect(linkElement).toBeInTheDocument();
+describe("App", () => {
+  test("とりあえずレンダリングできる", () => {
+    render(<App />);
+    const osTitle = screen.getByText(/DouOS/i);
+    expect(osTitle).toBeInTheDocument();
+  });
 });
-

@@ -3,6 +3,7 @@ import ViewModel from "../00_Framework/00_ViewModel";
 import WalletEntity, { WalletId } from "./WalletEntity";
 import styled from "styled-components";
 import { Action, peekIntoFuture } from "../00_Framework/00_Action";
+import VerticalHiddenList from "../00_Framework/ComponentContainer/VerticalHiddenList";
 
 type DistributerReceivers = {
   distributer: WalletEntity;
@@ -79,27 +80,35 @@ const WalletsDistributeButtonView: FC<WalletsDistributeButtonViewModel> = styled
     const distributerReceiversAction =
       createDistributerReceiversAction(sharingInfo);
     return (
-      <button
-        disabled={
-          !peekIntoFuture<DistributerReceivers>(
-            { distributer: distributerWallet, receivers: receiverWallets },
-            distributerReceiversAction
-          )
-        }
-        onClick={() => {
-          onDistributeExecute(
-            [
-              distributerWallet.id,
-              new Set(
-                [...receiverWallets.keys()].map((str) => new WalletId(str))
-              ),
-            ],
-            distributerReceiversAction
-          );
-        }}
-      >
-        分配率に応じて分配
-      </button>
+      <div>
+        {distributerWallet.id.toString()}
+        から
+        <VerticalHiddenList
+          main={[...receiverWallets.values()].map((w) => w.id.toString())}
+        />
+        へ
+        <button
+          disabled={
+            !peekIntoFuture<DistributerReceivers>(
+              { distributer: distributerWallet, receivers: receiverWallets },
+              distributerReceiversAction
+            )
+          }
+          onClick={() => {
+            onDistributeExecute(
+              [
+                distributerWallet.id,
+                new Set(
+                  [...receiverWallets.keys()].map((str) => new WalletId(str))
+                ),
+              ],
+              distributerReceiversAction
+            );
+          }}
+        >
+          分配率に応じて分配
+        </button>
+      </div>
     );
   }
 )``;

@@ -1,13 +1,37 @@
 import crypto from "crypto";
 
 export interface Id {
-  equals(other: Id): boolean;
+  equals(other: this): boolean;
 }
 
 export default interface Entity {
   readonly id: Id;
   readonly prev: Entity | undefined;
 }
+
+export interface Identifiable {
+  readonly id: Id;
+}
+
+export const convertIdentifiablesToMap = <T extends Identifiable>(
+  entities: Iterable<T>
+): Map<string, T> => {
+  const map = new Map<string, T>();
+  for (const entity of entities) {
+    map.set(entity.id.toString(), entity);
+  }
+  return map;
+};
+
+export const convertIdentifiablesToIdSet = <T extends Identifiable>(
+  entities: Iterable<T>
+): Set<string> => {
+  const set = new Set<string>();
+  for (const entity of entities) {
+    set.add(entity.id.toString());
+  }
+  return set;
+};
 
 export class StringId implements Id {
   private readonly _value: string;
@@ -25,9 +49,14 @@ export class StringId implements Id {
     }
     return this._value;
   }
-  equals(otherId: StringId): boolean {
-    if (!(otherId instanceof StringId)) {
-      throw new Error("同じ型のIDでないとくらべられません");
+  equals(otherId: this): boolean {
+    if (
+      !(
+        otherId instanceof this.constructor &&
+        this instanceof otherId.constructor
+      )
+    ) {
+      return false;
     }
     return this._value === otherId._value;
   }

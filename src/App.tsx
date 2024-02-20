@@ -1,180 +1,175 @@
-import Timeline from "./Components/20_Timeline";
-import SessionEntity, {
-  SessionAction,
-  SessionId,
-} from "./Components/20_SessionEntity";
-import TimeRange from "./Components/10_TimeRange";
 import { FC, useState } from "react";
 
 import styled from "styled-components";
-import update from "immutability-helper";
-import { ThreeRows } from "./Components/20_GaiaCode/20_GaiaCode";
 import PanelSystem from "./00_Framework/Panel/02_PanelSystem";
-import SharingApp from "./MoneyApp/SharingApp";
-import MoneyApp from "./MoneyApp/MoneyApp";
-import { DailyTimelineWithConflictsView } from "./Components/30_DailyTimelineViewWithConflicts";
-
-let inchoSessions: SessionEntity[] = [
-  new SessionEntity(undefined, "予定0", new TimeRange("09:00", "11:00")),
-  new SessionEntity(undefined, "予定1", new TimeRange("10:00", "12:00")),
-  new SessionEntity(undefined, "予定2", new TimeRange("11:00", "14:00")),
-  new SessionEntity(undefined, "予定3", new TimeRange("15:00", "17:00")),
-  new SessionEntity(undefined, "予定4", new TimeRange("17:00", "18:00")),
-  new SessionEntity(undefined, "予定4", new TimeRange("18:00", "20:00")),
-];
-
-const taineiSessions: SessionEntity[] = [
-  new SessionEntity(undefined, "勤務時間", new TimeRange("08:00", "18:00")),
-  new SessionEntity(
-    undefined,
-    "タイ古式3時間",
-    new TimeRange("09:00", "12:00")
-  ),
-  new SessionEntity(
-    undefined,
-    "タイ古式1時間",
-    new TimeRange("13:00", "14:00")
-  ),
-
-  new SessionEntity(
-    undefined,
-    "タイ古式1時間",
-    new TimeRange("16:40", "17:00")
-  ),
-];
-
-const ashitaroSessions: SessionEntity[] = [
-  new SessionEntity(
-    undefined,
-    "院長アシスタント0",
-    new TimeRange("09:00", "10:00")
-  ),
-  new SessionEntity(
-    undefined,
-    "院長アシスタント1",
-    new TimeRange("10:00", "12:00")
-  ),
-  new SessionEntity(
-    undefined,
-    "院長アシスタント2",
-    new TimeRange("12:00", "14:00")
-  ),
-  new SessionEntity(
-    undefined,
-    "院長アシスタント3",
-    new TimeRange("15:00", "17:00")
-  ),
-  new SessionEntity(
-    undefined,
-    "院長アシスタント4",
-    new TimeRange("18:00", "20:00")
-  ),
-];
-
-interface Calendar {
-  title: string;
-  sessionMap: Timeline;
-}
-
-const _calendars: Calendar[] = [
-  {
-    title: "院長",
-    sessionMap: new Timeline(inchoSessions),
-  },
-  {
-    title: "タイ姉",
-    sessionMap: new Timeline(taineiSessions),
-  },
-  {
-    title: "アシ太郎",
-    sessionMap: new Timeline(ashitaroSessions),
-  },
-];
+import Layer, {
+  ZScalerFunction,
+  reversePropotion,
+} from "./00_Framework/Panel/02_Layer";
+import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
+import FuzzySession from "./40_FuzzySession";
+import Panel from "./00_Framework/Panel/02_Panel";
+import SharingApp from "./MoneyAppPackage/SharingApp";
+import MoneyApp from "./MoneyAppPackage/MoneyApp";
+import CharactorsApp from "./CharactorsPackage/30_CharactorsApp";
 
 const App: FC = styled((props: { className: string }) => {
-  const {
-    className,
-    // position,
-    // size,
-    // parentSize,
-    // children,
-    // transitionState,
-    // zIndex,
-    // onMove,
-    // debugMode,
-  } = props;
-  const [calendars, setCalendars] = useState<Calendar[]>(_calendars);
+  const AppNames = ["PointFlow", "PointSharing", "FuzzySession", "Charactors"];
+  const { className } = props;
 
-  const goIntoFutureCalendar = (
-    calIndex: number,
-    sId: SessionId,
-    sessionAction: SessionAction
-  ) => {
-    //要するに何をしたいかと言うと：
-    //sessionsの中のinchoSessionsのsIdがsessionのやつをchangeStartTimeする。
+  const [appZ, setAppZ] = useState(new ZIndexCalcurator(AppNames));
 
-    //検索
-    const session = calendars[calIndex].sessionMap.get(sId);
-    if (session === undefined) {
-      throw new Error("そんなことはありえないはず");
-    }
+  const AppName = "FuzzySession";
 
-    try {
-      const futureSession = sessionAction(session);
+  //const zIndexScaler = inversePropotionFunction(2);
+  const appZScaler: ZScalerFunction = reversePropotion;
 
-      //永続化
-      const newCals = update(calendars, {
-        [calIndex]: {
-          sessionMap: (list) => list.set(futureSession.id, futureSession),
-        },
-      });
-      setCalendars(newCals);
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  return (
+    <PanelSystem className={className}>
+      <h1 className="e-os-title">DouOS</h1>
+      <Layer
+        zIndex={appZ.get(AppName)}
+        colorHue={0}
+        name={AppName}
+        zScaler={appZScaler}
+        zIndexMax={appZ.max}
+        onLayerHeaderClick={() => {
+          setAppZ(appZ.moveToTop(AppName));
+        }}
+      >
+        <FuzzySession
+          main={{}}
+          onPanelClick={() => {
+            setAppZ(appZ.moveToTop(AppName));
+          }}
+        />
+      </Layer>
 
-  const code: ThreeRows = [
-    [5, 8, 9, 5, 5, 9, 8],
-    [0, 3, 6, 0, 0, 6, 3],
-    [5, 3, 1, 5, 5, 1, 3],
-  ];
+      <Layer
+        zIndex={appZ.get("PointSharing")}
+        colorHue={0}
+        name={"PointSharing"}
+        zScaler={appZScaler}
+        zIndexMax={appZ.max}
+        onLayerHeaderClick={() => {
+          setAppZ(appZ.moveToTop("PointSharing"));
+        }}
+      >
+        <Panel
+          position={{ x: 100, y: 500 }}
+          size={{ width: 700, height: 500 }}
+          zIndex={0}
+          isActive={true}
+          onMove={() => {}}
+          bgColor="white"
+          overflow="visible"
+          onPanelClick={() => {
+            setAppZ(appZ.moveToTop("PointSharing"));
+          }}
+        >
+          {(renderedRect) => <SharingApp />}
+        </Panel>
+      </Layer>
 
-  return <PanelSystem main="hogehoge" />;
-  /**
-    <div className={className}>
-      <SharingApp />
-      <MoneyApp />
+      <Layer
+        zIndex={appZ.get("PointFlow")}
+        colorHue={0}
+        name="PointFlow"
+        zScaler={appZScaler}
+        zIndexMax={appZ.max}
+        onLayerHeaderClick={() => {
+          setAppZ(appZ.moveToTop("PointFlow"));
+        }}
+      >
+        <Panel
+          position={{ x: 300, y: 100 }}
+          size={{ width: 500, height: 400 }}
+          zIndex={0}
+          isActive={true}
+          bgColor="white"
+          onMove={() => {}}
+          onPanelClick={() => {
+            setAppZ(appZ.moveToTop("PointFlow"));
+          }}
+          overflow="visible"
+        >
+          {(renderedRect) => <MoneyApp />}
+        </Panel>
+      </Layer>
 
-      <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
-      <div className="e-calendar-columns">
-        {calendars.map((cal, calIndex) => {
-          const goIntoFutureSession = (sId: SessionId, action: SessionAction) =>
-            goIntoFutureCalendar(calIndex, sId, action);
+      <Layer
+        zIndex={appZ.get("Charactors")}
+        colorHue={60}
+        name="Charactors"
+        zScaler={appZScaler}
+        zIndexMax={appZ.max}
+        onLayerHeaderClick={() => {
+          setAppZ(appZ.moveToTop("Charactors"));
+        }}
+      >
+        <CharactorsApp
+          main={{}}
+          onAppClick={() => {
+            setAppZ(appZ.moveToTop("Charactors"));
+          }}
+        />
+      </Layer>
+
+      <ul className="e-layer-list">
+        {appZ.ids.map((id) => {
           return (
-            <div className="e-column" key={calIndex}>
-              <h2>{cal.title}</h2>
-              <DailyTimelineWithConflictsView
-                main={cal.sessionMap}
-                showsTime={calIndex === 0}
-                onTheSessionChange={goIntoFutureSession}
-              />
-            </div>
+            <li
+              key={id}
+              onClick={() => {
+                setAppZ(appZ.moveToTop(id));
+              }}
+            >
+              {id}
+            </li>
           );
         })}
-      </div>
-
-       * 
-      <h1>ガイアコード！</h1>
-      <GaiaCodeView main={new GaiaCode(code)}/>
-    </div>
-       */
+      </ul>
+    </PanelSystem>
+  );
 })`
+  .e-os-title {
+    position: absolute;
+
+    right: 0;
+    bottom: 0;
+    color: skyblue;
+  }
   .e-calendar-columns {
     display: flex;
     flex-direction: row;
 
     > .e-column {
+    }
+  }
+
+  .e-layer-list {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+
+    display: flex;
+    flex-direction: column-reverse;
+
+    margin: 0;
+    padding: 0;
+
+    z-index: 100; //最前面に表示されるようにする。TODO: 適当なので後で直す。
+
+    list-style: none;
+
+    > li {
+      padding: 5px;
+      background: white;
+
+      &:hover {
+        background: skyblue;
+        cursor: pointer;
+      }
     }
   }
 `;

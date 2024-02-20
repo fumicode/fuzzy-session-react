@@ -1,93 +1,13 @@
 import { FC } from "react";
 import styled from "styled-components";
 
-import ViewModel from "./../00_Framework/00_ViewModel";
+import ViewModel from "../00_Framework/00_ViewModel";
 
-import TimeRange, { TimeRangeTextView } from "./10_TimeRange";
-import crypto from "crypto";
-import { TimeDiff } from "./10_FuzzyTime";
+import { TimeRangeTextView, TimeDiff } from "./FuzzyTimePackage/index";
 
 import classNames from "classnames";
-import { Action, peekIntoFuture } from "../00_Framework/00_Action";
-import Entity, { StringId } from "../00_Framework/00_Entity";
-
-export class SessionId extends StringId {
-  static fromString(str: string): SessionId {
-    return new SessionId(str);
-  }
-
-  constructor(value: string | undefined = undefined) {
-    super(value);
-  }
-  equals(otherId: SessionId): boolean {
-    if (!(otherId instanceof SessionId)) {
-      throw new Error("同じ型のIDでないとくらべられません");
-    }
-
-    return super.equals(otherId);
-  }
-}
-
-export default class SessionEntity implements Entity {
-  readonly id: SessionId;
-  constructor(
-    id: SessionId | undefined,
-    readonly title: string,
-    readonly timeRange: TimeRange,
-    readonly prev: SessionEntity | undefined = undefined
-  ) {
-    if (!id) {
-      id = new SessionId();
-    }
-
-    this.id = id;
-  }
-  overlaps(otherSession: SessionEntity): TimeRange | undefined {
-    return this.timeRange.overlaps(otherSession.timeRange);
-  }
-  changeStartTime(diff: TimeDiff): this {
-    return new ThisClass(
-      this.id,
-      this.title,
-      new TimeRange(this.timeRange.start.change(diff), this.timeRange.end),
-      this
-    ) as this;
-  }
-  changeEndTime(diff: TimeDiff): this {
-    return new ThisClass(
-      this.id,
-      this.title,
-      new TimeRange(this.timeRange.start, this.timeRange.end.change(diff)),
-      this
-    ) as this;
-  }
-  changeTimeRange(diff: TimeDiff): this {
-    const nextState = new ThisClass(
-      this.id,
-      this.title,
-      new TimeRange(
-        this.timeRange.start.change(diff),
-        this.timeRange.end.change(diff)
-      ),
-      this
-    );
-    //diffの向きに変化した場合のみ、変更する。
-    //=diffと違う向きに変化したら、例外を投げる。
-    const sign: number = parseInt(diff.sign + "1");
-    const diffDirection =
-      this.timeRange.start.compare(nextState.timeRange.start) * -1;
-    if (diffDirection * sign < 0) {
-      throw new Error(
-        `changeTimeRange: diff.sign === ${diff.sign}, but start time has changed to different direction`
-      );
-    }
-    return nextState as this;
-  }
-}
-
-const ThisClass = SessionEntity;
-
-export type SessionAction = Action<SessionEntity>;
+import { peekIntoFuture } from "../00_Framework/00_Action";
+import SessionEntity, { SessionAction } from "./20_SessionEntity";
 
 export interface SessionViewModel extends ViewModel<SessionEntity> {
   //className,
@@ -95,9 +15,11 @@ export interface SessionViewModel extends ViewModel<SessionEntity> {
 
   hourPx: number;
 
-  onStartTimeChange: (sessionAction: SessionAction) => void;
-  onEndTimeChange: (sessionAction: SessionAction) => void;
+  dispatchAction: (sessionAction: SessionAction) => void;
   onDragStart: (startY: number) => void;
+
+  onDoubleClick?: (e: React.MouseEvent) => void;
+  onDetailOpen?: (e: React.MouseEvent) => void;
 
   isHovered: boolean;
 }
@@ -121,9 +43,11 @@ export const SessionView: FC<SessionViewModel> = styled(
 
     hourPx,
 
-    onStartTimeChange,
-    onEndTimeChange,
+    dispatchAction,
+
     onDragStart,
+    onDoubleClick,
+    onDetailOpen,
 
     isHovered,
   }: SessionViewModel) => {
@@ -134,12 +58,27 @@ export const SessionView: FC<SessionViewModel> = styled(
       <section
         className={c + " " + (isHovered && "m-hover")}
         style={{ height: `${hoursNum * hourPx}px` }}
+        onDoubleClick={(e) => {
+          onDoubleClick && onDoubleClick(e);
+        }}
       >
         {/* <div style={{fontSize:'13px'}}> 
         #{session.id.toString('short')} </div> */}
         <div style={{ fontSize: "13px" }}>{session.title}</div>
         <div style={{ fontSize: "10px" }}>
           <TimeRangeTextView main={timeRange} />
+        </div>
+        <div style={{ fontSize: "10px" }}>
+          {/*
+
+          <button
+            onClick={(e) => {
+              onDetailOpen && onDetailOpen(e);
+            }}
+          >
+            開く
+          </button>
+          */}
         </div>
         <div className="e-time-range-wrapper m-start">
           <div className="e-time-range">
@@ -169,7 +108,7 @@ export const SessionView: FC<SessionViewModel> = styled(
               className="e-button m-up"
               disabled={!peekIntoFuture(session, startTimeBackAction)}
               onClick={() => {
-                onStartTimeChange(startTimeBackAction);
+                dispatchAction(startTimeBackAction);
               }}
             >
               ▲
@@ -178,7 +117,7 @@ export const SessionView: FC<SessionViewModel> = styled(
               className="e-button m-down"
               disabled={!peekIntoFuture(session, startTimeGoAction)}
               onClick={() => {
-                onStartTimeChange(startTimeGoAction);
+                dispatchAction(startTimeGoAction);
               }}
             >
               ▼
@@ -189,7 +128,7 @@ export const SessionView: FC<SessionViewModel> = styled(
               className="e-button m-up"
               disabled={!peekIntoFuture(session, endTimeBackAction)}
               onClick={() => {
-                onEndTimeChange(endTimeBackAction);
+                dispatchAction(endTimeBackAction);
               }}
             >
               ▲
@@ -198,7 +137,7 @@ export const SessionView: FC<SessionViewModel> = styled(
               className="e-button m-down"
               disabled={!peekIntoFuture(session, endTimeGoAction)}
               onClick={() => {
-                onEndTimeChange(endTimeGoAction);
+                dispatchAction(endTimeGoAction);
               }}
             >
               ▼

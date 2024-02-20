@@ -1,8 +1,13 @@
 import React, { FC } from "react";
 
-import ViewModel from "../00_Framework/00_ViewModel";
+import ViewModel from "../../00_Framework/00_ViewModel";
 import styled from "styled-components";
-import FuzzyTime, { TimeDiff } from "./10_FuzzyTime";
+import FuzzyTime from "./10_FuzzyTime";
+import TimeDiff from "./00_TimeDiff";
+import { formatDistance, setDefaultOptions } from "date-fns";
+
+import { ja } from "date-fns/locale";
+setDefaultOptions({ locale: ja });
 
 export default class TimeRange {
   readonly start: FuzzyTime;
@@ -39,6 +44,7 @@ export default class TimeRange {
       }
     }
   }
+
   changeStartTime(diff: FuzzyTime | TimeDiff): TimeRange {
     if (diff instanceof FuzzyTime) {
       const start = diff;
@@ -48,6 +54,24 @@ export default class TimeRange {
     } else {
       throw new Error("diff must be FuzzyTime or TimeDiff");
     }
+  }
+
+  changeEndTime(diff: FuzzyTime | TimeDiff): TimeRange {
+    if (diff instanceof FuzzyTime) {
+      const end = diff;
+      return new TimeRange(this.start, end);
+    } else if (diff instanceof TimeDiff) {
+      return new TimeRange(this.start, this.end.change(diff));
+    } else {
+      throw new Error("diff must be FuzzyTime or TimeDiff");
+    }
+  }
+
+  move(diff: TimeDiff): this {
+    return new TimeRange(
+      this.start.change(diff),
+      this.end.change(diff)
+    ) as this;
   }
 
   get startHour(): number {
@@ -63,9 +87,18 @@ export default class TimeRange {
     const endDate = new Date(`2023-08-22T${this.end.toString()}`);
 
     //TODO: 簡易的な計算!!!! いずれ、date-fnsなどのlibを使って厳密に計算したい。
-    const duration = (endDate.getHours() + endDate.getMinutes()/60) - (startDate.getHours() + startDate.getMinutes()/60);
+    const duration =
+      endDate.getHours() +
+      endDate.getMinutes() / 60 -
+      (startDate.getHours() + startDate.getMinutes() / 60);
 
     return duration;
+  }
+  formatDuration(): string {
+    const startDate = this.start.convertToDate();
+    const endDate = this.end.convertToDate();
+
+    return formatDistance(startDate, endDate, { includeSeconds: false });
   }
 
   overlaps(otherTR: TimeRange): TimeRange | undefined {
@@ -116,9 +149,9 @@ export type TimeRangeViewModel = ViewModel<TimeRange> & {
   hourPx?: number;
 };
 
-export const TimeRangeTextView: FC<TimeRangeViewModel> = (
-  {main: range}: TimeRangeViewModel
-) => {
+export const TimeRangeTextView: FC<TimeRangeViewModel> = ({
+  main: range,
+}: TimeRangeViewModel) => {
   return (
     <>
       {range.start.toString()} 〜 {range.end.toString()}
@@ -127,8 +160,13 @@ export const TimeRangeTextView: FC<TimeRangeViewModel> = (
 };
 
 export const TimeRangeView: FC<TimeRangeViewModel> = styled(
-  ({className, main:range, background, hourPx, children}: TimeRangeViewModel) => {
-
+  ({
+    className,
+    main: range,
+    background,
+    hourPx,
+    children,
+  }: TimeRangeViewModel) => {
     const hoursNum = range.durationHour;
     hourPx = hourPx || 50;
 
