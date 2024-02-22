@@ -80,20 +80,22 @@ interface GlobalStore {
 
 type ActionType =
   | {
-      type: "setView";
-      newView: {
-        charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
-        charaZ: ZIndexCalcurator;
-      };
+      type: "setCharaView";
+      charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
     }
   | {
-      type: "setZ";
+      type: "setCharaZ";
+      charaZ: ZIndexCalcurator;
     };
 
 const reducer = (state: GlobalStore, action: ActionType) => {
-  if (action.type === "setView") {
+  if (action.type === "setCharaView") {
     return update(state, {
-      view: { $set: action.newView },
+      view: { charactorPBVMs: { $set: action.charactorPBVMs } },
+    });
+  } else if (action.type === "setCharaZ") {
+    return update(state, {
+      view: { charaZ: { $set: action.charaZ } },
     });
   }
   return state;
@@ -126,15 +128,13 @@ const useGlobalStore = function () {
       findById: (id: Id) => globalStore.view.charactorPBVMs.get(id.toString()),
 
       save: (charactorPBVM: PanelBoxViewModel<CharactorEntity>) => {
-        const newView = update(globalStore.view, {
-          charactorPBVMs: {
-            $add: [[charactorPBVM.id.toString(), charactorPBVM]],
-          },
+        const newCharaView = update(globalStore.view.charactorPBVMs, {
+          $add: [[charactorPBVM.id.toString(), charactorPBVM]],
         });
 
         dispatch({
-          type: "setView",
-          newView: newView,
+          type: "setCharaView",
+          charactorPBVMs: newCharaView,
         });
       },
     },
@@ -142,14 +142,10 @@ const useGlobalStore = function () {
     charaZRepo: {
       get: () => globalStore.view.charaZ,
       set: (newCharaZ: ZIndexCalcurator) => {
-        const newView = update(globalStore.view, {
-          charaZ: { $set: newCharaZ },
-        });
-
         //あとでcharaZ特有に変換する
         dispatch({
-          type: "setView",
-          newView: newView,
+          type: "setCharaZ",
+          charaZ: newCharaZ,
         });
       },
     },
@@ -184,7 +180,7 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
         const newChara = action(relatedCharaBVM);
         //保存
         charactorPBVMsRepository.save(newChara);
-        //charaZRepo.set(charaZ.moveToTop(relatedId.toString()));
+        charaZRepo.set(charaZ.moveToTop(relatedId.toString()));
       } catch (e) {
         if (e instanceof Error) {
           alert(e.message);
