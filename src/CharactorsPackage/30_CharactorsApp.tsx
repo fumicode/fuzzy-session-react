@@ -74,15 +74,21 @@ interface GlobalStore {
   };
   view: {
     charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
+    charaZ: ZIndexCalcurator;
   };
 }
 
-type ActionType = {
-  type: "setView";
-  newView: {
-    charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
-  };
-};
+type ActionType =
+  | {
+      type: "setView";
+      newView: {
+        charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
+        charaZ: ZIndexCalcurator;
+      };
+    }
+  | {
+      type: "setZ";
+    };
 
 const reducer = (state: GlobalStore, action: ActionType) => {
   if (action.type === "setView") {
@@ -105,6 +111,9 @@ const useGlobalStore = function () {
         sasukeBVM,
         narutoBVM,
       ]),
+      charaZ: new ZIndexCalcurator(
+        [itachi, sasuke, naruto].map((chara) => chara.id.toString())
+      ),
     },
   });
 
@@ -122,6 +131,22 @@ const useGlobalStore = function () {
             $add: [[charactorPBVM.id.toString(), charactorPBVM]],
           },
         });
+
+        dispatch({
+          type: "setView",
+          newView: newView,
+        });
+      },
+    },
+
+    charaZRepo: {
+      get: () => globalStore.view.charaZ,
+      set: (newCharaZ: ZIndexCalcurator) => {
+        const newView = update(globalStore.view, {
+          charaZ: { $set: newCharaZ },
+        });
+
+        //あとでcharaZ特有に変換する
         dispatch({
           type: "setView",
           newView: newView,
@@ -141,15 +166,8 @@ interface CharactorsAppViewModel extends ViewModel<{}> {
 export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
   ({ onAppClick }: CharactorsAppViewModel) => {
     //Appの処理
-    const { charactorPBVMsRepository } = useGlobalStore();
-
-    const [charaZ, setCharaZ] = useState<ZIndexCalcurator>(
-      new ZIndexCalcurator(
-        [...charactorPBVMsRepository.findAll()].map((chara) =>
-          chara.id.toString()
-        )
-      )
-    );
+    const { charactorPBVMsRepository, charaZRepo } = useGlobalStore();
+    const charaZ = charaZRepo.get();
 
     const handleCharactorBVMChange = (
       relatedId: CharactorId,
@@ -166,7 +184,7 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
         const newChara = action(relatedCharaBVM);
         //保存
         charactorPBVMsRepository.save(newChara);
-        setCharaZ(charaZ.moveToTop(relatedId.toString()));
+        //charaZRepo.set(charaZ.moveToTop(relatedId.toString()));
       } catch (e) {
         if (e instanceof Error) {
           alert(e.message);
@@ -210,7 +228,7 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                 onMove={(smartRect: SmartRect) => {}}
                 key={charactorBVM.id.toString()}
                 onPanelClick={() => {
-                  setCharaZ(charaZ.moveToTop(charactorBVM.id.toString()));
+                  charaZRepo.set(charaZ.moveToTop(charactorBVM.id.toString()));
                   onAppClick && onAppClick();
                 }}
               >
@@ -222,6 +240,7 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                       if (!renderedRect) {
                         return;
                       }
+
                       const moveCharactorBVMAction = (
                         charaBVM: PanelBoxViewModel<CharactorEntity>
                       ): PanelBoxViewModel<CharactorEntity> => {
@@ -230,6 +249,7 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                         );
                         return charaBVM.moveTo(newPos);
                       };
+
                       handleCharactorBVMChange(
                         rel.targetId,
                         moveCharactorBVMAction
