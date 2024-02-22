@@ -80,22 +80,22 @@ interface GlobalStore {
 
 type ActionType =
   | {
-      type: "setCharaView";
+      type: "/view/charactorPBVMs";
       charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
     }
   | {
-      type: "setCharaZ";
-      charaZ: ZIndexCalcurator;
+      type: "/view/charaZ";
+      action: Action<ZIndexCalcurator>;
     };
 
 const reducer = (state: GlobalStore, action: ActionType) => {
-  if (action.type === "setCharaView") {
+  if (action.type === "/view/charactorPBVMs") {
     return update(state, {
       view: { charactorPBVMs: { $set: action.charactorPBVMs } },
     });
-  } else if (action.type === "setCharaZ") {
+  } else if (action.type === "/view/charaZ") {
     return update(state, {
-      view: { charaZ: { $set: action.charaZ } },
+      view: { charaZ: { $set: action.action(state.view.charaZ) } },
     });
   }
   return state;
@@ -120,7 +120,7 @@ const useGlobalStore = function () {
   });
 
   return {
-    charactorPBVMsRepository: {
+    charactorPBVMsRepo: {
       findAll: () => globalStore.view.charactorPBVMs.values(),
       getSize(): number {
         return globalStore.view.charactorPBVMs.size;
@@ -133,7 +133,7 @@ const useGlobalStore = function () {
         });
 
         dispatch({
-          type: "setCharaView",
+          type: "/view/charactorPBVMs",
           charactorPBVMs: newCharaView,
         });
       },
@@ -141,11 +141,11 @@ const useGlobalStore = function () {
 
     charaZRepo: {
       get: () => globalStore.view.charaZ,
-      set: (newCharaZ: ZIndexCalcurator) => {
+      dispatch: (action: Action<ZIndexCalcurator>) => {
         //あとでcharaZ特有に変換する
         dispatch({
-          type: "setCharaZ",
-          charaZ: newCharaZ,
+          type: "/view/charaZ",
+          action: action,
         });
       },
     },
@@ -162,7 +162,8 @@ interface CharactorsAppViewModel extends ViewModel<{}> {
 export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
   ({ onAppClick }: CharactorsAppViewModel) => {
     //Appの処理
-    const { charactorPBVMsRepository, charaZRepo } = useGlobalStore();
+    const { charactorPBVMsRepo: charactorPBVMsRepo, charaZRepo } =
+      useGlobalStore();
     const charaZ = charaZRepo.get();
 
     const handleCharactorBVMChange = (
@@ -170,7 +171,7 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
       action: Action<PanelBoxViewModel<CharactorEntity>>
     ) => {
       //検索
-      const relatedCharaBVM = charactorPBVMsRepository.findById(relatedId);
+      const relatedCharaBVM = charactorPBVMsRepo.findById(relatedId);
 
       if (!relatedCharaBVM) {
         throw new Error(`charactor is undefined. id: ${relatedId}`);
@@ -179,8 +180,8 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
         //変更
         const newChara = action(relatedCharaBVM);
         //保存
-        charactorPBVMsRepository.save(newChara);
-        charaZRepo.set(charaZ.moveToTop(relatedId.toString()));
+        charactorPBVMsRepo.save(newChara);
+        charaZRepo.dispatch((charaZ) => charaZ.moveToTop(relatedId.toString()));
       } catch (e) {
         if (e instanceof Error) {
           alert(e.message);
@@ -192,24 +193,24 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
 
     return (
       <>
-        {[...charactorPBVMsRepository.findAll()].map((charaPBVM, index) => {
+        {[...charactorPBVMsRepo.findAll()].map((charaPBVM, index) => {
           const charaId = charaPBVM.id;
           if (!charaId) {
             return;
           }
-          const charactorBVM = charactorPBVMsRepository.findById(charaId);
+          const charactorBVM = charactorPBVMsRepo.findById(charaId);
           if (!charactorBVM) {
             throw new Error(`charactor is undefined. charaId: ${charaId}`);
           }
 
-          const colorHue = (index * 120) / charactorPBVMsRepository.getSize();
+          const colorHue = (index * 120) / charactorPBVMsRepo.getSize();
           return (
             <Layer
               zIndex={charaZ.get(charaId.toString())}
               colorHue={colorHue}
               opacity={0.2}
               name={`Charactor #${charaId} ${charaPBVM.main.name}`}
-              zIndexMax={charactorPBVMsRepository.getSize() - 1}
+              zIndexMax={charactorPBVMsRepo.getSize() - 1}
               key={charaId.toString()}
               zScaler={constantFunction}
               onLayerHeaderClick={() => {
@@ -224,7 +225,9 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                 onMove={(smartRect: SmartRect) => {}}
                 key={charactorBVM.id.toString()}
                 onPanelClick={() => {
-                  charaZRepo.set(charaZ.moveToTop(charactorBVM.id.toString()));
+                  charaZRepo.dispatch((charaZ) =>
+                    charaZ.moveToTop(charactorBVM.id.toString())
+                  );
                   onAppClick && onAppClick();
                 }}
               >
