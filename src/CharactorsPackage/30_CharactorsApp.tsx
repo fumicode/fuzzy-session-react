@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useReducer, useState } from "react";
 import styled from "styled-components";
 import ViewModel from "../00_Framework/00_ViewModel";
 import Panel from "../00_Framework/Panel/02_Panel";
@@ -69,35 +69,63 @@ const narutoBVM = new PanelBoxViewModel<CharactorEntity>(
 );
 
 interface GlobalStore {
-  charactors: Map<string, CharactorEntity>;
-  charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
+  domain: {
+    charactors: Map<string, CharactorEntity>;
+  };
+  view: {
+    charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
+  };
 }
 
+type ActionType = {
+  type: "setView";
+  newView: {
+    charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
+  };
+};
+
+const reducer = (state: GlobalStore, action: ActionType) => {
+  if (action.type === "setView") {
+    return update(state, {
+      view: { $set: action.newView },
+    });
+  }
+  return state;
+};
+
 const useGlobalStore = function () {
-  const [globalStore, setGlobalStore] = useState<GlobalStore>({
-    //localStorage とか cookie とかに保存したい
-    charactors: convertIdentifiablesToMap([itachi, sasuke, naruto]),
-    charactorPBVMs: convertIdentifiablesToMap([
-      itachiBVM,
-      sasukeBVM,
-      narutoBVM,
-    ]),
+  const [globalStore, dispatch] = useReducer(reducer, {
+    domain: {
+      //localStorage とか cookie とかに保存したい
+      charactors: convertIdentifiablesToMap([itachi, sasuke, naruto]),
+    },
+    view: {
+      charactorPBVMs: convertIdentifiablesToMap([
+        itachiBVM,
+        sasukeBVM,
+        narutoBVM,
+      ]),
+    },
   });
 
   return {
     charactorPBVMsRepository: {
-      findAll: () => globalStore.charactorPBVMs.values(),
+      findAll: () => globalStore.view.charactorPBVMs.values(),
       getSize(): number {
-        return globalStore.charactorPBVMs.size;
+        return globalStore.view.charactorPBVMs.size;
       },
-      findById: (id: Id) => globalStore.charactorPBVMs.get(id.toString()),
+      findById: (id: Id) => globalStore.view.charactorPBVMs.get(id.toString()),
+
       save: (charactorPBVM: PanelBoxViewModel<CharactorEntity>) => {
-        const newGlobalStore = update(globalStore, {
+        const newView = update(globalStore.view, {
           charactorPBVMs: {
             $add: [[charactorPBVM.id.toString(), charactorPBVM]],
           },
         });
-        setGlobalStore(newGlobalStore);
+        dispatch({
+          type: "setView",
+          newView: newView,
+        });
       },
     },
   };
@@ -194,7 +222,6 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                       if (!renderedRect) {
                         return;
                       }
-
                       const moveCharactorBVMAction = (
                         charaBVM: PanelBoxViewModel<CharactorEntity>
                       ): PanelBoxViewModel<CharactorEntity> => {
@@ -203,7 +230,6 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                         );
                         return charaBVM.moveTo(newPos);
                       };
-
                       handleCharactorBVMChange(
                         rel.targetId,
                         moveCharactorBVMAction
