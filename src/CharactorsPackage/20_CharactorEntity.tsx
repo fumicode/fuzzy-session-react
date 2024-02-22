@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Point2, Size2 } from "../01_Utils/00_Point";
 import ViewModel from "../00_Framework/00_ViewModel";
 import Entity, { StringId } from "../00_Framework/00_Entity";
+import { log } from "console";
 export type RelationType = string;
 
 export class CharactorId extends StringId {
@@ -18,9 +19,29 @@ export default class CharactorEntity implements Entity {
   constructor(
     readonly id: CharactorId,
     readonly name: string,
+    readonly count: number,
     public relatedCharactors: CharactorRelation[], //一時的にmutableにしておく //TODO: ↑immutableにして変更メソッドを追加する
     readonly prev: CharactorEntity | undefined = undefined
   ) {}
+
+  countUp(): CharactorEntity {
+    return new CharactorEntity(
+      this.id,
+      this.name,
+      this.count + 1,
+      this.relatedCharactors,
+      this
+    );
+  }
+
+  getView() {
+    return CharactorView;
+  }
+
+  //ViewとModelの相互依存。 あとでどうにかする
+  View = (props: Omit<CharactorViewModel, "main">) => {
+    return <CharactorView {...props} main={this} />;
+  };
 }
 
 export class CharactorRelation {
@@ -76,6 +97,21 @@ export const CharactorView = styled(
             );
           })}
         </div>
+
+        <p>
+          {charactor.count}
+          <button
+            onClick={() => {
+              /*
+              charaRepo.dispatchOne(charactor.id, (chara) => {
+                chara.countUp();
+              });
+              */
+            }}
+          >
+            +
+          </button>
+        </p>
       </article>
     );
   }

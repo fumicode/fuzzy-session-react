@@ -9,7 +9,6 @@ import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
 import CharactorEntity, {
   CharactorId,
   CharactorRelation,
-  CharactorView,
 } from "./20_CharactorEntity";
 import update from "immutability-helper";
 import { Action } from "../00_Framework/00_Action";
@@ -34,9 +33,9 @@ export class PanelBoxViewModel<T> {
 }
 
 //CharactorEntity
-const itachi = new CharactorEntity(new CharactorId("0"), "イタチ", []);
-const sasuke = new CharactorEntity(new CharactorId("1"), "サスケ", []);
-const naruto = new CharactorEntity(new CharactorId("2"), "ナルト", []);
+const itachi = new CharactorEntity(new CharactorId("0"), "イタチ", 0, []);
+const sasuke = new CharactorEntity(new CharactorId("1"), "サスケ", 0, []);
+const naruto = new CharactorEntity(new CharactorId("2"), "ナルト", 0, []);
 
 //CharactorRelationをつなげる
 itachi.relatedCharactors.push(new CharactorRelation(sasuke, "弟"));
@@ -80,8 +79,9 @@ interface GlobalStore {
 
 type ActionType =
   | {
-      type: "/view/charactorPBVMs";
-      charactorPBVMs: Map<string, PanelBoxViewModel<CharactorEntity>>;
+      type: "/view/charactorPBVMs/:charaId";
+      charaId: Id;
+      action: Action<PanelBoxViewModel<CharactorEntity>>;
     }
   | {
       type: "/view/charaZ";
@@ -89,16 +89,32 @@ type ActionType =
     };
 
 const reducer = (state: GlobalStore, action: ActionType) => {
-  if (action.type === "/view/charactorPBVMs") {
-    return update(state, {
-      view: { charactorPBVMs: { $set: action.charactorPBVMs } },
-    });
-  } else if (action.type === "/view/charaZ") {
-    return update(state, {
-      view: { charaZ: { $set: action.action(state.view.charaZ) } },
-    });
+  switch (action.type) {
+    case "/view/charactorPBVMs/:charaId":
+      //const a = this.findById(charaId);
+      const charaPBVM = state.view.charactorPBVMs.get(
+        action.charaId.toString()
+      );
+
+      if (!charaPBVM) {
+        //見つからなかったら何もしない
+        return state;
+      }
+
+      return update(state, {
+        view: {
+          charactorPBVMs: {
+            $add: [[action.charaId.toString(), action.action(charaPBVM)]],
+          },
+        },
+      });
+    case "/view/charaZ":
+      return update(state, {
+        view: { charaZ: { $set: action.action(state.view.charaZ) } },
+      });
+    default:
+      return state;
   }
-  return state;
 };
 
 const useGlobalStore = function () {
@@ -127,14 +143,14 @@ const useGlobalStore = function () {
       },
       findById: (id: Id) => globalStore.view.charactorPBVMs.get(id.toString()),
 
-      save: (charactorPBVM: PanelBoxViewModel<CharactorEntity>) => {
-        const newCharaView = update(globalStore.view.charactorPBVMs, {
-          $add: [[charactorPBVM.id.toString(), charactorPBVM]],
-        });
-
+      dispatchOne: (
+        charaId: Id,
+        action: Action<PanelBoxViewModel<CharactorEntity>>
+      ) => {
         dispatch({
-          type: "/view/charactorPBVMs",
-          charactorPBVMs: newCharaView,
+          type: "/view/charactorPBVMs/:charaId",
+          charaId,
+          action,
         });
       },
     },
@@ -162,34 +178,8 @@ interface CharactorsAppViewModel extends ViewModel<{}> {
 export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
   ({ onAppClick }: CharactorsAppViewModel) => {
     //Appの処理
-    const { charactorPBVMsRepo: charactorPBVMsRepo, charaZRepo } =
-      useGlobalStore();
+    const { charactorPBVMsRepo, charaZRepo } = useGlobalStore();
     const charaZ = charaZRepo.get();
-
-    const handleCharactorBVMChange = (
-      relatedId: CharactorId,
-      action: Action<PanelBoxViewModel<CharactorEntity>>
-    ) => {
-      //検索
-      const relatedCharaBVM = charactorPBVMsRepo.findById(relatedId);
-
-      if (!relatedCharaBVM) {
-        throw new Error(`charactor is undefined. id: ${relatedId}`);
-      }
-      try {
-        //変更
-        const newChara = action(relatedCharaBVM);
-        //保存
-        charactorPBVMsRepo.save(newChara);
-        charaZRepo.dispatch((charaZ) => charaZ.moveToTop(relatedId.toString()));
-      } catch (e) {
-        if (e instanceof Error) {
-          alert(e.message);
-        } else {
-          alert(e);
-        }
-      }
-    };
 
     return (
       <>
@@ -232,8 +222,7 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                 }}
               >
                 {(renderedRect) => (
-                  <CharactorView
-                    main={charactorBVM.main}
+                  <charactorBVM.main.View
                     colorHue={colorHue}
                     onRelationOpen={(rel) => {
                       if (!renderedRect) {
@@ -249,12 +238,15 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                         return charaBVM.moveTo(newPos);
                       };
 
-                      handleCharactorBVMChange(
+                      charactorPBVMsRepo.dispatchOne(
                         rel.targetId,
                         moveCharactorBVMAction
                       );
+                      charaZRepo.dispatch((charaZ) =>
+                        charaZ.moveToTop(rel.targetId.toString())
+                      );
                     }}
-                  ></CharactorView>
+                  ></charactorBVM.main.View>
                 )}
               </Panel>
             </Layer>
