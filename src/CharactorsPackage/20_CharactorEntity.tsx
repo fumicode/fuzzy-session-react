@@ -1,8 +1,9 @@
 import styled from "styled-components";
-import { Point2, Size2 } from "../01_Utils/00_Point";
 import ViewModel from "../00_Framework/00_ViewModel";
-import Entity, { StringId } from "../00_Framework/00_Entity";
-import { log } from "console";
+import Entity, { Id, StringId } from "../00_Framework/00_Entity";
+import { Action } from "../00_Framework/00_Action";
+import { useContext } from "react";
+import { CharactorsContext } from "./30_GlobalStateContext";
 export type RelationType = string;
 
 export class CharactorId extends StringId {
@@ -29,6 +30,16 @@ export default class CharactorEntity implements Entity {
       this.id,
       this.name,
       this.count + 1,
+      this.relatedCharactors,
+      this
+    );
+  }
+
+  countDown(): CharactorEntity {
+    return new CharactorEntity(
+      this.id,
+      this.name,
+      this.count - 1,
       this.relatedCharactors,
       this
     );
@@ -64,6 +75,7 @@ export class CharactorRelation {
 interface CharactorViewModel extends ViewModel<CharactorEntity> {
   colorHue: number;
   onRelationOpen(cr: CharactorRelation): void;
+  //あとで、contextを使って実装する
 }
 
 export const CharactorView = styled(
@@ -73,6 +85,8 @@ export const CharactorView = styled(
     colorHue,
     onRelationOpen,
   }: CharactorViewModel) => {
+    const charactorsRepo = useContext(CharactorsContext);
+
     return (
       <article className={className}>
         <header className="e-header">
@@ -85,33 +99,47 @@ export const CharactorView = styled(
         >
           {charactor.relatedCharactors.map((relation) => {
             return (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation(); //これがないと親のonClickが呼ばれてしまう
-                  onRelationOpen(relation);
-                }}
-                key={relation.targetId.toString()}
-              >
-                {relation.relation}:{relation.targetName}
-              </button>
+              <div key={relation.targetId.toString()}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); //これがないと親のonClickが呼ばれてしまう
+                    onRelationOpen(relation);
+                  }}
+                >
+                  {relation.relation}:{relation.targetName}
+                </button>
+              </div>
             );
           })}
-        </div>
 
-        <p>
-          {charactor.count}
-          <button
-            onClick={() => {
-              /*
-              charaRepo.dispatchOne(charactor.id, (chara) => {
-                chara.countUp();
-              });
-              */
-            }}
-          >
-            +
-          </button>
-        </p>
+          <p>
+            <button
+              onClick={() => {
+                charactorsRepo?.dispatchOne(
+                  charactor.id,
+                  (chara: CharactorEntity) => {
+                    return chara.countDown();
+                  }
+                );
+              }}
+            >
+              -
+            </button>
+            {charactor.count}
+            <button
+              onClick={() => {
+                charactorsRepo?.dispatchOne(
+                  charactor.id,
+                  (chara: CharactorEntity) => {
+                    return chara.countUp();
+                  }
+                );
+              }}
+            >
+              +
+            </button>
+          </p>
+        </div>
       </article>
     );
   }
