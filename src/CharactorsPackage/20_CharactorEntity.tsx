@@ -3,7 +3,7 @@ import ViewModel from "../00_Framework/00_ViewModel";
 import Entity, { Id, StringId } from "../00_Framework/00_Entity";
 import { Action } from "../00_Framework/00_Action";
 import { useContext } from "react";
-import { CharactorsContext } from "./30_GlobalStateContext";
+import { CharactorsContext } from "./30_CharactorContext";
 export type RelationType = string;
 
 export class CharactorId extends StringId {
@@ -115,7 +115,7 @@ export const CharactorView = styled(
           <p>
             <button
               onClick={() => {
-                charactorsRepo?.dispatchOne(
+                charactorsRepo?.charactorsRepo.dispatchOne(
                   charactor.id,
                   (chara: CharactorEntity) => {
                     return chara.countDown();
@@ -128,7 +128,7 @@ export const CharactorView = styled(
             {charactor.count}
             <button
               onClick={() => {
-                charactorsRepo?.dispatchOne(
+                charactorsRepo?.charactorsRepo.dispatchOne(
                   charactor.id,
                   (chara: CharactorEntity) => {
                     return chara.countUp();

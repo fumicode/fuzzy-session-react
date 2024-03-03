@@ -1,12 +1,11 @@
-import { FC } from "react";
+import { FC, useContext } from "react";
 import styled from "styled-components";
 import ViewModel from "../00_Framework/00_ViewModel";
 import Panel from "../00_Framework/Panel/02_Panel";
 import Layer, { constantFunction } from "../00_Framework/Panel/02_Layer";
 import SmartRect from "../00_Framework/Panel/01_SmartRect";
-import { PanelBoxViewModel, useGlobalStore } from "./30_CharactorState";
-
-import { CharactorsContext } from "./30_GlobalStateContext";
+import { PanelBoxViewModel, useCharactorsRepos } from "./30_CharactorState";
+import { CharactorsContext } from "./30_CharactorContext";
 
 interface CharactorsAppViewModel extends ViewModel<{}> {
   //className,
@@ -18,8 +17,13 @@ interface CharactorsAppViewModel extends ViewModel<{}> {
 export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
   ({ onAppClick }: CharactorsAppViewModel) => {
     //Appの処理
-    const globalStore = useGlobalStore();
-    const { charactorPBVMsRepo, charaZRepo, charactorsRepo } = globalStore;
+
+    const charactorsRepos = useContext(CharactorsContext);
+    if (charactorsRepos === null) {
+      return <div>charactorsRepos is null</div>;
+    }
+
+    const { charactorsRepo, charactorPBVMsRepo, charaZRepo } = charactorsRepos;
 
     const charaZ = charaZRepo.get();
     const charaZMax = charactorPBVMsRepo.getSize() - 1;
@@ -27,7 +31,7 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
     const charactors = [...charactorsRepo.findAll()];
 
     return (
-      <CharactorsContext.Provider value={charactorsRepo}>
+      <>
         {charactors.map((chara, index) => {
           const charaId = chara.id;
           if (!charaId) {
@@ -92,7 +96,7 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
             </Layer>
           );
         })}
-      </CharactorsContext.Provider>
+      </>
     );
   }
 )`

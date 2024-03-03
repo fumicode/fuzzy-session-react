@@ -132,9 +132,18 @@ export interface Repository<T> {
   dispatchOne: (id: Id, action: Action<T>) => void;
 }
 
-export interface CharactorsRepo extends Repository<CharactorEntity> {}
+export interface SingleRepository<T> {
+  get: () => T;
+  dispatch: (action: Action<T>) => void;
+}
 
-export const useGlobalStore = function () {
+export type CharactorsRepos = {
+  charactorsRepo: Repository<CharactorEntity>;
+  charactorPBVMsRepo: Repository<PanelBoxViewModel>;
+  charaZRepo: SingleRepository<ZIndexCalcurator>;
+};
+
+export const useCharactorsRepos = function (): CharactorsRepos {
   const [globalStore, dispatch] = useReducer(reducer, {
     domain: {
       //localStorage とか cookie とかに保存したい
@@ -152,7 +161,7 @@ export const useGlobalStore = function () {
     },
   });
 
-  const charactorsRepo: CharactorsRepo = {
+  const charactorsRepo: Repository<CharactorEntity> = {
     findAll: () => globalStore.domain.charactors.values(),
     getSize(): number {
       return globalStore.domain.charactors.size;
@@ -168,33 +177,39 @@ export const useGlobalStore = function () {
     },
   };
 
+  const charactorPBVMsRepo: Repository<PanelBoxViewModel> = {
+    findAll: () => globalStore.view.charactorPBVMs.values(),
+    getSize(): number {
+      return globalStore.view.charactorPBVMs.size;
+    },
+    findById: (id: Id) => globalStore.view.charactorPBVMs.get(id.toString()),
+
+    dispatchOne: (charaId: Id, action: Action<PanelBoxViewModel>) => {
+      dispatch({
+        type: "/view/charactorPBVMs/:charaId",
+        charaId,
+        action,
+      });
+    },
+  };
+
+  const charaZRepo: SingleRepository<ZIndexCalcurator> = {
+    get: () => globalStore.view.charaZ,
+    dispatch: (action: Action<ZIndexCalcurator>) => {
+      //あとでcharaZ特有に変換する
+      dispatch({
+        type: "/view/charaZ",
+        action: action,
+      });
+    },
+  };
+
   return {
+    //domain
     charactorsRepo,
-    charactorPBVMsRepo: {
-      findAll: () => globalStore.view.charactorPBVMs.values(),
-      getSize(): number {
-        return globalStore.view.charactorPBVMs.size;
-      },
-      findById: (id: Id) => globalStore.view.charactorPBVMs.get(id.toString()),
 
-      dispatchOne: (charaId: Id, action: Action<PanelBoxViewModel>) => {
-        dispatch({
-          type: "/view/charactorPBVMs/:charaId",
-          charaId,
-          action,
-        });
-      },
-    },
-
-    charaZRepo: {
-      get: () => globalStore.view.charaZ,
-      dispatch: (action: Action<ZIndexCalcurator>) => {
-        //あとでcharaZ特有に変換する
-        dispatch({
-          type: "/view/charaZ",
-          action: action,
-        });
-      },
-    },
+    //view
+    charactorPBVMsRepo,
+    charaZRepo,
   };
 };
