@@ -6,6 +6,8 @@ import Layer, { constantFunction } from "../00_Framework/Panel/02_Layer";
 import SmartRect from "../00_Framework/Panel/01_SmartRect";
 import { PanelBoxViewModel, useCharactorsRepos } from "./30_CharactorState";
 import { CharactorsContext } from "./30_CharactorContext";
+import CharactorEntity from "./20_CharactorEntity";
+import { CharactorView } from "./20_CharactorView";
 
 interface CharactorsAppViewModel extends ViewModel<{}> {
   //className,
@@ -13,6 +15,9 @@ interface CharactorsAppViewModel extends ViewModel<{}> {
 
   onAppClick(): void;
 }
+
+//ViewをModelのClassに登録する初期化処理
+CharactorEntity.registerView(CharactorView);
 
 export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
   ({ onAppClick }: CharactorsAppViewModel) => {
@@ -70,8 +75,10 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                   onAppClick && onAppClick();
                 }}
               >
-                {(renderedRect) => (
-                  <chara.View
+                {(renderedRect) => {
+                  const CharaView = chara.getView();
+                  return (
+                  <CharaView
                     colorHue={colorHue}
                     onRelationOpen={(rel) => {
                       if (!renderedRect) {
@@ -90,8 +97,9 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                         charaZ.moveToTop(rel.targetId.toString())
                       );
                     }}
-                  ></chara.View>
-                )}
+                  ></CharaView>
+
+                )}}
               </Panel>
             </Layer>
           );
