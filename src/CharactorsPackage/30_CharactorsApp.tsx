@@ -4,10 +4,12 @@ import ViewModel from "../00_Framework/00_ViewModel";
 import Panel from "../00_Framework/Panel/02_Panel";
 import Layer, { constantFunction } from "../00_Framework/Panel/02_Layer";
 import SmartRect from "../00_Framework/Panel/01_SmartRect";
-import { PanelBoxViewModel, useCharactorsRepos } from "./30_CharactorState";
+import { PanelBoxViewModel, Repository, SingleRepository, useCharactorsRepos } from "./30_CharactorState";
 import { CharactorsContext } from "./30_CharactorContext";
 import CharactorEntity from "./20_CharactorEntity";
 import { CharactorView } from "./20_CharactorView";
+import ZIndexCalcurator from "../01_Utils/01_ZIndexCalcurator";
+import PanelSizeContext from "../00_Framework/Panel/01_PanelSizeContext";
 
 interface CharactorsAppViewModel extends ViewModel<{}> {
   //className,
@@ -75,31 +77,13 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
                   onAppClick && onAppClick();
                 }}
               >
-                {(renderedRect) => {
-                  const CharaView = chara.getView();
-                  return (
-                  <CharaView
-                    colorHue={colorHue}
-                    onRelationOpen={(rel) => {
-                      if (!renderedRect) {
-                        return;
-                      }
-                      charactorPBVMsRepo.dispatchOne(
-                        rel.targetId,
-                        (charaBVM: PanelBoxViewModel): PanelBoxViewModel => {
-                          const newPos = renderedRect.calcPositionToOpen(
-                            charaBVM.size
-                          );
-                          return charaBVM.moveTo(newPos);
-                        }
-                      );
-                      charaZRepo.dispatch((charaZ) =>
-                        charaZ.moveToTop(rel.targetId.toString())
-                      );
-                    }}
-                  ></CharaView>
-
-                )}}
+                <RenderCharactorView 
+                  chara={chara}
+                  colorHue={colorHue}
+                  charactorPBVMsRepo={charactorPBVMsRepo}
+                  charaZRepo = {charaZRepo}
+                >
+                </RenderCharactorView>
               </Panel>
             </Layer>
           );
@@ -122,5 +106,46 @@ export const CharactorsApp: FC<CharactorsAppViewModel> = styled(
     z-index: 100;
   }
 `;
+
+type RenderCharactorViewProps = {
+  chara: CharactorEntity;
+  colorHue: number;
+  charactorPBVMsRepo: Repository<PanelBoxViewModel>;
+  charaZRepo: SingleRepository<ZIndexCalcurator>;
+}
+
+const RenderCharactorView = ({
+  chara,
+  colorHue,
+  charactorPBVMsRepo,
+  charaZRepo
+
+}: RenderCharactorViewProps)=>{
+  const renderedRect = useContext(PanelSizeContext);
+  const CharaView = chara.getView();
+  return (
+  <CharaView
+    colorHue={colorHue}
+    onRelationOpen={(rel) => {
+      if (!renderedRect) {
+        return;
+      }
+      charactorPBVMsRepo.dispatchOne(
+        rel.targetId,
+        (charaBVM: PanelBoxViewModel): PanelBoxViewModel => {
+          const newPos = renderedRect.calcPositionToOpen(
+            charaBVM.size
+          );
+          return charaBVM.moveTo(newPos);
+        }
+      );
+      charaZRepo.dispatch((charaZ) =>
+        charaZ.moveToTop(rel.targetId.toString())
+      );
+    }}
+  ></CharaView>);
+
+
+};
 
 export default CharactorsApp;

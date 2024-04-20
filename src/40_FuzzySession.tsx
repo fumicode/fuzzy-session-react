@@ -314,20 +314,18 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
                 onPanelClick();
               }}
             >
-              {(renderedRect) => (
-                <div>
-                  <SessionDetailView
-                    main={selectedSession}
-                    users={globalState.users}
-                    hourPx={20}
-                    dispatchSessionAction={(action: SessionAction) =>
-                      dispatchSessionAction(selectedSession.id, action)
-                    }
-                    onDragStart={() => {}}
-                    isHovered={true}
-                  />
-                </div>
-              )}
+              <div>
+                <SessionDetailView
+                  main={selectedSession}
+                  users={globalState.users}
+                  hourPx={20}
+                  dispatchSessionAction={(action: SessionAction) =>
+                    dispatchSessionAction(selectedSession.id, action)
+                  }
+                  onDragStart={() => {}}
+                  isHovered={true}
+                />
+              </div>
             </Panel>
           </Layer>
         )}
@@ -355,43 +353,41 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
               onPanelClick();
             }}
           >
-            {(renderedRect) => (
-              <div className={className}>
-                <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
-                <div className="e-calendar-columns">
-                  {[...globalState.calendars.values()].map((cal, calIndex) => {
-                    return (
-                      <div className="e-column" key={calIndex}>
-                        <h2>{cal.title}</h2>
-                        <DailyTimelineWithConflictsView
-                          main={cal.timeline}
-                          sessionEntities={globalState.sessions}
-                          showsTime={calIndex === 0}
-                          onTheSessionChange={dispatchSessionAction}
-                          onSessionFocus={(sId, originalRect) => {
-                            const session = globalState.sessions.get(
-                              sId.toString()
-                            );
-                            if (session === undefined) {
-                              return;
-                            }
+            <div className={className}>
+              <h1>🤖チャピスケ！📆　　（FuzzySession）</h1>
+              <div className="e-calendar-columns">
+                {[...globalState.calendars.values()].map((cal, calIndex) => {
+                  return (
+                    <div className="e-column" key={calIndex}>
+                      <h2>{cal.title}</h2>
+                      <DailyTimelineWithConflictsView
+                        main={cal.timeline}
+                        sessionEntities={globalState.sessions}
+                        showsTime={calIndex === 0}
+                        onTheSessionChange={dispatchSessionAction}
+                        onSessionFocus={(sId, originalRect) => {
+                          const session = globalState.sessions.get(
+                            sId.toString()
+                          );
+                          if (session === undefined) {
+                            return;
+                          }
 
-                            const positionToOpen =
-                              originalRect.calcPositionToOpen({
-                                width: 300, //適当
-                                height: 300,
-                              });
-                            setSelectedSessionId(session.id);
-                            setSelectedPosition(positionToOpen);
-                            setViewZ(viewZ.moveToTop("詳細"));
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
+                          const positionToOpen =
+                            originalRect.calcPositionToOpen({
+                              width: 300, //適当
+                              height: 300,
+                            });
+                          setSelectedSessionId(session.id);
+                          setSelectedPosition(positionToOpen);
+                          setViewZ(viewZ.moveToTop("詳細"));
+                        }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
           </Panel>
         </Layer>
       </>

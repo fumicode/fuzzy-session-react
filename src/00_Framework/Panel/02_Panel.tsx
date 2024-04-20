@@ -6,6 +6,7 @@ import { Point2, Size2 } from "../../01_Utils/00_Point";
 import useGetSmartRect from "./01_useGetSmartRect";
 import { Transition, TransitionStatus } from "react-transition-group";
 import WrapperSizeContext from "./01_WrapperSizeContext";
+import PanelSizeContext from "./01_PanelSizeContext";
 
 interface PanelProps {
   //string: テキトーな型
@@ -20,7 +21,7 @@ interface PanelProps {
   bgColor?: string;
   overflow?: string;
 
-  children: (renderedRect: SmartRect) => React.ReactNode;
+  children: React.ReactNode;
 
   transitionState: TransitionStatus;
 
@@ -61,6 +62,7 @@ export const PanelCore = styled(
         onMove
       );
 
+
       const defaultStyle = {
         transition: `left ${duration}ms ease-in-out,
           top ${duration}ms ease-in-out, 
@@ -95,8 +97,9 @@ export const PanelCore = styled(
             onPanelClick && onPanelClick();
           }}
         >
-          {renderedRect && children(renderedRect)}
-
+          <PanelSizeContext.Provider value={renderedRect}>
+            {children}
+          </PanelSizeContext.Provider>
           {debugMode && renderedRect && (
             <div className="e-rect-info">
               <SmartRectView main={renderedRect} className="e-smartRect" />

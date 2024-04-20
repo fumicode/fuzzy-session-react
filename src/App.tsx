@@ -72,7 +72,7 @@ const App: FC = styled((props: { className: string }) => {
               setAppZ(appZ.moveToTop("PointSharing"));
             }}
           >
-            {(renderedRect) => <SharingApp />}
+            <SharingApp />
           </Panel>
         </Layer>
 
@@ -98,7 +98,7 @@ const App: FC = styled((props: { className: string }) => {
             }}
             overflow="visible"
           >
-            {(renderedRect) => <MoneyApp />}
+            <MoneyApp />
           </Panel>
         </Layer>
 
