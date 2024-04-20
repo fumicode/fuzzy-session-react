@@ -300,10 +300,19 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
               }}
             >
               <div>
-                <Component
-                  selectedSession={selectedSession}
-                  dispatchSessionAction={dispatchSessionAction}
-                />
+                {
+                  (()=>{
+                    const View = selectedSession.getView()
+                    return (
+                      <View
+                        main={selectedSession}
+                        dispatchSessionAction={(action: SessionAction) =>
+                          dispatchSessionAction(selectedSession.id, action)
+                        }
+                      ></View>
+                    );
+                  })()
+                }
               </div>
             </Panel>
           </Layer>
@@ -382,20 +391,4 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
   }
 `;
 
-type Props = {
-  selectedSession: SessionEntity;
-  dispatchSessionAction:(sId: SessionId, sessionAction: SessionAction) => void 
-}
-
-const Component = ({ selectedSession, dispatchSessionAction }:Props) => {
-  const View = selectedSession.getView()
-  return (
-    <View
-      main={selectedSession}
-      dispatchSessionAction={(action: SessionAction) =>
-        dispatchSessionAction(selectedSession.id, action)
-      }
-    ></View>
-  );
-}
 export default FuzzySession;
