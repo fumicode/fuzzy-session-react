@@ -8,6 +8,9 @@ import Entity, {
 } from "../00_Framework/00_Entity";
 import { Session } from "inspector";
 import UserEntity from "./20_UserEntity";
+import { FC } from "react";
+import { SessionView } from "./20_SessionView";
+import ViewModel from "../00_Framework/00_ViewModel";
 
 export class SessionId extends StringId {
   static fromString(str: string): SessionId {
@@ -153,6 +156,32 @@ export default class SessionEntity implements Entity {
       members: this.members,
     };
   }
+
+  getView(){
+
+    const RegisteredView = componentList[0];
+    const CurriedView = (props: Omit<SessionViewModel, "main">) => 
+      <RegisteredView {...props} main={this} />;
+
+    return CurriedView;
+
+  }
+
+  static registerView(component: FC<SessionViewModel>) {
+    componentList.push(component);
+  }
+}
+
+const componentList: FC<SessionViewModel>[] = [];
+
+
+
+export interface SessionViewModel extends ViewModel<SessionEntity> {
+  //className,
+  //main
+
+  dispatchSessionAction: (sessionAction: SessionAction) => void;
+
 }
 
 const ThisClass = SessionEntity;

@@ -1,31 +1,12 @@
 import { FC, useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 
-import ViewModel from "../00_Framework/00_ViewModel";
+import { TimeDiff } from "./FuzzyTimePackage/index";
 
-import { TimeRangeTextView, TimeDiff } from "./FuzzyTimePackage/index";
-
-import classNames from "classnames";
-import { peekIntoFuture } from "../00_Framework/00_Action";
-import SessionEntity, { SessionAction } from "./20_SessionEntity";
-import UserEntity from "./20_UserEntity";
+import SessionEntity, { SessionAction, SessionViewModel } from "./20_SessionEntity";
 import { TimeRangeCharactorView } from "./FuzzyTimePackage/10_TimeRangeCharactorView";
 import { FuzzySessionGlobalContext } from "./30_FuzzySessionGlobalState";
 
-export interface SessionViewModel extends ViewModel<SessionEntity> {
-  //className,
-  //main
-
-
-  hourPx: number;
-
-  onDragStart: (startY: number) => void;
-  onDoubleClick?: (e: React.MouseEvent) => void;
-
-  dispatchSessionAction: (sessionAction: SessionAction) => void;
-
-  isHovered: boolean;
-}
 
 export const titleChangeActionCreator =
   (title: string) => (session: SessionEntity) =>
@@ -79,7 +60,6 @@ const SessionDetailView: FC<SessionViewModel> = styled(
     dispatchSessionAction,
   }: SessionViewModel) => {
     const timeRange = session.timeRange;
-    const hoursNum = timeRange.durationHour;
 
     const {users} = useContext(FuzzySessionGlobalContext);
     

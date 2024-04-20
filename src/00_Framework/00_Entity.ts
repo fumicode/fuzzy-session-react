@@ -4,6 +4,7 @@ export interface Id {
   equals(other: this): boolean;
 }
 
+
 export default interface Entity {
   readonly id: Id;
   readonly prev: Entity | undefined;

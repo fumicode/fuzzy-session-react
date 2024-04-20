@@ -21,7 +21,11 @@ import CalendarEntity, {
   CalendarId,
 } from "./FuzzySessionPackage/CalendarPackage/20_CalendarEntity";
 import SessionDetailView from "./FuzzySessionPackage/20_SessionDetailView";
-import FuzzySessionGlobalState, { FuzzySessionGlobalContext } from "./FuzzySessionPackage/30_FuzzySessionGlobalState";
+import FuzzySessionGlobalState, { FuzzySessionGlobalContext, fuzzySessionReducer } from "./FuzzySessionPackage/30_FuzzySessionGlobalState";
+
+//View の登録。
+//とりあえず、ここに書いておく。あとで、どこかに移す。
+SessionEntity.registerView(SessionDetailView) 
 
 const incho = new UserEntity(
   "incho",
@@ -172,7 +176,7 @@ interface FuzzySessionViewModel extends ViewModel<{}> {
 
 
 const useGlobalState = () => {
-  const [globalState, setGlobalState] = useState<FuzzySessionGlobalState>({
+  const [globalState, dispatch] = useReducer(fuzzySessionReducer, {
     calendars: convertIdentifiablesToMap(_calendars),
     users: convertIdentifiablesToMap(_users),
     sessions: convertIdentifiablesToMap(_allSessions),
@@ -183,7 +187,7 @@ const useGlobalState = () => {
   const onSessionSave = () => {
     //カレンダーも更新。（全部イチから作り直している。これはぜったいよくない。要点チェックにしたい）
 
-    setGlobalState((gs) =>
+    dispatch((gs) =>
       update(gs, {
         calendars: {
           $set: convertIdentifiablesToMap(
@@ -194,29 +198,6 @@ const useGlobalState = () => {
     );
   };
 
-  const dictionary = new Map<
-    Function,
-    { property: keyof FuzzySessionGlobalState }
-  >([
-    [SessionId, { property: "sessions" }],
-    [CalendarId, { property: "calendars" }],
-    [UserId, { property: "users" }],
-  ]);
-
-  //作ってみたけど、まだ使えてない。dispatchを一元化しようとしてるけど最後よくわからん。
-  // 返り値のMapの型がunknownにしかできてないの残念。
-  const decideRepoById = (id: Id, action: Function): Map<string, unknown> => {
-    if (!dictionary.has(id.constructor)) {
-      throw new Error(`指定されたid ${id} は未対応です。`);
-    }
-
-    const propertyName = dictionary.get(id.constructor)?.property;
-    if (propertyName === undefined) {
-      throw new Error(`指定されたid ${id} は未対応です。`);
-    }
-
-    return globalState[propertyName] as Map<string, unknown>;
-  };
 
   const dispatchSessionAction = (
     sId: SessionId,
@@ -235,7 +216,7 @@ const useGlobalState = () => {
       const futureSession = sessionAction(session);
 
       //永続化
-      setGlobalState((globalState) =>
+      dispatch((globalState) =>
         update(globalState, {
           sessions: {
             $add: [[session.id.toString(), futureSession]],
@@ -319,15 +300,18 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
               }}
             >
               <div>
-                <SessionDetailView
-                  main={selectedSession}
-                  hourPx={20}
-                  dispatchSessionAction={(action: SessionAction) =>
-                    dispatchSessionAction(selectedSession.id, action)
-                  }
-                  onDragStart={() => {}}
-                  isHovered={true}
-                />
+                {
+                  (()=>{
+                    const View = selectedSession.getView()
+                    return (
+                      <View
+                        dispatchSessionAction={(action: SessionAction) =>
+                          dispatchSessionAction(selectedSession.id, action)
+                        }
+                      ></View>
+                    )
+                  })()
+                }
               </div>
             </Panel>
           </Layer>
