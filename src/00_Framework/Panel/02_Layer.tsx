@@ -18,13 +18,18 @@ export interface LayerProps {
 
 export type ZScalerFunction = (zIndex: number, maxZIndex: number) => number;
 
-export const inversePropotionFunction =
-  (xOffset: number = 8) =>
-  (x: number, max: number) =>
-    -1 / (x + xOffset) + 1;
+export const inversePropotionFunctionGenerator =
+  (curveRate: number = 8) =>
+  (x: number, max: number) => {
+    return func(max-x, curveRate)
+  }
+
+const func = (x:number, a:number) => { //反比例関数で、xが0のときに1を返す関数。
+  return a / (x + a);
+}
 
 export const weakInversePropotion: ZScalerFunction =
-  inversePropotionFunction(8);
+  inversePropotionFunctionGenerator(8);
 
 export const constantFunction: ZScalerFunction = (x: number) => 1;
 

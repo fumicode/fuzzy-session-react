@@ -13,7 +13,7 @@ import ViewModel from "./00_Framework/00_ViewModel";
 import { Point2 } from "./01_Utils/00_Point";
 import Panel from "./00_Framework/Panel/02_Panel";
 import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
-import Layer, { inversePropotionFunction } from "./00_Framework/Panel/02_Layer";
+import Layer, { inversePropotionFunctionGenerator } from "./00_Framework/Panel/02_Layer";
 import styled from "styled-components";
 import UserEntity, { UserId } from "./FuzzySessionPackage/20_UserEntity";
 import { Id, convertIdentifiablesToMap } from "./00_Framework/00_Entity";
@@ -287,6 +287,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
       x: 0,
       y: 0,
     });
+    const newFunction = inversePropotionFunctionGenerator(50);
 
     return (
       <>
@@ -295,8 +296,8 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
             zIndex={viewZ.get("詳細")}
             colorHue={0}
             name={"詳細"}
-            zScaler={inversePropotionFunction(8)}
-            zIndexMax={1}
+            zScaler={newFunction}
+            zIndexMax={viewZ.max}
             onLayerHeaderClick={() => {
               setViewZ(viewZ.moveToTop("詳細"));
               onPanelClick();
@@ -334,8 +335,8 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
           zIndex={viewZ.get("一覧")}
           colorHue={0}
           name={"一覧"}
-          zScaler={inversePropotionFunction(8)}
-          zIndexMax={1}
+          zScaler={newFunction}
+          zIndexMax={viewZ.max}
           onLayerHeaderClick={() => {
             setViewZ(viewZ.moveToTop("一覧"));
             onPanelClick();

@@ -4,7 +4,7 @@ import styled from "styled-components";
 import PanelSystem from "./00_Framework/Panel/02_PanelSystem";
 import Layer, {
   ZScalerFunction,
-  reversePropotion,
+  inversePropotionFunctionGenerator,
 } from "./00_Framework/Panel/02_Layer";
 import ZIndexCalcurator from "./01_Utils/01_ZIndexCalcurator";
 import FuzzySession from "./40_FuzzySession";
@@ -24,7 +24,8 @@ const App: FC = styled((props: { className: string }) => {
   const AppName = "FuzzySession";
 
   //const zIndexScaler = inversePropotionFunction(2);
-  const appZScaler: ZScalerFunction = reversePropotion;
+  //const appZScaler: ZScalerFunction = reversePropotion;
+  const appZScaler: ZScalerFunction = inversePropotionFunctionGenerator();
 
   const charaRepos = useCharactorsRepos();
 

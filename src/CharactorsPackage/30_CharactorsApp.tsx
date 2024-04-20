@@ -3,7 +3,7 @@ import styled from "styled-components";
 import ViewModel from "../00_Framework/00_ViewModel";
 import Panel from "../00_Framework/Panel/02_Panel";
 import Layer, { constantFunction } from "../00_Framework/Panel/02_Layer";
-import SmartRect from "../00_Framework/Panel/01_SmartRect";
+import SmartRect, { SmartRectView } from "../00_Framework/Panel/01_SmartRect";
 import { PanelBoxViewModel, Repository, SingleRepository, useCharactorsRepos } from "./30_CharactorState";
 import { CharactorsContext } from "./30_CharactorContext";
 import CharactorEntity from "./20_CharactorEntity";
@@ -124,26 +124,37 @@ const RenderCharactorView = ({
   const renderedRect = useContext(PanelSizeContext);
   const CharaView = chara.getView();
   return (
-  <CharaView
-    colorHue={colorHue}
-    onRelationOpen={(rel) => {
-      if (!renderedRect) {
-        return;
-      }
-      charactorPBVMsRepo.dispatchOne(
-        rel.targetId,
-        (charaBVM: PanelBoxViewModel): PanelBoxViewModel => {
-          const newPos = renderedRect.calcPositionToOpen(
-            charaBVM.size
+    <>
+      <CharaView
+        colorHue={colorHue}
+        onRelationOpen={(rel) => {
+          if (!renderedRect) {
+            return;
+          }
+          charactorPBVMsRepo.dispatchOne(
+            rel.targetId,
+            (charaBVM: PanelBoxViewModel): PanelBoxViewModel => {
+              const newPos = renderedRect.calcPositionToOpen(
+                charaBVM.size
+              );
+              return charaBVM.moveTo(newPos);
+            }
           );
-          return charaBVM.moveTo(newPos);
-        }
-      );
-      charaZRepo.dispatch((charaZ) =>
-        charaZ.moveToTop(rel.targetId.toString())
-      );
-    }}
-  ></CharaView>);
+          charaZRepo.dispatch((charaZ) =>
+            charaZ.moveToTop(rel.targetId.toString())
+          );
+        }}
+      ></CharaView>
+
+      {
+        renderedRect && (
+          <SmartRectView main={renderedRect}/>
+        )
+
+      }
+
+    </>
+);
 
 
 };
