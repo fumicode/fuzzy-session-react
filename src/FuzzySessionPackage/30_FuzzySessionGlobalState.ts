@@ -1,3 +1,4 @@
+import { createContext } from "react";
 import SessionEntity from "./20_SessionEntity";
 import UserEntity from "./20_UserEntity";
 import CalendarEntity from "./CalendarPackage/20_CalendarEntity";
@@ -9,3 +10,10 @@ export default interface FuzzySessionGlobalState {
 
   readonly relations: {};
 }
+
+export const FuzzySessionGlobalContext = createContext<FuzzySessionGlobalState>({
+  calendars: new Map(),
+  users: new Map(),
+  sessions: new Map(),
+  relations: {},
+});

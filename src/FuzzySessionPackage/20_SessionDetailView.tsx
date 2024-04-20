@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 
 import ViewModel from "../00_Framework/00_ViewModel";
@@ -10,12 +10,12 @@ import { peekIntoFuture } from "../00_Framework/00_Action";
 import SessionEntity, { SessionAction } from "./20_SessionEntity";
 import UserEntity from "./20_UserEntity";
 import { TimeRangeCharactorView } from "./FuzzyTimePackage/10_TimeRangeCharactorView";
+import { FuzzySessionGlobalContext } from "./30_FuzzySessionGlobalState";
 
 export interface SessionViewModel extends ViewModel<SessionEntity> {
   //className,
   //main
 
-  users: Map<string, UserEntity>;
 
   hourPx: number;
 
@@ -75,12 +75,14 @@ const SessionDetailView: FC<SessionViewModel> = styled(
   ({
     className,
     main: session,
-    users,
 
     dispatchSessionAction,
   }: SessionViewModel) => {
     const timeRange = session.timeRange;
     const hoursNum = timeRange.durationHour;
+
+    const {users} = useContext(FuzzySessionGlobalContext);
+    
 
     const [title, setTitle] = useState<Text>(new Text(session.title));
 

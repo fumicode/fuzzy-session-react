@@ -4,7 +4,7 @@ import SessionEntity, {
   SessionId,
 } from "./FuzzySessionPackage/20_SessionEntity";
 import { TimeRange } from "./FuzzySessionPackage/FuzzyTimePackage/index";
-import { FC, useState } from "react";
+import { FC, createContext, useReducer, useState } from "react";
 
 import update from "immutability-helper";
 import { DailyTimelineWithConflictsView } from "./FuzzySessionPackage/30_DailyTimelineViewWithConflicts";
@@ -21,7 +21,7 @@ import CalendarEntity, {
   CalendarId,
 } from "./FuzzySessionPackage/CalendarPackage/20_CalendarEntity";
 import SessionDetailView from "./FuzzySessionPackage/20_SessionDetailView";
-import FuzzySessionGlobalState from "./FuzzySessionPackage/30_FuzzySessionGlobalState";
+import FuzzySessionGlobalState, { FuzzySessionGlobalContext } from "./FuzzySessionPackage/30_FuzzySessionGlobalState";
 
 const incho = new UserEntity(
   "incho",
@@ -170,6 +170,7 @@ interface FuzzySessionViewModel extends ViewModel<{}> {
   onPanelClick(): void;
 }
 
+
 const useGlobalState = () => {
   const [globalState, setGlobalState] = useState<FuzzySessionGlobalState>({
     calendars: convertIdentifiablesToMap(_calendars),
@@ -177,6 +178,7 @@ const useGlobalState = () => {
     sessions: convertIdentifiablesToMap(_allSessions),
     relations: {},
   });
+
 
   const onSessionSave = () => {
     //カレンダーも更新。（全部イチから作り直している。これはぜったいよくない。要点チェックにしたい）
@@ -271,6 +273,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
 
     const { globalState, dispatchSessionAction } = useGlobalState();
 
+
     const [viewZ, setViewZ] = useState<ZIndexCalcurator>(
       new ZIndexCalcurator(["詳細", "一覧"])
     );
@@ -290,7 +293,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
     const newFunction = inversePropotionFunctionGenerator(50);
 
     return (
-      <>
+      <FuzzySessionGlobalContext.Provider value={globalState}>
         {selectedSession && (
           <Layer
             zIndex={viewZ.get("詳細")}
@@ -318,7 +321,6 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
               <div>
                 <SessionDetailView
                   main={selectedSession}
-                  users={globalState.users}
                   hourPx={20}
                   dispatchSessionAction={(action: SessionAction) =>
                     dispatchSessionAction(selectedSession.id, action)
@@ -391,7 +393,7 @@ const FuzzySession: FC<FuzzySessionViewModel> = styled(
             </div>
           </Panel>
         </Layer>
-      </>
+      </FuzzySessionGlobalContext.Provider>
     );
   }
 )`
