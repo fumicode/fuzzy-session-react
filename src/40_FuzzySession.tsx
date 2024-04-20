@@ -391,6 +391,7 @@ const Component = ({ selectedSession, dispatchSessionAction }:Props) => {
   const View = selectedSession.getView()
   return (
     <View
+      main={selectedSession}
       dispatchSessionAction={(action: SessionAction) =>
         dispatchSessionAction(selectedSession.id, action)
       }

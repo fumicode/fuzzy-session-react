@@ -126,6 +126,7 @@ const RenderCharactorView = ({
   return (
     <>
       <CharaView
+        main={chara}
         colorHue={colorHue}
         onRelationOpen={(rel) => {
           if (!renderedRect) {

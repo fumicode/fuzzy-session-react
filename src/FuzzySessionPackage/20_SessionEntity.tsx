@@ -158,13 +158,7 @@ export default class SessionEntity implements Entity {
   }
 
   getView(){
-
-    const RegisteredView = componentList[0];
-    const CurriedView = (props: Omit<SessionViewModel, "main">) => 
-      <RegisteredView {...props} main={this} />;
-
-    return CurriedView;
-
+    return componentList[0];
   }
 
   static registerView(component: FC<SessionViewModel>) {

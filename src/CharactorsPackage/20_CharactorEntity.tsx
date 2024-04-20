@@ -43,12 +43,7 @@ export default class CharactorEntity implements Entity {
   }
 
   getView() {
-
-    const RegisteredView = componentList[0];
-    const CurriedView = (props: Omit<CharactorViewModel, "main">) => 
-      <RegisteredView {...props} main={this} />;
-
-    return CurriedView;
+    return componentList[0];
   }
 
 
